@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId     Int      @id @default(autoincrement())
+  telegramId String
+  userName   String
+  basket     Basket[]
+  order      Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Product {
+  productId   Int      @id @default(autoincrement())
+  name        String
+  synonym     String?
+  description String
+  picture     String?
+  count       Int
+  cost        Decimal
+  basket      Basket[]
+  order       Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Basket {
+  basketId     Int     @id @default(autoincrement())
+  userId       Int
+  productId    Int
+  productCount Int
+  product      Product @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: Cascade)
+  user         User    @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Order {
+  orderId          Int      @id @default(autoincrement())
+  orderTrackNumber String
+  userId           Int
+  surName          String?
+  firstName        String?
+  middleName       String?
+  productId        Int?
+  productCount     Int
+  product          Product? @relation(fields: [productId], references: [productId], onDelete: SetDefault, onUpdate: Cascade)
+  user             User     @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model CdekOffice {
+  officeId     Int    @id @default(autoincrement())
+  code         String
+  uuid         String
+  countryCode  String
+  regionCode   Int
+  region       String
+  cityCode     Int
+  City         String
+  address      String
+  address_full String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+}
+
+model UserCrm {
+  id        Int    @id @unique @default(autoincrement())
+  firstName String
+  surName   String
+  role      Role   @default(MODERATOR)
+  email     String
+  password  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
