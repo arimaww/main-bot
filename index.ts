@@ -2,12 +2,23 @@ import { config } from 'dotenv'
 config()
 import TelegramBot from "node-telegram-bot-api";
 import { prisma } from './prisma/prisma-client';
+import express from 'express'
+import morgan from 'morgan';
+
 
 
 const token = process.env.TOKEN!;
 const WEB_APP = process.env.WEB_APP!;
 
+const app = express()
+
 const bot = new TelegramBot(token, { polling: true })
+
+
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
+app.use(morgan('dev'))
+
 
 
 bot.on('message', async (msg) => {
@@ -34,5 +45,4 @@ bot.on('message', async (msg) => {
             }
         })
     }
-
 })
