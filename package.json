@@ -11,11 +11,15 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.19.1",
+    "@types/cors": "^2.8.17",
+    "@types/request": "^2.48.12",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.20.0",
     "morgan": "^1.10.0",
     "node-telegram-bot-api": "^0.66.0",
-    "prisma": "^5.19.1"
+    "prisma": "^5.19.1",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
