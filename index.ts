@@ -4,10 +4,10 @@ import TelegramBot from "node-telegram-bot-api";
 import { prisma } from './prisma/prisma-client';
 import express, { Request, Response } from 'express'
 import morgan from 'morgan';
-import { makeRequest, recordOrderInfo } from './helpers/helpers';
-import { TWeb } from './types/types';
+import { getOrderTrackNumber, recordOrderInfo } from './helpers/helpers';
+import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
-
+import { v4 as uuidv4 } from 'uuid';
 
 
 const token = process.env.TOKEN!;
@@ -55,6 +55,9 @@ bot.on('message', async (msg) => {
 
 app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     const {
+        
+        selectedPvzCode,
+        selectedTariff,
         telegramId,
         basket,
         queryId,
@@ -90,13 +93,16 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             where: { telegramId: telegramId.toString() },
         });
 
-        await makeRequest(uuid, token).then(async trackNumber => {
+        await getOrderTrackNumber(uuid, token).then(async trackNumber => {
             const uniqueProducts = products.filter((prod) => prod.productCount > 0);
+            
+            const orderId = uuid;
+
 
             for (let prod of uniqueProducts) {
                 await recordOrderInfo({
                     userId: user?.userId!,
-                    orderTrackNumber: trackNumber!,
+                    orderUniqueNumber: orderId,
                     productCount: prod.productCount,
                     productId: prod.productId,
                     firstName,
@@ -109,26 +115,119 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 if (msg.chat.id === telegramId) {
                     if (msg.photo) {
                         const fileId = msg.photo[msg.photo.length - 1].file_id;
-            
+
                         try {
 
                             const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${products.filter(el => el.productCount > 0)
                                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                                 .join("\n")}\n\nТрек-номер: ${trackNumber}\nФИО: ${surName} ${firstName} ${middleName}\nНомер: ${phone}\nДоставка: ${deliverySum} ₽`
-        
-            
-                            bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
-                                caption: messageToManager,
-                                reply_markup: {
-                                    inline_keyboard: [
-                                        [{ text: "Принять", callback_data: "Принять" }, { text: "Удалить", callback_data: "Удалить" }]
-                                    ]
-                                },
-                                parse_mode: "HTML"
+
+
+                                const orderId = uuid; // Используем уникальный идентификатор заказа
+
+                                bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
+                                    caption: messageToManager,
+                                    reply_markup: {
+                                        inline_keyboard: [
+                                            [{ text: "Принять", callback_data: `Принять_${orderId}` }, { text: "Удалить", callback_data: `Удалить_${orderId}` }]
+                                        ]
+                                    },
+                                    parse_mode: "HTML"
+                                });
+
+                                async function getOrderData(orderId: string) {
+                                    // Предполагаем, что данные заказов хранятся в базе данных
+                                    const order = await prisma.order.findFirst({
+                                        where: { orderUniqueNumber: orderId },
+                                    });
+
+
+                                    const entireOrders = await prisma.order.findMany({
+                                        where: { orderUniqueNumber: orderId },
+                                    })
+                                
+                                    if (!order) {
+                                        throw new Error("Заказ не найден");
+                                    }
+
+                                    const user = await prisma.user.findFirst({where: {userId: order?.userId}})
+
+                                    const products = await prisma.product.findMany();
+
+                                    const orderProds:TProduct[] = []
+
+                                    for(const order of entireOrders) {
+                                        products.map((prod) => {
+                                            if(prod.productId === order.productId && order.productCount > 0) {
+                                                orderProds.push({
+                                                    cost: Number(prod.cost), 
+                                                    count: prod.count,
+                                                    productId: 0,
+                                                    name: prod.name,
+                                                    synonym: prod.synonym || '',
+                                                    description: prod.description,
+                                                    picture: prod.picture || '',
+                                                    productCount: order.productCount
+                                                })
+                                            }
+                                        })
+                                    }
+
+                                    console.log(orderProds)
+                                
+                                    return {
+                                        telegramId: user?.telegramId,    // ID пользователя, оформившего заказ
+                                        trackNumber: order?.orderTrackNumber,
+                                        products: orderProds
+
+                                    };
+                                }
+                            // Обработчик callback_query для кнопок "Принять" и "Удалить"
+                            bot.on("callback_query", async (query) => {
+                                const chatId = query.message?.chat.id;
+                                const messageId = query.message?.message_id;
+
+                                if (!query.data) {
+                                    console.error("Отсутствует callback_data");
+                                    return;
+                                }
+                                // Извлекаем идентификатор заказа из callback_data
+                                const [action, orderId] = query.data.split("_");
+                            
+                                try {
+                                    // Получаем данные заказа на основе orderId (например, из базы данных)
+                                    const orderData = await getOrderData(orderId);
+                            
+                                    if (action === "Принять") {
+                                        // Менеджер нажал "Принять"
+                                        
+                                        // выполнение заказа и получение трек номера
+
+                                        await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят! Вот трек-номер: ${orderData?.trackNumber}\n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}`);
+                            
+                                        // Обновляем сообщение у менеджера
+                                        await bot.editMessageCaption("Заказ был принят.", {
+                                            chat_id: chatId,
+                                            message_id: messageId,
+                                        });
+                                    } else if (action === "Удалить") {
+                                        // Действие для удаления заказа
+                                        await bot.editMessageCaption("Заказ был удален.", {
+                                            chat_id: chatId,
+                                            message_id: messageId,
+                                        });
+                                    }
+                            
+                                    // Закрываем callback
+                                    await bot.answerCallbackQuery(query.id);
+                                } catch (err) {
+                                    console.error("Ошибка обработки заказа:", err);
+                                }
                             });
-            
+
+
                             bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят. Заказ завершен.");
-            
+
                             bot.removeListener("message", handleScreenshotMessage);
                         } catch (err) {
                             console.error('Ошибка отправки сообщения:', err);
@@ -138,7 +237,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     }
                 }
             };
-            
+
 
 
 
@@ -149,7 +248,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 title: "Ваш заказ",
                 input_message_content: {
                     message_text:
-                        "Трек-номер: " + trackNumber +
                         `\n\nЗаказ:\n${products
                             .filter((el: any) => el.productCount > 0)
                             .map((el: any) => `${el.productCount} шт. | ${el.synonym}`)

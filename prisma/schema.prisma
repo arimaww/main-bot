@@ -11,11 +11,10 @@ model User {
   userId     Int      @id @default(autoincrement())
   telegramId String
   userName   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
   basket     Basket[]
   order      Order[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Product {
@@ -26,43 +25,42 @@ model Product {
   picture     String?
   count       Int
   cost        Decimal
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
   basket      Basket[]
   order       Order[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Basket {
-  basketId     Int     @id @default(autoincrement())
+  basketId     Int      @id @default(autoincrement())
   userId       Int
   productId    Int
   productCount Int
-  product      Product @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: Cascade)
-  user         User    @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  product      Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model Order {
-  orderId          Int      @id @default(autoincrement())
-  orderTrackNumber String
-  userId           Int
-  surName          String?
-  firstName        String?
-  middleName       String?
-  productId        Int?
-  productCount     Int
-  product          Product? @relation(fields: [productId], references: [productId], onDelete: SetDefault, onUpdate: Cascade)
-  user             User     @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  orderId           Int         @id @default(autoincrement())
+  orderTrackNumber  String?
+  userId            Int
+  surName           String?
+  firstName         String?
+  middleName        String?
+  productId         Int?
+  productCount      Int
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @default(now()) @updatedAt
+  status            OrderStatus @default(PENDING)
+  orderUniqueNumber String?
+  product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
+  user              User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model CdekOffice {
-  officeId     Int    @id @default(autoincrement())
+  officeId     Int      @id @default(autoincrement())
   code         String
   uuid         String
   countryCode  String
@@ -72,7 +70,17 @@ model CdekOffice {
   City         String
   address      String
   address_full String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+}
 
+model UserCrm {
+  id        Int      @id @unique @default(autoincrement())
+  firstName String
+  surName   String
+  role      Role     @default(MODERATOR)
+  email     String
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
@@ -82,14 +90,7 @@ enum Role {
   MODERATOR
 }
 
-model UserCrm {
-  id        Int    @id @unique @default(autoincrement())
-  firstName String
-  surName   String
-  role      Role   @default(MODERATOR)
-  email     String
-  password  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+enum OrderStatus {
+  PENDING
+  SUCCESS
 }
