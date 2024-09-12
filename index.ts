@@ -111,17 +111,20 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         const fileId = msg.photo[msg.photo.length - 1].file_id;
             
                         try {
-                            const messageToManager = `Пользователь сделал заказ:\n${products.filter(el => el.productCount > 0)
+
+                            const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${products.filter(el => el.productCount > 0)
                                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                                .join("\n")}\n\nТрек-номер: ${trackNumber}\nФИО: ${surName} ${firstName} ${middleName}\nНомер: ${phone}\nДоставка: ${deliverySum} ₽`;
+                                .join("\n")}\n\nТрек-номер: ${trackNumber}\nФИО: ${surName} ${firstName} ${middleName}\nНомер: ${phone}\nДоставка: ${deliverySum} ₽`
+        
             
                             bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
-                                caption: messageToManager, // Подпись к фотографии (описание заказа)
+                                caption: messageToManager,
                                 reply_markup: {
                                     inline_keyboard: [
                                         [{ text: "Принять", callback_data: "Принять" }, { text: "Удалить", callback_data: "Удалить" }]
                                     ]
-                                }
+                                },
+                                parse_mode: "HTML"
                             });
             
                             bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят. Заказ завершен.");
