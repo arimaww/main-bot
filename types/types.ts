@@ -33,8 +33,11 @@ export type TRecordOrderInfo = {
 	middleName: string;
 	productId: number;
 	productCount: number;
+	phone: string;
 	orderTrackNumber?: string;
 	orderUniqueNumber?: string;
+	selectedPvzCode?: string;
+	selectedTariff?: number;
 };
 
 export type TDeliveryRequest = {
@@ -109,3 +112,17 @@ export type TDeliveryResponse = {
         }
     ]
 }
+
+export type TCdekUser = {
+	grant_type: "client_credentials",
+	client_id: string,
+	client_secret: string
+}
+
+export type ResponseAuthData = {
+    access_token: string,
+    token_type: string,
+    expires_in: number,
+    scope: string,
+    jti: string,
+} 
