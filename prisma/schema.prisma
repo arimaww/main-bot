@@ -55,6 +55,9 @@ model Order {
   updatedAt         DateTime    @default(now()) @updatedAt
   status            OrderStatus @default(PENDING)
   orderUniqueNumber String?
+  phone             String?
+  selectedPvzCode   String?
+  selectedTariff    Int?
   product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
   user              User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
