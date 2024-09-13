@@ -1,66 +1,66 @@
 import request from "request";
-import { TDeliveryRequest, TDeliveryResponse, TRecordOrderInfo } from "../types/types";
+import { ResponseAuthData, TCdekUser, TDeliveryRequest, TDeliveryResponse, TRecordOrderInfo } from "../types/types";
 
 export const recordOrderInfo = async (body: TRecordOrderInfo) => {
-	try {
-		const options = {
-			url: `${process.env.SERVER_API_URL}/orders/recordInfo`,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify(body),
-		};
+    try {
+        const options = {
+            url: `${process.env.SERVER_API_URL}/orders/recordInfo`,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify(body),
+        };
 
-		request(options, (error, response, body) => {
-			if (error) return console.log(error);
-		});
-	} catch (err) {
-		console.log(err);
-	}
+        request(options, (error, response, body) => {
+            if (error) return console.log(error);
+        });
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 export const getOrderTrackNumber = (uuid: string, token: string): Promise<string> => {
-	return new Promise((resolve, reject) => {
-		const options = {
-			url: `${process.env.SERVER_API_URL}/orders/info/`,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify({ im_number: uuid, token: token }),
-		};
+    return new Promise((resolve, reject) => {
+        const options = {
+            url: `${process.env.SERVER_API_URL}/orders/info/`,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({ im_number: uuid, token: token }),
+        };
 
-		request(options, (error, _, body) => {
-			if (error) {
-				return reject("Ошибка при запросе к CDEK API: " + error);
-			}
+        request(options, (error, _, body) => {
+            if (error) {
+                return reject("Ошибка при запросе к CDEK API: " + error);
+            }
 
-			let data;
-			try {
-				data = JSON.parse(body);
-			} catch (parseError) {
-				return reject("Error parsing JSON");
-			}
+            let data;
+            try {
+                data = JSON.parse(body);
+            } catch (parseError) {
+                return reject("Error parsing JSON");
+            }
 
-			if (data.entity && data.entity.cdek_number) {
-				return resolve(data.entity.cdek_number);
-			} else if (data.requests[0].errors) {
-				reject("Ошибка: " + data.requests[0].errors[0].message);
-			} else {
-				return reject("cdek_number not found");
-			}
-		});
-	});
+            if (data.entity && data.entity.cdek_number) {
+                return resolve(data.entity.cdek_number);
+            } else if (data.requests[0].errors) {
+                reject("Ошибка: " + data.requests[0].errors[0].message);
+            } else {
+                return reject("cdek_number not found");
+            }
+        });
+    });
 };
 
 
 
-export const getOrderObjRu = (access_token:string | undefined, uuidCdek: string, basket:any, 
+export const getOrderObjRu = async (access_token: string | undefined, uuidCdek: string, totalPrice: any,
     surName: string, firstName: string, middleName: string,
-    phone: string, selectedPvzCode: string, deliverySum: number, selectedTariff: number):TDeliveryRequest => {
+    phone: string, selectedPvzCode: string, deliverySum: number, selectedTariff: number): Promise<TDeliveryRequest> => {
     return {
         token: access_token,
         number: uuidCdek,
@@ -79,10 +79,10 @@ export const getOrderObjRu = (access_token:string | undefined, uuidCdek: string,
             items: [{
                 ware_key: "1",
                 payment: {
-                    value:  0.1
+                    value: 0.1
                 },
                 name: "Товар",
-                cost: Number(basket?.totalPrice),
+                cost: Number(totalPrice),
                 amount: 1,
                 weight: 2000,
             }],
@@ -104,36 +104,79 @@ export const getOrderObjRu = (access_token:string | undefined, uuidCdek: string,
             parameter: '0'
         }],
         tariff_code: selectedTariff,
-        shipment_point: 'KIZ9',
+        shipment_point: process.env.SHIPMENT_POINT!,
         delivery_point: selectedPvzCode
     };
 }
 
 
-export const makeTrackNumber = async (body: TDeliveryRequest):Promise<TDeliveryResponse | undefined> => {
-	try {
-		const options = {
-			url: `${process.env.SERVER_API_URL}/orders`,
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify(body),
-		};
+export const makeTrackNumber = async (body: TDeliveryRequest): Promise<TDeliveryResponse | undefined> => {
+    try {
+        const options = {
+            url: `${process.env.SERVER_API_URL}/orders`,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify(body),
+        };
 
-		request(options, (error, response, body) => {
-			if (error) return console.log(error);
-			let data;
-			try {
-				data = JSON.parse(body);
-				return data;
-			} catch (parseError) {
-				return console.log('json parse error')
-			}
-		});
-		return undefined;
-	} catch (err) {
-		console.log(err);
-	}
-}
+        return new Promise((resolve, reject) => {
+            request(options, (error, response, body) => {
+                if (error) {
+                    console.log(error);
+                    reject(error);  // Если ошибка, отклоняем промис
+                }
+
+                try {
+                    const data = JSON.parse(body);  // Парсим JSON
+                    console.log('data: ' + data)
+                    resolve(data);  // Возвращаем данные через resolve
+                } catch (parseError) {
+                    console.log('json parse error');
+                    reject(parseError);  // Отклоняем промис, если ошибка парсинга
+                }
+            });
+        });
+    } catch (err) {
+        console.log(err);
+        return undefined;  // Возвращаем undefined, если произошла ошибка в try/catch
+    }
+};
+
+
+export const getToken = async (body: TCdekUser): Promise<ResponseAuthData | undefined> => {
+    try {
+        const options = {
+            url: `${process.env.SERVER_API_URL}/oauth/token`,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify(body),
+        };
+
+        // Возвращаем промис
+        return new Promise((resolve, reject) => {
+            request(options, (error, response, body) => {
+                if (error) {
+                    console.error(error);
+                    reject(error);
+                }
+                try {
+                    const data = JSON.parse(body);
+                    resolve(data);
+                } catch (err) {
+                    console.log(err);
+                    resolve(undefined);
+                }
+            });
+        });
+        
+    } catch (err) {
+        console.log(err);
+        return undefined;
+    }
+};
