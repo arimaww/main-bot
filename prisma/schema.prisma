@@ -58,6 +58,7 @@ model Order {
   phone             String?
   selectedPvzCode   String?
   selectedTariff    Int?
+  fileId            String?
   product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
   user              User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
