@@ -101,7 +101,7 @@ bot.on('message', async (msg) => {
                 const user = await prisma.user?.findFirst({ where: { userId: ord?.userId } })
                 const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
                     .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone}\nДоставка: {empty} ₽`
+                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone}\nДоставка: ${ord?.deliveryCost} ₽`
 
 
 
