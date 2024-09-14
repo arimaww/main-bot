@@ -53,7 +53,7 @@ model Order {
   productCount      Int
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @default(now()) @updatedAt
-  status            OrderStatus @default(PENDING)
+  status            OrderStatus @default(WAITPAY)
   orderUniqueNumber String?
   phone             String?
   selectedPvzCode   String?
@@ -98,4 +98,5 @@ enum Role {
 enum OrderStatus {
   PENDING
   SUCCESS
+  WAITPAY
 }

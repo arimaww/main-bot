@@ -28,7 +28,8 @@ app.options("*", cors())
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
 
-    if (msg.text === "/start") {
+    const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY" } })
+    if (msg.text === "/start" && !isUserDidOrder) {
         const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
 
         if (!user) {
@@ -99,6 +100,7 @@ bot.on('message', async (msg) => {
                 });
 
                 const user = await prisma.user?.findFirst({ where: { userId: ord?.userId } })
+
                 const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
                     .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                     .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone}\nДоставка: ${ord?.deliveryCost} ₽`
@@ -142,6 +144,17 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     let errorOrderCreating = null;
 
     try {
+        const user = await prisma.user.findFirst({
+            where: { telegramId: telegramId.toString() },
+        });
+
+        const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
+
+        if (isUserDidOrder) {
+            bot.sendMessage(telegramId, "У вас есть неоплаченный заказ")
+            return res.status(400).json({ message: "Ожидание оплаты предыдущего заказа" })
+        }
+
         if (!basket || !queryId || !totalPrice) {
             await bot.answerWebAppQuery(queryId, {
                 type: "article",
@@ -156,9 +169,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 .json({ message: "Все поля обязательны для заполнения" });
         }
 
-        const user = await prisma.user.findFirst({
-            where: { telegramId: telegramId.toString() },
-        });
+
 
 
         const uniqueProducts = products.filter((prod) => prod.productCount > 0);
@@ -202,7 +213,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             where: { orderUniqueNumber: orderId },
                         });
 
-                        if (order && order.status === "PENDING") {
+                        if (order && order.status === "WAITPAY") {
                             await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
                                 caption: messageToManager,
                                 reply_markup: {
@@ -219,6 +230,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                         // Обработчик callback_query для кнопок "Принять" и "Удалить"
 
+                        await prisma.order.updateMany({ where: { orderUniqueNumber: orderId }, data: { status: "PENDING" } })
 
                         bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят. Заказ завершен.");
 
