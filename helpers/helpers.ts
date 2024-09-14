@@ -126,22 +126,21 @@ export const makeTrackNumber = async (body: TDeliveryRequest): Promise<TDelivery
             request(options, (error, response, body) => {
                 if (error) {
                     console.log(error);
-                    reject(error);  // Если ошибка, отклоняем промис
+                    reject(error);
                 }
 
                 try {
-                    const data = JSON.parse(body);  // Парсим JSON
-                    console.log('data: ' + data)
-                    resolve(data);  // Возвращаем данные через resolve
+                    const data = JSON.parse(body);
+                    resolve(data);
                 } catch (parseError) {
                     console.log('json parse error');
-                    reject(parseError);  // Отклоняем промис, если ошибка парсинга
+                    reject(parseError);
                 }
             });
         });
     } catch (err) {
         console.log(err);
-        return undefined;  // Возвращаем undefined, если произошла ошибка в try/catch
+        return undefined;
     }
 };
 
@@ -158,7 +157,6 @@ export const getToken = async (body: TCdekUser): Promise<ResponseAuthData | unde
             body: JSON.stringify(body),
         };
 
-        // Возвращаем промис
         return new Promise((resolve, reject) => {
             request(options, (error, response, body) => {
                 if (error) {
