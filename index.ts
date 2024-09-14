@@ -133,7 +133,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                     caption: messageToManager,
                                     reply_markup: {
                                         inline_keyboard: [
-                                            [{ text: "Принять", callback_data: `Принять_${orderId}` }, { text: "Удалить", callback_data: `Удалить_${orderId}` }]
+                                            [{ text: "✅ Принять", callback_data: `Принять_${orderId}` }, { text: "❌ Удалить", callback_data: `Удалить_${orderId}` }]
                                         ]
                                     },
                                     parse_mode: "HTML"
@@ -307,12 +307,12 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
 
                 const timestamp = new Date().toISOString();
 
-                await bot.editMessageCaption(`Заказ был принят. Трек-номер: ${orderTrackNumberForUser} Время: ${timestamp}`, {
+                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \nВремя: ${timestamp}`, {
                     chat_id: chatId,
                     message_id: messageId,
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "Удалить", callback_data: `Удалить_${orderUnique}` }] // Убираем кнопку "Принять"
+                            [{ text: "❌ Удалить", callback_data: `Удалить_${orderUnique}` }]
                         ]
                     }
                 
