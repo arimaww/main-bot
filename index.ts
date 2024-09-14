@@ -303,7 +303,7 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
                     data: { status: "SUCCESS", orderTrackNumber: orderTrackNumberForUser }
                 })
                 // --------------------------------------------------
-                await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят! Вот трек-номер: ${orderTrackNumberForUser}\n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}`);
+                await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят! \nВот трек-номер: ${orderTrackNumberForUser}\n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}`);
 
                 const timestamp = new Date().toISOString();
 
