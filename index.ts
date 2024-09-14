@@ -305,10 +305,15 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
                 // --------------------------------------------------
                 await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят! \nВот трек-номер: ${orderTrackNumberForUser}\n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}`);
 
-                const timestamp = new Date().toISOString();
+                const timestamp = new Date();
 
-                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \nВремя: ${timestamp}`, {
-                    chat_id: chatId,
+                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \n` + 
+                    `Время: ${timestamp.getDate()}.${timestamp.getMonth()+1 < 10 ? '0' +( timestamp.getMonth()+1) : (timestamp.getMonth()+1)}.` +
+                    `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` + 
+                    `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes() }`, {
+                    
+                    
+                        chat_id: chatId,
                     message_id: messageId,
                     reply_markup: {
                         inline_keyboard: [
