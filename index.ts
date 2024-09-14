@@ -49,6 +49,26 @@ bot.on('message', async (msg) => {
             }
         })
     }
+
+    const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
+    const unAcceptedOrders = `Непринятые заказы (${orders.length})`
+    if (msg.text === "/admin") {
+        // добавление для менеджера кнопки списка всех неподтвержденных заказов
+        if (chatId.toString() === MANAGER_CHAT_ID) {
+            bot.sendMessage(MANAGER_CHAT_ID, "Вы вошли как администратор", {
+                reply_markup: {
+                    keyboard: [
+                        [{ text: unAcceptedOrders }]
+                    ],
+                    resize_keyboard: true
+                }
+            })
+
+        }
+    }
+    if (msg.text == unAcceptedOrders && chatId.toString() === MANAGER_CHAT_ID) {
+        console.log('заглушка')
+    }
 })
 
 
@@ -333,7 +353,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
             const user = await prisma.user.findFirst({ where: { userId: order?.userId } })
 
-            if(user)
+            if (user)
                 await bot.sendMessage(user?.telegramId, "К сожалению ваш заказ был удалён")
 
             await bot.editMessageCaption("Заказ был удален.", {
