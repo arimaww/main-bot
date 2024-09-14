@@ -7,12 +7,11 @@ import morgan from 'morgan';
 import { getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber, recordOrderInfo } from './helpers/helpers';
 import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
-import { v4 as uuidv4 } from 'uuid';
 
 
 const token = process.env.TOKEN!;
 const WEB_APP = process.env.WEB_APP!;
-const MANAGER_CHAT_ID = "2127200971"
+const MANAGER_CHAT_ID = process.env.MANAGER_CHAT_ID!;
 
 const app = express()
 
@@ -272,7 +271,7 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
         return;
     }
     // Извлекаем идентификатор заказа из callback_data
-    const [action, orderId] = query.data.split("_");
+    const [action, orderUnique] = query.data.split("_");
 
     try {
         // Получаем данные заказа на основе orderId
@@ -284,8 +283,8 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
 
             // выполнение заказа и получение трек номера
 
-            const orderData = await getOrderData(orderId);
-            const getRuObj = await getOrderObjRu(authData?.access_token, orderId, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
+            const orderData = await getOrderData(orderUnique);
+            const getRuObj = await getOrderObjRu(authData?.access_token, orderUnique, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
                 orderData?.middleName!, orderData?.phone!, orderData?.selectedPvzCode!, 121, orderData?.selectedTariff!
             )
 
@@ -294,8 +293,6 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
             await makeTrackNumber(getRuObj)
 
             if (orderData && orderData.im_number) {
-                console.log('number: ' + orderData?.im_number);
-
 
                 await delay(2000);
 
@@ -315,19 +312,20 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
                     message_id: messageId,
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "Удалить", callback_data: `Удалить_${orderId}` }] // Убираем кнопку "Принять"
+                            [{ text: "Удалить", callback_data: `Удалить_${orderUnique}` }] // Убираем кнопку "Принять"
                         ]
                     }
                 
                 });
             }
-            else {
-                console.log('нет такого заказа')
-            }
-
 
         } else if (action === "Удалить") {
             // Действие для удаления заказа
+
+            await prisma.order.deleteMany({where: {orderUniqueNumber: orderUnique}})
+
+
+
             await bot.editMessageCaption("Заказ был удален.", {
                 chat_id: chatId,
                 message_id: messageId,
