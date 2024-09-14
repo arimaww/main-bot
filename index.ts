@@ -176,6 +176,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 middleName,
                 surName,
                 phone: phone,
+                deliveryCost: deliverySum!,
                 selectedPvzCode: selectedPvzCode,
                 selectedTariff: parseInt(selectedTariff)
             });

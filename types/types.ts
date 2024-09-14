@@ -34,6 +34,7 @@ export type TRecordOrderInfo = {
 	productId: number;
 	productCount: number;
 	phone: string;
+	deliveryCost: number;
 	orderTrackNumber?: string;
 	orderUniqueNumber?: string;
 	selectedPvzCode?: string;
