@@ -51,8 +51,16 @@ bot.on('message', async (msg) => {
     }
 
     const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
-    const unAcceptedOrders = `Непринятые заказы (${orders.length})`
+    const seen = new Set();
+    const uniqueOrders = orders.filter(order => {
+        const key = `${order.productId}-${order.orderId}`; // Создаем уникальный ключ
+        const duplicate = seen.has(key);
+        seen.add(key);
+        return !duplicate;
+    });
+    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`
     if (msg.text === "/admin") {
+
         // добавление для менеджера кнопки списка всех неподтвержденных заказов
         if (chatId.toString() === MANAGER_CHAT_ID) {
             bot.sendMessage(MANAGER_CHAT_ID, "Вы вошли как администратор", {
@@ -63,11 +71,52 @@ bot.on('message', async (msg) => {
                     resize_keyboard: true
                 }
             })
-
         }
+
     }
     if (msg.text == unAcceptedOrders && chatId.toString() === MANAGER_CHAT_ID) {
-        console.log('заглушка')
+        const seen = new Set();
+        const uniqueOrders = orders.filter(order => {
+            const duplicate = seen.has(order.orderUniqueNumber);
+            seen.add(order.orderUniqueNumber);
+            return !duplicate;
+        });
+
+        uniqueOrders.map(async ord => {
+            if (ord.fileId) {
+                const productList = await prisma.product.findMany()
+                const orderList = await prisma.order.findMany({ where: { orderUniqueNumber: ord?.orderUniqueNumber } })
+
+
+                const combinedOrderData = orderList.map(order => {
+                    const product = productList.find(prod => prod.productId === order.productId);
+                    return {
+                        productName: product?.name,
+                        synonym: product?.synonym,
+                        productCount: order.productCount,
+                        deliverySum: 0,
+                    };
+                });
+
+                const user = await prisma.user?.findFirst({ where: { userId: ord?.userId } })
+                const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
+                    .map((el) => `${el.productCount} шт. | ${el.synonym}`)
+                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone}\nДоставка: {empty} ₽`
+
+
+
+
+                await bot.sendPhoto(MANAGER_CHAT_ID, ord.fileId, {
+                    caption: messageToManager,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: "✅ Принять", callback_data: `Принять_${ord?.orderUniqueNumber}` }, { text: "❌ Удалить", callback_data: `Удалить_${ord?.orderUniqueNumber}` }]
+                        ]
+                    },
+                    parse_mode: "HTML"
+                });
+            }
+        })
     }
 })
 
@@ -137,6 +186,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 if (msg.photo) {
                     const fileId = msg.photo[msg.photo.length - 1].file_id;
 
+                    const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
+
+                    await prisma.order.updateMany({ where: { userId: user?.userId, orderUniqueNumber: orderId }, data: { fileId: fileId } })
+
                     try {
 
                         const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${products.filter(el => el.productCount > 0)
@@ -164,8 +217,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
 
                         // Обработчик callback_query для кнопок "Принять" и "Удалить"
-
-
 
 
                         bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят. Заказ завершен.");
