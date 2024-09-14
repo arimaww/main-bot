@@ -124,28 +124,28 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             .join("\n")}\n\n\nФИО: ${surName} ${firstName} ${middleName}\nНомер: ${phone}\nДоставка: ${deliverySum} ₽`
 
 
-                            const order = await prisma.order.findFirst({
-                                where: { orderUniqueNumber: orderId },
-                            });
-                            
-                            if (order && order.status === "PENDING") {
-                                await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
-                                    caption: messageToManager,
-                                    reply_markup: {
-                                        inline_keyboard: [
-                                            [{ text: "✅ Принять", callback_data: `Принять_${orderId}` }, { text: "❌ Удалить", callback_data: `Удалить_${orderId}` }]
-                                        ]
-                                    },
-                                    parse_mode: "HTML"
-                                });
-                            } else {
-                                console.log("Этот заказ уже обработан или отправлен.");
-                            }
+                        const order = await prisma.order.findFirst({
+                            where: { orderUniqueNumber: orderId },
+                        });
 
-                        
+                        if (order && order.status === "PENDING") {
+                            await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
+                                caption: messageToManager,
+                                reply_markup: {
+                                    inline_keyboard: [
+                                        [{ text: "✅ Принять", callback_data: `Принять_${orderId}` }, { text: "❌ Удалить", callback_data: `Удалить_${orderId}` }]
+                                    ]
+                                },
+                                parse_mode: "HTML"
+                            });
+                        } else {
+                            console.log("Этот заказ уже обработан или отправлен.");
+                        }
+
+
                         // Обработчик callback_query для кнопок "Принять" и "Удалить"
 
-                        
+
 
 
                         bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят. Заказ завершен.");
@@ -262,7 +262,7 @@ async function getOrderData(orderId: string) {
     };
 }
 
-const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
+const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
     const chatId = query.message?.chat.id;
     const messageId = query.message?.message_id;
 
@@ -279,7 +279,7 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
         if (action === "Принять") {
             // Менеджер нажал "Принять"
 
-            const authData = await getToken({grant_type: 'client_credentials', client_id: process.env.CLIENT_ID!, client_secret: process.env.CLIENT_SECRET!})
+            const authData = await getToken({ grant_type: 'client_credentials', client_id: process.env.CLIENT_ID!, client_secret: process.env.CLIENT_SECRET! })
 
             // выполнение заказа и получение трек номера
 
@@ -307,29 +307,34 @@ const handleCallbackQuery = async (query:TelegramBot.CallbackQuery) => {
 
                 const timestamp = new Date();
 
-                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \n` + 
-                    `Время: ${timestamp.getDate()}.${timestamp.getMonth()+1 < 10 ? '0' +( timestamp.getMonth()+1) : (timestamp.getMonth()+1)}.` +
-                    `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` + 
-                    `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes() }`, {
-                    
-                    
-                        chat_id: chatId,
+                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \n` +
+                    `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
+                    `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
+                    `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`, {
+
+
+                    chat_id: chatId,
                     message_id: messageId,
                     reply_markup: {
                         inline_keyboard: [
                             [{ text: "❌ Удалить", callback_data: `Удалить_${orderUnique}` }]
                         ]
                     }
-                
+
                 });
             }
 
         } else if (action === "Удалить") {
             // Действие для удаления заказа
 
-            await prisma.order.deleteMany({where: {orderUniqueNumber: orderUnique}})
+            await prisma.order.deleteMany({ where: { orderUniqueNumber: orderUnique } })
 
+            const order = await prisma.order.findFirst({ where: { orderUniqueNumber: orderUnique } })
 
+            const user = await prisma.user.findFirst({ where: { userId: order?.userId } })
+
+            if(user)
+                await bot.sendMessage(user?.telegramId, "К сожалению ваш заказ был удалён")
 
             await bot.editMessageCaption("Заказ был удален.", {
                 chat_id: chatId,
