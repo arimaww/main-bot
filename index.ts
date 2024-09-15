@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import { getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber, recordOrderInfo } from './helpers/helpers';
 import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
+import { Order } from '@prisma/client';
 
 
 const token = process.env.TOKEN!;
@@ -24,6 +25,26 @@ app.use(morgan('dev'))
 app.options("*", cors())
 
 
+const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text: string) => {
+    const seen = new Set();
+    const uniqueOrders = orders.filter(order => {
+        const key = `${order.productId}-${order.orderId}`;
+        const duplicate = seen.has(key);
+        seen.add(key);
+        return !duplicate;
+    });
+
+    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`
+    bot.sendMessage(MANAGER_CHAT_ID, text, {
+        reply_markup: {
+            keyboard: [
+                [{ text: unAcceptedOrders }]
+            ],
+            resize_keyboard: true
+        }
+    })
+    bot.deleteMessage(MANAGER_CHAT_ID, msg.message_id)
+}
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -51,27 +72,23 @@ bot.on('message', async (msg) => {
         })
     }
 
+
+
     const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
     const seen = new Set();
     const uniqueOrders = orders.filter(order => {
-        const key = `${order.productId}-${order.orderId}`; // Создаем уникальный ключ
+        const key = `${order.productId}-${order.orderId}`;
         const duplicate = seen.has(key);
         seen.add(key);
         return !duplicate;
     });
+
     const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`
-    if (msg.text === "/admin") {
+    if (msg.text === "/orders") {
 
         // добавление для менеджера кнопки списка всех неподтвержденных заказов
         if (chatId.toString() === MANAGER_CHAT_ID) {
-            bot.sendMessage(MANAGER_CHAT_ID, "Вы вошли как администратор", {
-                reply_markup: {
-                    keyboard: [
-                        [{ text: unAcceptedOrders }]
-                    ],
-                    resize_keyboard: true
-                }
-            })
+            updatingOrdersKeyboard(orders, msg, "Список обновлён")
         }
 
     }
@@ -213,6 +230,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             where: { orderUniqueNumber: orderId },
                         });
 
+                        const orderList = await prisma.order.findMany();
+                        updatingOrdersKeyboard(orderList, msg, "Поступил новый заказ")
+
+
                         if (order && order.status === "WAITPAY") {
                             await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
                                 caption: messageToManager,
@@ -332,7 +353,7 @@ async function getOrderData(orderId: string) {
     }
 
     return {
-        telegramId: user?.telegramId,    // ID пользователя, оформившего заказ
+        telegramId: user?.telegramId,
         trackNumber: order?.orderTrackNumber,
         im_number: order?.orderUniqueNumber,
         products: orderProds,
