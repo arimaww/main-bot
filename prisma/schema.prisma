@@ -60,6 +60,8 @@ model Order {
   selectedTariff    Int?
   fileId            String?
   deliveryCost      Int?
+  bankId            Int?
+  Bank              Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
   product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
   user              User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
@@ -88,6 +90,16 @@ model UserCrm {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Bank {
+  id        Int      @id @unique @default(autoincrement())
+  bankName  String
+  requisite String
+  recipient String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  Order     Order[]
 }
 
 enum Role {

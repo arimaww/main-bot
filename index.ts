@@ -43,7 +43,6 @@ const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text:
             resize_keyboard: true
         }
     })
-    bot.deleteMessage(MANAGER_CHAT_ID, msg.message_id)
 }
 
 bot.on('message', async (msg) => {
@@ -155,7 +154,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         products,
         uuid,
         token,
-        deliverySum
+        deliverySum,
+        bank
     } = req.body;
 
     let errorOrderCreating = null;
@@ -194,21 +194,27 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         const orderId = uuid;
 
 
-        for (let prod of uniqueProducts) {
-            await recordOrderInfo({
-                userId: user?.userId!,
-                orderUniqueNumber: orderId,
-                productCount: prod.productCount,
-                productId: prod.productId,
-                firstName,
-                middleName,
-                surName,
-                phone: phone,
-                deliveryCost: deliverySum!,
-                selectedPvzCode: selectedPvzCode,
-                selectedTariff: parseInt(selectedTariff)
-            });
+        const bankId = await prisma.bank.findFirst({ where: { bankName: bank } }).then(el => el?.id)
+
+        if (bankId) {
+            for (let prod of uniqueProducts) {
+                await recordOrderInfo({
+                    userId: user?.userId!,
+                    orderUniqueNumber: orderId,
+                    productCount: prod.productCount,
+                    productId: prod.productId,
+                    firstName,
+                    middleName,
+                    surName,
+                    phone: phone,
+                    deliveryCost: deliverySum!,
+                    selectedPvzCode: selectedPvzCode,
+                    selectedTariff: parseInt(selectedTariff),
+                    bankId: bankId
+                });
+            }
         }
+
 
         const handleScreenshotMessage = async (msg: TelegramBot.Message) => {
             if (msg.chat.id === telegramId) {
@@ -286,8 +292,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             },
         });
 
+        const bankData = await prisma.bank.findFirst({ where: { bankName: bank } })
 
-        await bot.sendMessage(telegramId, "Пожалуйста, прикрепите скриншот чека для завершения заказа.");
+        await bot.sendMessage(telegramId, `К опалте: ${totalPrice} ₽\n\nБанк: ${bankData?.bankName}\nПолучатель: ${bankData?.recipient}\n\n`
+            + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`);
 
         bot.on("message", handleScreenshotMessage);
 

@@ -24,6 +24,7 @@ export type TWeb = {
 	deliverySum: number | undefined;
 	selectedPvzCode: string;
 	selectedTariff: string;
+	bank: string
 };
 
 export type TRecordOrderInfo = {
@@ -39,6 +40,7 @@ export type TRecordOrderInfo = {
 	orderUniqueNumber?: string;
 	selectedPvzCode?: string;
 	selectedTariff?: number;
+	bankId: number;
 };
 
 export type TDeliveryRequest = {
