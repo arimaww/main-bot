@@ -28,7 +28,7 @@ app.options("*", cors())
 const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text: string) => {
     const seen = new Set();
     const uniqueOrders = orders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
+        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`;
         const duplicate = seen.has(key);
         seen.add(key);
         return !duplicate;
@@ -260,7 +260,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                         await prisma.order.updateMany({ where: { orderUniqueNumber: orderId }, data: { status: "PENDING" } })
 
-                        bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят. Заказ завершен.");
+                        bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.");
 
                         bot.removeListener("message", handleScreenshotMessage);
                     } catch (err) {
@@ -384,11 +384,9 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         console.error("Отсутствует callback_data");
         return;
     }
-    // Извлекаем идентификатор заказа из callback_data
     const [action, orderUnique] = query.data.split("_");
 
     try {
-        // Получаем данные заказа на основе orderId
 
         if (action === "Принять") {
             // Менеджер нажал "Принять"
