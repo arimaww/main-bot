@@ -28,7 +28,7 @@ app.options("*", cors())
 const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text: string) => {
     const seen = new Set();
     const uniqueOrders = orders.filter(order => {
-        const key = `${order.productId}-${order.orderId}`;
+        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
         const duplicate = seen.has(key);
         seen.add(key);
         return !duplicate;
@@ -76,13 +76,14 @@ bot.on('message', async (msg) => {
     const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
     const seen = new Set();
     const uniqueOrders = orders.filter(order => {
-        const key = `${order.productId}-${order.orderId}`;
+        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
         const duplicate = seen.has(key);
         seen.add(key);
         return !duplicate;
     });
 
-    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`
+    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`;
+
     if (msg.text === "/orders") {
 
         // добавление для менеджера кнопки списка всех неподтвержденных заказов
