@@ -420,7 +420,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 const timestamp = new Date();
 
-                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \n` +
+                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nДанные клиента:\n${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nОбщ. прайс: ${orderData?.totalPrice}\n` +
                     `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
                     `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
                     `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`, {
