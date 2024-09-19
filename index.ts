@@ -343,7 +343,7 @@ async function getOrderData(orderId: string) {
                     synonym: prod.synonym || '',
                     description: prod.description,
                     picture: prod.picture || '',
-                    productCount: order.productCount
+                    productCount: order.productCount,
                 })
             }
         })
@@ -372,7 +372,8 @@ async function getOrderData(orderId: string) {
         phone: order?.phone,
         selectedPvzCode: order?.selectedPvzCode,
         selectedTariff: order?.selectedTariff,
-        totalPrice: totalPrice
+        totalPrice: totalPrice,
+        deliveryCost: order?.deliveryCost
     };
 }
 
@@ -397,7 +398,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
             const orderData = await getOrderData(orderUnique);
             const getRuObj = await getOrderObjRu(authData?.access_token, orderUnique, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
-                orderData?.middleName!, orderData?.phone!, orderData?.selectedPvzCode!, 121, orderData?.selectedTariff!
+                orderData?.middleName!, orderData?.phone!, orderData?.selectedPvzCode!, orderData.deliveryCost!, orderData?.selectedTariff!
             )
 
             const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
