@@ -211,7 +211,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     deliveryCost: deliverySum!,
                     selectedPvzCode: selectedPvzCode,
                     selectedTariff: parseInt(selectedTariff),
-                    bankId: bankId
+                    bankId: bankId,
+                    totalPrice: totalPrice
                 });
             }
         }
@@ -349,18 +350,6 @@ async function getOrderData(orderId: string) {
         })
     }
 
-    const basket = await prisma.basket.findMany({ where: { userId: user?.userId } });
-    let totalPrice = 0;
-    if (basket) {
-        for (const el of basket) {
-            const prodCost = await prisma.product.findFirst({ where: { productId: el.productId } });
-
-            if (prodCost) {
-                totalPrice += Number(el.productCount) * Number(prodCost.cost);
-            }
-        }
-    }
-
     return {
         telegramId: user?.telegramId,
         trackNumber: order?.orderTrackNumber,
@@ -372,8 +361,9 @@ async function getOrderData(orderId: string) {
         phone: order?.phone,
         selectedPvzCode: order?.selectedPvzCode,
         selectedTariff: order?.selectedTariff,
-        totalPrice: totalPrice,
-        deliveryCost: order?.deliveryCost
+        totalPrice: order?.totalPrice,
+        deliveryCost: order?.deliveryCost,
+        username: user?.userName
     };
 }
 
@@ -416,25 +406,28 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     data: { status: "SUCCESS", orderTrackNumber: orderTrackNumberForUser }
                 })
                 // --------------------------------------------------
-                await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят! \nВот трек-номер: ${orderTrackNumberForUser}\n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}`);
+                await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят! \n\nВот трек-номер: ${orderTrackNumberForUser}\n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}`);
 
                 const timestamp = new Date();
 
-                await bot.editMessageCaption(`Заказ был принят. \nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nДанные клиента:\n${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nОбщ. прайс: ${orderData?.totalPrice}\n` +
+
+                await bot.deleteMessage(chatId!, messageId!);
+
+                await bot.sendMessage(chatId!, `Заказ ${orderData?.username ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nОбщ. прайс: ${orderData?.totalPrice}\n\n\nДанные клиента:\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n\n` +
                     `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
                     `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
                     `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`, {
-
-
-                    chat_id: chatId,
-                    message_id: messageId,
                     reply_markup: {
                         inline_keyboard: [
                             [{ text: "❌ Удалить", callback_data: `Удалить_${orderUnique}` }]
                         ]
-                    }
-
+                    },
+                    parse_mode: "HTML",
+                    disable_web_page_preview: true
                 });
+
+
             }
 
         } else if (action === "Удалить") {
