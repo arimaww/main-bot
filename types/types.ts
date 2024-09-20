@@ -41,6 +41,7 @@ export type TRecordOrderInfo = {
 	selectedPvzCode?: string;
 	selectedTariff?: number;
 	bankId: number;
+	totalPrice: number;
 };
 
 export type TDeliveryRequest = {
