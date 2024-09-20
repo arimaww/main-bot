@@ -437,6 +437,16 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 });
 
 
+                await bot.sendMessage(process.env.CDEK_GROUP_ID!, `Заказ ${orderData?.username ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nОбщ. прайс: ${orderData?.totalPrice}\n\n\nДанные клиента:\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n\n` +
+                    `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
+                    `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
+                    `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`, {
+                    parse_mode: "HTML",
+                    disable_web_page_preview: true
+                });
+
+
             }
 
         } else if (action === "Удалить") {
