@@ -452,11 +452,12 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         } else if (action === "Удалить") {
             // Действие для удаления заказа
 
-            await prisma.order.deleteMany({ where: { orderUniqueNumber: orderUnique } })
-
             const order = await prisma.order.findFirst({ where: { orderUniqueNumber: orderUnique } })
 
             const user = await prisma.user.findFirst({ where: { userId: order?.userId } })
+
+
+            await prisma.order.deleteMany({ where: { orderUniqueNumber: orderUnique } })
 
             if (user)
                 await bot.sendMessage(user?.telegramId, "К сожалению ваш заказ был удалён")
