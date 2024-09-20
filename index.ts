@@ -406,7 +406,16 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     data: { status: "SUCCESS", orderTrackNumber: orderTrackNumberForUser }
                 })
                 // --------------------------------------------------
-                await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят! \n\nВот трек-номер: ${orderTrackNumberForUser}\n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}`);
+                await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят!\nВот трек-номер: ${orderTrackNumberForUser}\n\n` +
+                    `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName ? orderData.middleName[0] : ''}.!\n\n` +
+                    `Ваш заказ:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\n` +
+                    `Сроки доставки по РФ ориентировочно 5-7 дней.\n\nОтправка посылки осуществляется в течении 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
+                    `Если в течении 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
+                    `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
+                {
+                    parse_mode: 'HTML',
+                    disable_web_page_preview: true,
+                });
 
                 const timestamp = new Date();
 
