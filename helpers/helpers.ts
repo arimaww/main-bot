@@ -110,6 +110,55 @@ export const getOrderObjRu = async (access_token: string | undefined, uuidCdek: 
 }
 
 
+
+export const getOrderObjInternation = async (access_token: string | undefined, uuidCdek: string, totalPrice: any,
+    surName: string, firstName: string, middleName: string,
+    phone: string, selectedPvzCode: string, deliverySum: number, selectedTariff: number): Promise<TDeliveryRequest> => {
+    return {
+        token: access_token,
+        number: uuidCdek,
+        type: 1,
+        delivery_recipient_cost: {
+            value: 0
+        },
+        packages: [{
+            number: "1",
+            comment: "Упаковка",
+            height: 10,
+            items: [{
+                ware_key: "1",
+                payment: {
+                    value: 0
+                },
+                name: "Товар",
+                cost: Number(totalPrice),
+                amount: 1,
+                weight: 2000,
+            }],
+            length: 23,
+            weight: 2000,
+            width: 19
+        }],
+        recipient: {
+            name: `${surName} ${firstName} ${middleName}`,
+            phones: [{
+                number: phone
+            }]
+        },
+        sender: {
+            name: "Зубаиров Заур Залбегович"
+        },
+        services: [{
+            code: "INSURANCE",
+            parameter: '0'
+        }],
+        tariff_code: selectedTariff,
+        shipment_point: process.env.SHIPMENT_POINT!,
+        delivery_point: selectedPvzCode
+    };
+}
+
+
 export const makeTrackNumber = async (body: TDeliveryRequest): Promise<TDeliveryResponse | undefined> => {
     try {
         const options = {
@@ -172,7 +221,7 @@ export const getToken = async (body: TCdekUser): Promise<ResponseAuthData | unde
                 }
             });
         });
-        
+
     } catch (err) {
         console.log(err);
         return undefined;

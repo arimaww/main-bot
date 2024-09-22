@@ -4,7 +4,7 @@ import TelegramBot from "node-telegram-bot-api";
 import { prisma } from './prisma/prisma-client';
 import express, { Request, Response } from 'express'
 import morgan from 'morgan';
-import { getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber, recordOrderInfo } from './helpers/helpers';
+import { getOrderObjInternation, getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber, recordOrderInfo } from './helpers/helpers';
 import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
 import { Order } from '@prisma/client';
@@ -154,7 +154,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         phone,
         products,
         uuid,
-        token,
+        selectedCountry,
         deliverySum,
         bank
     } = req.body;
@@ -212,7 +212,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     selectedPvzCode: selectedPvzCode,
                     selectedTariff: parseInt(selectedTariff),
                     bankId: bankId,
-                    totalPrice: totalPrice
+                    totalPrice: totalPrice,
+                    selectedCountry: selectedCountry
                 });
             }
         }
@@ -296,8 +297,14 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
         const bankData = await prisma.bank.findFirst({ where: { bankName: bank } })
 
-        await bot.sendMessage(telegramId, `К опалте: ${totalPrice} ₽\n\nБанк: ${bankData?.bankName}\nПолучатель: ${bankData?.recipient}\n\n`
-            + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`);
+
+
+        selectedCountry !== "RU" ?
+            await bot.sendMessage(telegramId, `К опалте: ${totalPrice+Number(deliverySum)} ₽\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\nБанк: ${bankData?.bankName}\nПолучатель: ${bankData?.recipient}\n\n`
+                + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`)
+            :
+            await bot.sendMessage(telegramId, `К опалте: ${totalPrice} ₽\n\nБанк: ${bankData?.bankName}\nПолучатель: ${bankData?.recipient}\n\n`
+                + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`)
 
         bot.on("message", handleScreenshotMessage);
 
@@ -363,7 +370,8 @@ async function getOrderData(orderId: string) {
         selectedTariff: order?.selectedTariff,
         totalPrice: order?.totalPrice,
         deliveryCost: order?.deliveryCost,
-        username: user?.userName
+        username: user?.userName,
+        selectedCountry: order?.selectedCountry
     };
 }
 
@@ -387,13 +395,17 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             // выполнение заказа и получение трек номера
 
             const orderData = await getOrderData(orderUnique);
-            const getRuObj = await getOrderObjRu(authData?.access_token, orderUnique, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
-                orderData?.middleName!, orderData?.phone!, orderData?.selectedPvzCode!, orderData.deliveryCost!, orderData?.selectedTariff!
-            )
+
+            
+            const getobj = orderData?.selectedCountry === "RU" ? await getOrderObjRu(authData?.access_token, orderUnique, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
+                orderData?.middleName!, orderData?.phone!, orderData?.selectedPvzCode!, orderData.deliveryCost!, orderData?.selectedTariff!)
+                :
+                await getOrderObjInternation(authData?.access_token, orderUnique, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
+                    orderData?.middleName!, orderData?.phone!, orderData?.selectedPvzCode!, orderData.deliveryCost!, orderData?.selectedTariff!)
 
             const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-            await makeTrackNumber(getRuObj)
+            await makeTrackNumber(getobj)
 
             if (orderData && orderData.im_number) {
 
@@ -409,13 +421,13 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят!\nВот трек-номер: ${orderTrackNumberForUser}\n\n` +
                     `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName ? orderData.middleName[0] : ''}.!\n\n` +
                     `Ваш заказ:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\n` +
-                    `Сроки доставки по РФ ориентировочно 5-7 дней.\n\nОтправка посылки осуществляется в течении 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
-                    `Если в течении 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
+                    `Сроки доставки по РФ ориентировочно 5-7 дней.\n\nОтправка посылки осуществляется в течение 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
+                    `Если в течение 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
                     `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
-                {
-                    parse_mode: 'HTML',
-                    disable_web_page_preview: true,
-                });
+                    {
+                        parse_mode: 'HTML',
+                        disable_web_page_preview: true,
+                    });
 
                 const timestamp = new Date();
 

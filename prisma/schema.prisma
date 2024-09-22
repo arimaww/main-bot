@@ -62,6 +62,7 @@ model Order {
   deliveryCost      Int?
   bankId            Int?
   totalPrice        Int?
+  selectedCountry   String?
   Bank              Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
   product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
   user              User        @relation(fields: [userId], references: [userId], onDelete: Cascade)

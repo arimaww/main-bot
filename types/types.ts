@@ -20,7 +20,7 @@ export type TWeb = {
 	phone: string;
 	products: TProduct[];
 	uuid: string;
-	token: string;
+	selectedCountry: string | undefined;
 	deliverySum: number | undefined;
 	selectedPvzCode: string;
 	selectedTariff: string;
@@ -42,6 +42,7 @@ export type TRecordOrderInfo = {
 	selectedTariff?: number;
 	bankId: number;
 	totalPrice: number;
+	selectedCountry: string | undefined
 };
 
 export type TDeliveryRequest = {
