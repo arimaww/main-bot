@@ -239,8 +239,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             where: { orderUniqueNumber: orderId },
                         });
 
-                        const orderList = await prisma.order.findMany();
-                        updatingOrdersKeyboard(orderList, msg, "Поступил новый заказ")
+
+                        const orderList = await prisma.order.findMany({ where: { status: "PENDING" } })
+                        updatingOrdersKeyboard(orderList, msg, "Поступил новый заказ\nПропишите /orders для обновления списка заказов")
 
 
                         if (order && order.status === "WAITPAY") {
@@ -300,7 +301,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
 
         selectedCountry !== "RU" ?
-            await bot.sendMessage(telegramId, `К опалте: ${totalPrice+Number(deliverySum)} ₽\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\nБанк: ${bankData?.bankName}\nПолучатель: ${bankData?.recipient}\n\n`
+            await bot.sendMessage(telegramId, `К опалте: ${totalPrice + Number(deliverySum)} ₽\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\nБанк: ${bankData?.bankName}\nПолучатель: ${bankData?.recipient}\n\n`
                 + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`)
             :
             await bot.sendMessage(telegramId, `К опалте: ${totalPrice} ₽\n\nБанк: ${bankData?.bankName}\nПолучатель: ${bankData?.recipient}\n\n`
@@ -371,7 +372,8 @@ async function getOrderData(orderId: string) {
         totalPrice: order?.totalPrice,
         deliveryCost: order?.deliveryCost,
         username: user?.userName,
-        selectedCountry: order?.selectedCountry
+        selectedCountry: order?.selectedCountry,
+        status: order?.status
     };
 }
 
@@ -390,13 +392,16 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         if (action === "Принять") {
             // Менеджер нажал "Принять"
 
-            const authData = await getToken({ grant_type: 'client_credentials', client_id: process.env.CLIENT_ID!, client_secret: process.env.CLIENT_SECRET! })
-
-            // выполнение заказа и получение трек номера
-
-            const orderData = await getOrderData(orderUnique);
-
             
+            const authData = await getToken({ grant_type: 'client_credentials', client_id: process.env.CLIENT_ID!, client_secret: process.env.CLIENT_SECRET! })
+            
+            // выполнение заказа и получение трек номера
+            
+            const orderData = await getOrderData(orderUnique);
+            
+            if(orderData?.status === "SUCCESS")
+                return bot.sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
+
             const getobj = orderData?.selectedCountry === "RU" ? await getOrderObjRu(authData?.access_token, orderUnique, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
                 orderData?.middleName!, orderData?.phone!, orderData?.selectedPvzCode!, orderData.deliveryCost!, orderData?.selectedTariff!)
                 :
