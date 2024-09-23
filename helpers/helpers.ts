@@ -84,11 +84,11 @@ export const getOrderObjRu = async (access_token: string | undefined, uuidCdek: 
                 name: "Товар",
                 cost: Number(totalPrice),
                 amount: 1,
-                weight: 2000,
+                weight: 1200,
             }],
-            length: 23,
-            weight: 2000,
-            width: 19
+            length: 30,
+            weight: 1200,
+            width: 20
         }],
         recipient: {
             name: `${surName} ${firstName} ${middleName}`,
@@ -133,11 +133,11 @@ export const getOrderObjInternation = async (access_token: string | undefined, u
                 name: "Товар",
                 cost: Number(totalPrice),
                 amount: 1,
-                weight: 2000,
+                weight: 1200,
             }],
-            length: 23,
-            weight: 2000,
-            width: 19
+            length: 30,
+            weight: 1200,
+            width: 20
         }],
         recipient: {
             name: `${surName} ${firstName} ${middleName}`,
