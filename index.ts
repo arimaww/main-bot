@@ -59,6 +59,8 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
     if (match && match[2]) {
         const productPairs = match[2].split('_');
 
+        await prisma.basket.deleteMany({ where: { userId: user?.userId } })
+
         for (const pair of productPairs) {
             const [productId, productCount] = pair.split('-').map(Number);
 
@@ -74,6 +76,7 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                     // console.log(`Товар с ID ${productId} не найден.`);
                     continue;
                 }
+
 
                 await prisma.basket.create({
                     data: {
