@@ -27,6 +27,7 @@ model Product {
   cost        Decimal
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+  primeCost   Decimal?
   basket      Basket[]
   order       Order[]
 }
@@ -45,7 +46,7 @@ model Basket {
 model Order {
   orderId           Int         @id @default(autoincrement())
   orderTrackNumber  String?
-  userId            Int
+  userId            Int?
   surName           String?
   firstName         String?
   middleName        String?
@@ -63,9 +64,11 @@ model Order {
   bankId            Int?
   totalPrice        Int?
   selectedCountry   String?
+  email             String?
+  orderType         OrderType?
   Bank              Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
   product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
-  user              User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user              User?       @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model CdekOffice {
@@ -107,10 +110,18 @@ model Bank {
 enum Role {
   ADMIN
   MODERATOR
+  OWNER
 }
 
 enum OrderStatus {
   PENDING
   SUCCESS
   WAITPAY
+}
+
+enum OrderType {
+  CDEK
+  MAIL
+  MINIBUS
+  PICKUP
 }

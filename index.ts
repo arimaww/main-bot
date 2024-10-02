@@ -116,7 +116,7 @@ bot.on('message', async (msg) => {
                     };
                 });
 
-                const user = await prisma.user?.findFirst({ where: { userId: ord?.userId } })
+                const user = await prisma.user?.findFirst({ where: { userId: ord?.userId! } })
 
                 const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
                     .map((el) => `${el.productCount} шт. | ${el.synonym}`)
@@ -335,7 +335,7 @@ async function getOrderData(orderId: string) {
         throw new Error("Заказ не найден");
     }
 
-    const user = await prisma.user.findFirst({ where: { userId: order?.userId } })
+    const user = await prisma.user.findFirst({ where: { userId: order?.userId! } })
 
     const products = await prisma.product.findMany();
 
@@ -471,7 +471,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
             const order = await prisma.order.findFirst({ where: { orderUniqueNumber: orderUnique } })
 
-            const user = await prisma.user.findFirst({ where: { userId: order?.userId } })
+            const user = await prisma.user.findFirst({ where: { userId: order?.userId! } })
 
 
             await prisma.order.deleteMany({ where: { orderUniqueNumber: orderUnique } })
