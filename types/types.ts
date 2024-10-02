@@ -42,15 +42,22 @@ export type TRecordOrderInfo = {
 	selectedTariff?: number;
 	bankId: number;
 	totalPrice: number;
-	selectedCountry: string | undefined
+	selectedCountry: string | undefined;
+	orderType: "CDEK"
 };
 
 export type TDeliveryRequest = {
 	token: string | undefined;
 	number: string;
 	type: number;
+	date_invoice?: string,
+	shipper_address?: string,
 	shipment_point: string;
 	delivery_point: string;
+	shipper_name?: string;
+	seller?: {
+		address: string,
+	}
 	delivery_recipient_cost: {
 		value: number;
 	};
@@ -75,6 +82,7 @@ export type TDeliveryRequest = {
 					cost: number;
 					amount: number;
 					weight: number;
+					weight_gross?: number;
 				}
 			];
 			length: number;

@@ -81,7 +81,7 @@ export const getOrderObjRu = async (access_token: string | undefined, uuidCdek: 
                 payment: {
                     value: 0.1
                 },
-                name: "Товар",
+                name: "Пищевые добавки",
                 cost: Number(totalPrice),
                 amount: 1,
                 weight: 1200,
@@ -118,9 +118,16 @@ export const getOrderObjInternation = async (access_token: string | undefined, u
         token: access_token,
         number: uuidCdek,
         type: 1,
+        date_invoice: `${new Date().getFullYear()}-${new Date().getMonth()+1 < 10 ? '0'+ new Date().getMonth()+1 : new Date().getMonth()+1}` 
+        + `-${new Date().getDate() < 10 ? '0' + new Date().getDate() : new Date().getDate()}`,
+        shipper_address: "г. Кизилюрт, площадь Героев 1",
         delivery_recipient_cost: {
             value: 0
         },
+        seller: {
+            address: "г. Кизилюрт, площадь Героев 1"
+        },
+        shipper_name: "Vorobei Shop",
         packages: [{
             number: "1",
             comment: "Упаковка",
@@ -130,10 +137,11 @@ export const getOrderObjInternation = async (access_token: string | undefined, u
                 payment: {
                     value: 0
                 },
-                name: "Товар",
+                name: "Пищевые добавки",
                 cost: Number(totalPrice),
                 amount: 1,
                 weight: 1200,
+                weight_gross: 1300
             }],
             length: 30,
             weight: 1200,
