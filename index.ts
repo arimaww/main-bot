@@ -45,12 +45,45 @@ const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text:
     })
 }
 
-bot.on('message', async (msg) => {
-    const chatId = msg.chat.id;
 
-    const user = await prisma.user.findFirst({where: {
-        telegramId: msg.chat.id.toString()
-    }})
+bot.onText(/\/start( (.+))?/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const telegramId = msg.chat.id;
+
+    const user = await prisma.user.findFirst({
+        where: {
+            telegramId: telegramId.toString(),
+        },
+    });
+
+    if (match && match[2]) {
+        const productPairs = match[2].split('_');
+
+        for (const pair of productPairs) {
+            const [productId, productCount] = pair.split('-').map(Number);
+
+            if (!isNaN(productId) && !isNaN(productCount)) {
+                await prisma.basket.create({
+                    data: {
+                        userId: user?.userId!,
+                        productId: productId,
+                        productCount: productCount,
+                    },
+                });
+            } else {
+                console.log(`Неверный формат: ${pair}`);
+            }
+        }
+
+        bot.sendMessage(chatId, `Товары успешно добавлены в вашу корзину.`);
+    } else {
+        const chatId = msg.chat.id;
+
+    const user = await prisma.user.findFirst({
+        where: {
+            telegramId: msg.chat.id.toString()
+        }
+    })
     const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
     if (msg.text === "/start" && !isUserDidOrder) {
         const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
@@ -140,7 +173,9 @@ bot.on('message', async (msg) => {
             }
         })
     }
-})
+    }
+});
+
 
 
 app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
