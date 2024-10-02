@@ -48,7 +48,10 @@ const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text:
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
 
-    const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY" } })
+    const user = await prisma.user.findFirst({where: {
+        telegramId: msg.chat.id.toString()
+    }})
+    const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
     if (msg.text === "/start" && !isUserDidOrder) {
         const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
 
@@ -213,7 +216,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     selectedTariff: parseInt(selectedTariff),
                     bankId: bankId,
                     totalPrice: totalPrice,
-                    selectedCountry: selectedCountry
+                    selectedCountry: selectedCountry,
+                    orderType: "CDEK",
                 });
             }
         }
@@ -270,7 +274,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         console.error('Ошибка отправки сообщения:', err);
                     }
                 } else {
-                    bot.sendMessage(telegramId, "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение.");
+                    setTimeout(() => bot.sendMessage(telegramId, "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение."), 500)
                 }
             }
         };
@@ -392,14 +396,14 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         if (action === "Принять") {
             // Менеджер нажал "Принять"
 
-            
+
             const authData = await getToken({ grant_type: 'client_credentials', client_id: process.env.CLIENT_ID!, client_secret: process.env.CLIENT_SECRET! })
-            
+
             // выполнение заказа и получение трек номера
-            
+
             const orderData = await getOrderData(orderUnique);
-            
-            if(orderData?.status === "SUCCESS")
+
+            if (orderData?.status === "SUCCESS")
                 return bot.sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
 
             const getobj = orderData?.selectedCountry === "RU" ? await getOrderObjRu(authData?.access_token, orderUnique, orderData?.totalPrice, orderData?.surName!, orderData?.firstName!,
