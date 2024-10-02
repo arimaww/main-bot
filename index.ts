@@ -90,10 +90,10 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
             }
         }
 
-        bot.sendMessage(chatId, "Товары успешно добавлены в вашу корзину\nОсталось лишь открыть в приложение и перейти в корзину", {
+        bot.sendMessage(chatId, "Товары успешно добавлены в вашу корзину\nОсталось лишь открыть корзину:", {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "Открыть каталог", web_app: { url: `${WEB_APP}/basket` } }]
+                    [{ text: "Открыть корзину", web_app: { url: `${WEB_APP}/basket` } }]
                 ]
             }
         })
