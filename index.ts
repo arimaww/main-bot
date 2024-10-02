@@ -62,7 +62,19 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
         for (const pair of productPairs) {
             const [productId, productCount] = pair.split('-').map(Number);
 
+
             if (!isNaN(productId) && !isNaN(productCount)) {
+
+                const productExists = await prisma.product.findFirst({
+                    where: { productId: productId },
+                });
+
+                if (!productExists) {
+                    // bot.sendMessage(chatId, `Товар с ID ${productId} не найден`)
+                    // console.log(`Товар с ID ${productId} не найден.`);
+                    continue;
+                }
+
                 await prisma.basket.create({
                     data: {
                         userId: user?.userId!,
@@ -79,100 +91,100 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
     } else {
         const chatId = msg.chat.id;
 
-    const user = await prisma.user.findFirst({
-        where: {
-            telegramId: msg.chat.id.toString()
-        }
-    })
-    const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
-    if (msg.text === "/start" && !isUserDidOrder) {
-        const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
+        const user = await prisma.user.findFirst({
+            where: {
+                telegramId: msg.chat.id.toString()
+            }
+        })
+        const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
+        if (msg.text === "/start" && !isUserDidOrder) {
+            const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
 
-        if (!user) {
-            await prisma.user.create({
-                data: {
-                    telegramId: msg.chat.id.toString(),
-                    userName: msg.chat.username?.toString() || "",
+            if (!user) {
+                await prisma.user.create({
+                    data: {
+                        telegramId: msg.chat.id.toString(),
+                        userName: msg.chat.username?.toString() || "",
+                    }
+                })
+            }
+
+            bot.sendMessage(chatId, "Чтобы сделать заказ нажмите на кнопку снизу", {
+                reply_markup: {
+
+                    inline_keyboard: [
+                        [{ text: "Открыть каталог", web_app: { url: WEB_APP } }]
+                    ]
                 }
             })
         }
 
-        bot.sendMessage(chatId, "Чтобы сделать заказ нажмите на кнопку снизу", {
-            reply_markup: {
-
-                inline_keyboard: [
-                    [{ text: "Открыть каталог", web_app: { url: WEB_APP } }]
-                ]
-            }
-        })
-    }
 
 
-
-    const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
-    const seen = new Set();
-    const uniqueOrders = orders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
-        const duplicate = seen.has(key);
-        seen.add(key);
-        return !duplicate;
-    });
-
-    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`;
-
-    if (msg.text === "/orders") {
-
-        // добавление для менеджера кнопки списка всех неподтвержденных заказов
-        if (chatId.toString() === MANAGER_CHAT_ID) {
-            updatingOrdersKeyboard(orders, msg, "Список обновлён")
-        }
-
-    }
-    if (msg.text == unAcceptedOrders && chatId.toString() === MANAGER_CHAT_ID) {
+        const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
         const seen = new Set();
         const uniqueOrders = orders.filter(order => {
-            const duplicate = seen.has(order.orderUniqueNumber);
-            seen.add(order.orderUniqueNumber);
+            const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
+            const duplicate = seen.has(key);
+            seen.add(key);
             return !duplicate;
         });
 
-        uniqueOrders.map(async ord => {
-            if (ord.fileId) {
-                const productList = await prisma.product.findMany()
-                const orderList = await prisma.order.findMany({ where: { orderUniqueNumber: ord?.orderUniqueNumber } })
+        const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`;
 
+        if (msg.text === "/orders") {
 
-                const combinedOrderData = orderList.map(order => {
-                    const product = productList.find(prod => prod.productId === order.productId);
-                    return {
-                        productName: product?.name,
-                        synonym: product?.synonym,
-                        productCount: order.productCount,
-                        deliverySum: 0,
-                    };
-                });
-
-                const user = await prisma.user?.findFirst({ where: { userId: ord?.userId! } })
-
-                const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
-                    .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone}\nДоставка: ${ord?.deliveryCost} ₽`
-
-
-
-
-                await bot.sendPhoto(MANAGER_CHAT_ID, ord.fileId, {
-                    caption: messageToManager,
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: "✅ Принять", callback_data: `Принять_${ord?.orderUniqueNumber}` }, { text: "❌ Удалить", callback_data: `Удалить_${ord?.orderUniqueNumber}` }]
-                        ]
-                    },
-                    parse_mode: "HTML"
-                });
+            // добавление для менеджера кнопки списка всех неподтвержденных заказов
+            if (chatId.toString() === MANAGER_CHAT_ID) {
+                updatingOrdersKeyboard(orders, msg, "Список обновлён")
             }
-        })
-    }
+
+        }
+        if (msg.text == unAcceptedOrders && chatId.toString() === MANAGER_CHAT_ID) {
+            const seen = new Set();
+            const uniqueOrders = orders.filter(order => {
+                const duplicate = seen.has(order.orderUniqueNumber);
+                seen.add(order.orderUniqueNumber);
+                return !duplicate;
+            });
+
+            uniqueOrders.map(async ord => {
+                if (ord.fileId) {
+                    const productList = await prisma.product.findMany()
+                    const orderList = await prisma.order.findMany({ where: { orderUniqueNumber: ord?.orderUniqueNumber } })
+
+
+                    const combinedOrderData = orderList.map(order => {
+                        const product = productList.find(prod => prod.productId === order.productId);
+                        return {
+                            productName: product?.name,
+                            synonym: product?.synonym,
+                            productCount: order.productCount,
+                            deliverySum: 0,
+                        };
+                    });
+
+                    const user = await prisma.user?.findFirst({ where: { userId: ord?.userId! } })
+
+                    const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
+                        .map((el) => `${el.productCount} шт. | ${el.synonym}`)
+                        .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone}\nДоставка: ${ord?.deliveryCost} ₽`
+
+
+
+
+                    await bot.sendPhoto(MANAGER_CHAT_ID, ord.fileId, {
+                        caption: messageToManager,
+                        reply_markup: {
+                            inline_keyboard: [
+                                [{ text: "✅ Принять", callback_data: `Принять_${ord?.orderUniqueNumber}` }, { text: "❌ Удалить", callback_data: `Удалить_${ord?.orderUniqueNumber}` }]
+                            ]
+                        },
+                        parse_mode: "HTML"
+                    });
+                }
+            })
+        }
     }
 });
 
