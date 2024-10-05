@@ -77,6 +77,14 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                     continue;
                 }
 
+                if (!user) {
+                    await prisma.user.create({
+                        data: {
+                            telegramId: msg.chat.id.toString(),
+                            userName: msg.chat.username?.toString() || "",
+                        }
+                    })
+                }
 
                 await prisma.basket.create({
                     data: {
