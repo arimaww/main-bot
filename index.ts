@@ -369,10 +369,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
 
         selectedCountry !== "RU" ?
-            await bot.sendMessage(telegramId, `К опалте: ${totalPrice + Number(deliverySum)} ₽\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\nБанк: ${bankData?.bankName}\n\nРеквизиты: ${bankData?.requisite}\nПолучатель: ${bankData?.recipient}\n\n`
+            await bot.sendMessage(telegramId, `К оплате: ${totalPrice + Number(deliverySum)} ₽\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\nБанк: ${bankData?.bankName}\n\nРеквизиты: ${bankData?.requisite}\nПолучатель: ${bankData?.recipient}\n\n`
                 + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`)
             :
-            await bot.sendMessage(telegramId, `К опалте: ${totalPrice} ₽\n\nБанк: ${bankData?.bankName}\n\nРеквизиты: ${bankData?.requisite}\nПолучатель: ${bankData?.recipient}\n\n`
+            await bot.sendMessage(telegramId, `К оплате: ${totalPrice} ₽\n\nБанк: ${bankData?.bankName}\n\nРеквизиты: ${bankData?.requisite}\nПолучатель: ${bankData?.recipient}\n\n`
                 + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`)
 
         bot.on("message", handleScreenshotMessage);
