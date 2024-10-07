@@ -369,12 +369,24 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
 
         selectedCountry !== "RU" ?
-            await bot.sendMessage(telegramId, `К оплате: ${totalPrice + Number(deliverySum)} ₽\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\nБанк: ${bankData?.bankName}\n\nРеквизиты: ${bankData?.requisite}\nПолучатель: ${bankData?.recipient}\n\n`
-                + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`)
+            await bot.sendMessage(telegramId, `К оплате: ${totalPrice + Number(deliverySum)} ₽` +
+                `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
+                `Банк: ${bankData?.bankName}\n\n` +
+                `Реквизиты: ${bankData?.requisite}\n` +
+                `Получатель: ${bankData?.recipient}\n\n` +
+                `<b>РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В СЕГОДНЯШНЕЕ ЧИСЛО</b>\n\n` +
+                `Пожалуйста, прикрепите <b>скриншот</b> чека для завершения заказа.`,
+                { parse_mode: 'HTML' })
             :
-            await bot.sendMessage(telegramId, `К оплате: ${totalPrice} ₽\n\nБанк: ${bankData?.bankName}\n\nРеквизиты: ${bankData?.requisite}\nПолучатель: ${bankData?.recipient}\n\n`
-                + `Пожалуйста, прикрепите скриншот чека для завершения заказа.`)
-
+            await bot.sendMessage(telegramId,
+                `К оплате: ${totalPrice} ₽\n\n` +
+                `Банк: ${bankData?.bankName}\n\n` +
+                `Реквизиты: ${bankData?.requisite}\n` +
+                `Получатель: ${bankData?.recipient}\n\n` +
+                `<b>РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В СЕГОДНЯШНЕЕ ЧИСЛО</b>\n\n` +
+                `Пожалуйста, прикрепите <b>СКРИНШОТ</b> ЧЕКА для завершения заказа.`,
+                { parse_mode: 'HTML' }
+            );
         bot.on("message", handleScreenshotMessage);
 
         await prisma.basket.deleteMany({ where: { userId: user?.userId } });
