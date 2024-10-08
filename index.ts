@@ -50,6 +50,8 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
     const chatId = msg.chat.id;
     const telegramId = msg.chat.id;
 
+    // bot.sendMessage(chatId, '>> sadasdasd', { parse_mode: 'MarkdownV2' })
+
     const user = await prisma.user.findFirst({
         where: {
             telegramId: telegramId.toString(),
@@ -374,8 +376,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 `Банк: ${bankData?.bankName}\n\n` +
                 `Реквизиты: ${bankData?.requisite}\n` +
                 `Получатель: ${bankData?.recipient}\n\n` +
-                `<b>РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В СЕГОДНЯШНЕЕ ЧИСЛО</b>\n\n` +
-                `Пожалуйста, прикрепите <b>скриншот</b> чека для завершения заказа.`,
+                `<b>РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В СЕГОДНЯШНЕЕ ЧИСЛО.</b>\n\n` +
+                `<blockquote>Если вы не успели оплатить заказ в день, когда вам скинули реквизиты, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
+                `Пожалуйста, отправьте боту ответным сообщением <b>СКРИНШОТ</b> <i>(не файл!)</i> чека об оплате для завершения заказа.`,
                 { parse_mode: 'HTML' })
             :
             await bot.sendMessage(telegramId,
@@ -383,8 +386,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 `Банк: ${bankData?.bankName}\n\n` +
                 `Реквизиты: ${bankData?.requisite}\n` +
                 `Получатель: ${bankData?.recipient}\n\n` +
-                `<b>РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В СЕГОДНЯШНЕЕ ЧИСЛО</b>\n\n` +
-                `Пожалуйста, прикрепите <b>СКРИНШОТ</b> ЧЕКА для завершения заказа.`,
+                `<b>РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В СЕГОДНЯШНЕЕ ЧИСЛО.</b>\n\n` +
+                `<blockquote>Если вы не успели оплатить заказ в день, когда вам скинули реквизиты, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
+                `Пожалуйста, отправьте боту ответным сообщением <b>СКРИНШОТ</b> <i>(не файл!)</i> чека об оплате для завершения заказа.`,
                 { parse_mode: 'HTML' }
             );
         bot.on("message", handleScreenshotMessage);
