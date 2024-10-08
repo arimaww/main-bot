@@ -8,12 +8,13 @@ datasource db {
 }
 
 model User {
-  userId     Int      @id @default(autoincrement())
+  userId     Int        @id @default(autoincrement())
   telegramId String
   userName   String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now()) @updatedAt
   basket     Basket[]
+  Keyboard   Keyboard[]
   order      Order[]
 }
 
@@ -105,6 +106,15 @@ model Bank {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   Order     Order[]
+}
+
+model Keyboard {
+  keyboardId Int    @unique @default(autoincrement())
+  chatId     Int
+  title      String
+  messageId  Int
+  userId     Int
+  User       User   @relation(fields: [userId], references: [userId])
 }
 
 enum Role {
