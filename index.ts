@@ -441,11 +441,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             where: { orderUniqueNumber: orderId },
                         });
 
-
-                        const orderList = await prisma.order.findMany({ where: { status: "PENDING" } })
-                        updatingOrdersKeyboard(orderList, msg, "Поступил новый заказ\nПропишите /orders для обновления списка заказов")
-
-
                         if (order && order.status === "WAITPAY") {
                             await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
                                 caption: messageToManager,
