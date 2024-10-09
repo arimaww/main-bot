@@ -526,7 +526,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     parse_mode: 'HTML',
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: 'Если не оплатить в течение 1 часа, то заказ отменится', callback_data: 'отмена' }]
+                            [{ text: 'Без оплаты - отменится через 30 мин.', callback_data: 'отмена' }]
                         ]
                     }
                 })
@@ -543,7 +543,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     parse_mode: 'HTML',
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: 'Если не оплатить в течение 1 часа, то заказ отменится', callback_data: 'отмена' }]
+                            [{ text: 'Без оплаты - отменится через 30 мин.', callback_data: 'отмена' }]
                         ]
                     }
                 }
@@ -558,7 +558,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 bot.removeListener("message", handleScreenshotMessage);
                 await bot.sendMessage(user?.telegramId!, 'Ваш заказ был автоматически отменен из-за отсутствия оплаты.');
             }
-        }, 3600000); // 1 час = 3600000 миллисекунд
+        }, 1800000); // 1 час = 3600000 миллисекунд
 
         // Сохраняем timerId в базе или переменной, чтобы при получении чека можно было отменить таймер
         // saveTimerIdForOrder(orders[0].id, timerId);
