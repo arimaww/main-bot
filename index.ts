@@ -345,14 +345,14 @@ const handleScreenshotMessage1 = async (msg: TelegramBot.Message) => {
 
                 await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0]?.orderUniqueNumber }, data: { status: "PENDING" } })
 
-                bot.sendMessage(parseInt(user?.telegramId!), "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.");
+                await bot.sendMessage(parseInt(user?.telegramId!), "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.");
 
                 bot.removeListener("message", handleScreenshotMessage1);
             } catch (err) {
                 console.error('Ошибка отправки сообщения:', err);
             }
         } else {
-            setTimeout(() => bot.sendMessage(parseInt(user?.telegramId!), "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение."), 500)
+            await bot.sendMessage(parseInt(user?.telegramId!), "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение.")
         }
     }
 };
