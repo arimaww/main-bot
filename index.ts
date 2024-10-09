@@ -196,10 +196,12 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                 }
             })
         }
+    }
+});
 
-
-
-        const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
+bot.on('message', async (msg:TelegramBot.Message) => {
+    const chatId = msg.chat.id
+    const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
         const seen = new Set();
         const uniqueOrders = orders.filter(order => {
             const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
@@ -263,8 +265,7 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                 }
             })
         }
-    }
-});
+})
 
 const handleScreenshotMessage1 = async (msg: TelegramBot.Message) => {
     const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
@@ -584,7 +585,8 @@ async function getOrderData(orderId: string) {
         deliveryCost: order?.deliveryCost,
         username: user?.userName,
         selectedCountry: order?.selectedCountry,
-        status: order?.status
+        status: order?.status,
+        fileId: order?.fileId,
     };
 }
 
@@ -650,19 +652,33 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 await bot.deleteMessage(chatId!, messageId!);
 
-                await bot.sendMessage(chatId!, `Заказ ${orderData?.username ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nОбщ. прайс: ${orderData?.totalPrice}\n\n\nДанные клиента:\n` +
+
+
+                const acceptOrderMessage = `Заказ ${orderData?.username ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nОбщ. прайс: ${orderData?.totalPrice}\n\n\nДанные клиента:\n` +
                     `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n\n` +
                     `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
                     `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
-                    `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`, {
+                    `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`
+
+                await bot.sendPhoto(chatId!, orderData?.fileId!, {
+                    caption: acceptOrderMessage,
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "❌ Удалить", callback_data: `Удалить_${orderUnique}` }]
+                            [{ text: "❌ Удалить", callback_data: `Удалить_${orderData?.im_number}` }]
                         ]
                     },
-                    parse_mode: "HTML",
-                    disable_web_page_preview: true
+                    parse_mode: "HTML"
                 });
+
+                // await bot.sendMessage(chatId!, acceptOrderMessage, {
+                //     reply_markup: {
+                //         inline_keyboard: [
+                //             [{ text: "❌ Удалить", callback_data: `Удалить_${orderUnique}` }]
+                //         ]
+                //     },
+                //     parse_mode: "HTML",
+                //     disable_web_page_preview: true
+                // });
 
 
                 await bot.sendMessage(process.env.CDEK_GROUP_ID!, `Заказ ${orderData?.username ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nОбщ. прайс: ${orderData?.totalPrice}\n\n\nДанные клиента:\n` +
