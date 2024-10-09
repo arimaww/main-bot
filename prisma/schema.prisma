@@ -110,9 +110,9 @@ model Bank {
 
 model Keyboard {
   keyboardId Int    @unique @default(autoincrement())
-  chatId     Int
+  chatId     BigInt @unique
   title      String
-  messageId  Int
+  messageId  BigInt
   userId     Int
   User       User   @relation(fields: [userId], references: [userId])
 }
