@@ -858,6 +858,41 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 bot.on("callback_query", handleCallbackQuery);
 
 
+async function cancelWaitPayOrders() {
+    // Логика получения всех заказов со статусом "WAITPAY"
+    const waitPayOrders = await prisma.order.findMany({ where: { status: 'WAITPAY' } });
+
+
+    const seen = new Set();
+    const uniqueOrders = waitPayOrders.filter(order => {
+        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`;
+        const duplicate = seen.has(key);
+        seen.add(key);
+        return !duplicate;
+    });
+    for (const order of uniqueOrders) {
+
+        const message = `Ваш заказ был отменен, так как реквизиты были изменены.`;
+        const user = await prisma.user.findFirst({ where: { userId: order?.userId! } })
+
+        await bot.sendMessage(user?.telegramId!, message);
+        bot.removeAllListeners()
+
+        await prisma.order.deleteMany({ where: { orderUniqueNumber: order?.orderUniqueNumber } })
+    }
+}
+
+app.post('/update-payment-info', async (req, res) => {
+    try {
+        await cancelWaitPayOrders();
+
+        return res.status(200).json({ message: 'Реквизиты обновлены и заказы отменены' });
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка обновления реквизитов', error });
+    }
+});
+
+
 app.listen(7000, () => {
     console.log("Запущен на 7000 порте");
 });
