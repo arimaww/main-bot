@@ -67,6 +67,7 @@ model Order {
   selectedCountry   String?
   email             String?
   orderType         OrderType?
+  messageId         String?
   Bank              Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
   product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
   user              User?       @relation(fields: [userId], references: [userId], onDelete: Cascade)

@@ -513,8 +513,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
         const bankData = await prisma.bank.findFirst({ where: { bankName: bank } })
 
-
-
         selectedCountry !== "RU" ?
             await bot.sendMessage(telegramId,
                 `К оплате: ${totalPrice + Number(deliverySum)} ₽` +
@@ -534,7 +532,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             [{ text: 'Без оплаты - отменится через 30 мин.', callback_data: 'отмена' }]
                         ]
                     }
-                })
+                }).then((async sentMessage => {
+                    await prisma.order.updateMany({ where: { orderUniqueNumber: orderId }, data: { messageId: sentMessage.message_id.toString() } })
+                }))
             :
             await bot.sendMessage(user?.telegramId!,
                 `К оплате: ${totalPrice} ₽\n\n` +
@@ -554,7 +554,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         ]
                     }
                 }
-            );
+            ).then((async sentMessage => {
+                await prisma.order.updateMany({ where: { orderUniqueNumber: orderId }, data: { messageId: sentMessage.message_id.toString() } })
+            }));
 
 
         const timerId = setTimeout(async () => {
@@ -839,7 +841,9 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                         `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 30 МИНУТ‼️</b>\n\n` +
                         `<blockquote>Если вы не успели оплатить заказ за 30 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
                         `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
-                        { parse_mode: 'HTML' })
+                        { parse_mode: 'HTML' }).then((async sentMessage => {
+                            await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber }, data: { messageId: sentMessage.message_id.toString() } })
+                        }))
                     :
                     await bot.sendMessage(user?.telegramId!,
                         `К оплате: ${orders[0].totalPrice!} ₽\n\n` +
@@ -852,7 +856,9 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                         `<blockquote>Если вы не успели оплатить заказ за 30 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
                         `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
                         { parse_mode: 'HTML' }
-                    );
+                    ).then((async sentMessage => {
+                        await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber }, data: { messageId: sentMessage.message_id.toString() } })
+                    }));
             }
 
             bot.on('message', handleScreenshotMessage1)
@@ -886,7 +892,7 @@ async function cancelWaitPayOrders() {
 
         await bot.sendMessage(user?.telegramId!, message);
         bot.removeAllListeners()
-
+        await bot.deleteMessage(user?.telegramId!, parseInt(order?.messageId!))
         await prisma.order.deleteMany({ where: { orderUniqueNumber: order?.orderUniqueNumber } })
     }
 }
