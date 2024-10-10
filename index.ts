@@ -48,8 +48,9 @@ const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text:
 const timers = new Map(); // Объект для хранения таймеров по id заказа
 
 // Сохранение timerId для заказа
-function saveTimerIdForOrder(unique: string, timerId: number) {
+function saveTimerIdForOrder(unique: string, timerId: NodeJS.Timeout) {
     timers.set(unique, timerId);
+    // console.log(`Таймер для заказа ${unique} сохранен с ID: ${timerId}`);
 }
 
 // Получение timerId для заказа
@@ -60,6 +61,7 @@ function getTimerIdForOrder(unique: string) {
 // Удаление таймера после получения скриншота
 function removeTimerIdForOrder(unique: string) {
     timers.delete(unique);
+    // console.log(`Таймер для заказа ${unique} удален.`);
 }
 
 // Если у клиента есть неоплаченный заказ
@@ -558,54 +560,54 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 bot.removeListener("message", handleScreenshotMessage);
                 await bot.sendMessage(user?.telegramId!, 'Ваш заказ был автоматически отменен из-за отсутствия оплаты.');
             }
-        }, 1800000); // 1 час = 3600000 миллисекунд
+        }, 1800000); // 30 мин = 1800000 миллисекунд
 
-        // Сохраняем timerId в базе или переменной, чтобы при получении чека можно было отменить таймер
-        // saveTimerIdForOrder(orders[0].id, timerId);
+        saveTimerIdForOrder(orderId, timerId);
 
 
         async function onPaymentReceived(unique: string) {
             // Получаем timerId из базы или переменной
             const timerId = getTimerIdForOrder(unique);
             if (timerId) {
-                clearTimeout(timerId); // Отменяем таймер
-                console.log(`Таймер для заказа ${unique} отменен, оплата получена.`);
+                // console.log(`Таймер для заказа ${unique} отменен, оплата получена.`);
+                clearTimeout(timerId);
+                removeTimerIdForOrder(unique);
             }
         }
 
         // Пример функций отмены заказа и проверки статуса
         async function cancelOrder(unique: string) {
-            const order = await prisma.order.findFirst({ where: { orderUniqueNumber: unique } })
-            const orderList = await prisma.order.findMany({ where: { orderUniqueNumber: unique } })
-            const user = await prisma.user.findFirst({ where: { userId: order?.userId! } })
-            const keyboard = await prisma.keyboard.findFirst({ where: { userId: order?.userId! } })
+            const order = await prisma.order.findFirst({ where: { orderUniqueNumber: unique } });
+            const orderList = await prisma.order.findMany({ where: { orderUniqueNumber: unique } });
+            const user = await prisma.user.findFirst({ where: { userId: order?.userId! } });
+            const keyboard = await prisma.keyboard.findFirst({ where: { userId: order?.userId! } });
 
             if (keyboard) {
-                await prisma.keyboard.deleteMany({ where: { userId: order?.userId! } })
-                bot.deleteMessage(user?.telegramId!, Number(keyboard?.messageId!))
+                await prisma.keyboard.deleteMany({ where: { userId: order?.userId! } });
+                bot.deleteMessage(user?.telegramId!, Number(keyboard?.messageId!));
             }
+
             for (const ord of orderList) {
-                const prod = await prisma.product.findFirst({ where: { productId: ord.productId! } })
+                const prod = await prisma.product.findFirst({ where: { productId: ord.productId! } });
 
                 await prisma.product.update({
                     where: { productId: ord.productId! },
                     data: { count: Number(prod?.count) + Number(ord.productCount) }
-                })
+                });
             }
-
-            await prisma.order.deleteMany({ where: { orderUniqueNumber: unique } })
+            removeTimerIdForOrder(order?.orderUniqueNumber!)
+            await prisma.order.deleteMany({ where: { orderUniqueNumber: unique } });
+            // console.log(`Заказ ${unique} был отменен.`);
         }
-
         async function checkOrderStatus(unique: string) {
-            const order = await prisma.order.findFirst({ where: { orderUniqueNumber: unique } })
+            const order = await prisma.order.findFirst({ where: { orderUniqueNumber: unique } });
 
             if (order?.status === 'WAITPAY') {
                 return { isPaid: false }; // Здесь возвращаем статус заказа
+            } else if (order?.status === 'PENDING') {
+                onPaymentReceived(unique); // Если оплата получена, отменяем таймер
             }
-            else if (order?.status === 'PENDING') {
-                onPaymentReceived(unique)
-            }
-            return { isPaid: true };;
+            return { isPaid: true };
         }
         bot.on("message", handleScreenshotMessage);
 
