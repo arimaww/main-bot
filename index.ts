@@ -174,7 +174,6 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                 }
             }).then(async (sentMessage) => {
                 if (user) {
-                    console.log(user?.userId)
                     await prisma.keyboard.upsert({
                         where: { chatId: parseInt(user?.telegramId)! },
                         create: {
