@@ -563,6 +563,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             // Проверяем, поступил ли чек об оплате
             const order = await checkOrderStatus(orderId);
             if (!order?.isPaid) {
+                const existingOrder = await prisma.order.findFirst({ where: { userId: user?.userId } })
+                await bot.deleteMessage(user?.telegramId!, Number(existingOrder?.messageId))
+                    .catch(err => console.log(err))
                 await cancelOrder(orderId);
                 bot.removeListener("message", handleScreenshotMessage);
                 await bot.sendMessage(user?.telegramId!, 'Ваш заказ был автоматически отменен из-за отсутствия оплаты.');
