@@ -890,6 +890,13 @@ async function cancelWaitPayOrders() {
         const message = `Ваш заказ был отменен, так как реквизиты были изменены.`;
         const user = await prisma.user.findFirst({ where: { userId: order?.userId! } })
 
+        const keyboard = await prisma.keyboard.findFirst({ where: { userId: user?.userId } })
+
+        if (keyboard) {
+            await bot.deleteMessage(user?.telegramId!, Number(keyboard.messageId))
+            await prisma.keyboard.delete({ where: { keyboardId: keyboard.keyboardId } })
+        }
+
         await bot.sendMessage(user?.telegramId!, message);
         bot.removeAllListeners()
         await bot.deleteMessage(user?.telegramId!, parseInt(order?.messageId!))
