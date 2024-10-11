@@ -181,7 +181,7 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                         productId: productId,
                         productCount: productCount,
                     },
-                });
+                }).catch(err => console.log(err));
             } else {
                 console.log(`Неверный формат: ${pair}`);
             }
