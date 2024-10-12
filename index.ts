@@ -150,6 +150,15 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
 
         await prisma.basket.deleteMany({ where: { userId: user?.userId } })
 
+        if (!user) {
+            await prisma.user.create({
+                data: {
+                    telegramId: msg.chat.id.toString(),
+                    userName: msg.chat.username?.toString() || "",
+                }
+            })
+        }
+
         for (const pair of productPairs) {
             const [productId, productCount] = pair.split('-').map(Number);
 
@@ -166,22 +175,17 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                     continue;
                 }
 
-                if (!user) {
-                    await prisma.user.create({
-                        data: {
-                            telegramId: msg.chat.id.toString(),
-                            userName: msg.chat.username?.toString() || "",
-                        }
-                    })
-                }
+                const userExist = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
 
                 await prisma.basket.create({
                     data: {
-                        userId: user?.userId!,
+                        userId: userExist?.userId!,
                         productId: productId,
                         productCount: productCount,
                     },
                 }).catch(err => console.log(err));
+
+
             } else {
                 console.log(`Неверный формат: ${pair}`);
             }
