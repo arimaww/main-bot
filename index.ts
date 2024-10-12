@@ -631,7 +631,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
             if (keyboard) {
                 await prisma.keyboard.deleteMany({ where: { userId: order?.userId! } });
-                bot.deleteMessage(user?.telegramId!, Number(keyboard?.messageId!));
+                bot.deleteMessage(user?.telegramId!, Number(keyboard?.messageId!)).catch(err => console.log(err));
             }
 
             for (const ord of orderList) {
@@ -787,7 +787,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 const timestamp = new Date();
 
 
-                await bot.deleteMessage(chatId!, messageId!);
+                await bot.deleteMessage(chatId!, messageId!).catch(err => console.log(err));
 
 
 
@@ -858,8 +858,8 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 await prisma.order.deleteMany({ where: { orderUniqueNumber: orderUnique } })
 
-                bot.sendMessage(user?.telegramId, 'Заказ успешно удален');
-                bot.deleteMessage(user?.telegramId, Number(keyboard?.messageId))
+                await bot.sendMessage(user?.telegramId, 'Заказ успешно удален');
+                await bot.deleteMessage(user?.telegramId, Number(keyboard?.messageId)).catch(err => console.log(err))
                 await prisma.keyboard.delete({ where: { keyboardId: keyboard?.keyboardId } })
             }
         }
@@ -933,13 +933,13 @@ async function cancelWaitPayOrders() {
         const keyboard = await prisma.keyboard.findFirst({ where: { userId: user?.userId } })
 
         if (keyboard) {
-            await bot.deleteMessage(user?.telegramId!, Number(keyboard.messageId))
+            await bot.deleteMessage(user?.telegramId!, Number(keyboard.messageId)).catch(err => console.log(err))
             await prisma.keyboard.delete({ where: { keyboardId: keyboard.keyboardId } })
         }
 
         await bot.sendMessage(user?.telegramId!, message);
         bot.removeAllListeners()
-        await bot.deleteMessage(user?.telegramId!, parseInt(order?.messageId!))
+        await bot.deleteMessage(user?.telegramId!, parseInt(order?.messageId!)).catch(err => console.log(err))
         await prisma.order.deleteMany({ where: { orderUniqueNumber: order?.orderUniqueNumber } })
     }
 }
