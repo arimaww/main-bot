@@ -943,7 +943,7 @@ async function cancelWaitPayOrders() {
 
         await bot.sendMessage(user?.telegramId!, message);
         bot.removeAllListeners()
-        await bot.deleteMessage(user?.telegramId!, parseInt(order?.messageId!)).catch(err => console.log(err))
+        // await bot.deleteMessage(user?.telegramId!, parseInt(order?.messageId!)).catch(err => console.log(err))
         await prisma.order.deleteMany({ where: { orderUniqueNumber: order?.orderUniqueNumber } })
     }
 }
