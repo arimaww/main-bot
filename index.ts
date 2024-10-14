@@ -103,7 +103,7 @@ function removeTimerIdForOrder(unique: string) {
 }
 
 // Если у клиента есть неоплаченный заказ
-bot.on("message", async (msg) => {
+bot.onText(/\/orders/, async (msg) => {
     const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
     const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
 
@@ -778,9 +778,9 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 })
                 // --------------------------------------------------
                 await bot.sendMessage(orderData.telegramId!, `Ваш заказ принят!\nВот трек-номер: ${orderTrackNumberForUser}\n\n` +
-                    `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName ? orderData.middleName[0] : ''}.!\n\n` +
+                    `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!\n\n` +
                     `Ваш заказ:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\n` +
-                    `Сроки доставки по РФ ориентировочно 5-7 дней.\n\nОтправка посылки осуществляется в течение 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
+                    `Отправка посылки осуществляется в течение 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
                     `Если в течение 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
                     `Ссылка на чат наших клиентов:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
                     `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
@@ -793,7 +793,6 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
 
                 await bot.deleteMessage(chatId!, messageId!).catch(err => console.log(err));
-
 
 
                 const acceptOrderMessage = `Заказ ${orderData?.username ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nОбщ. прайс: ${orderData?.totalPrice}\n\n\nДанные клиента:\n` +
@@ -953,6 +952,7 @@ async function cancelWaitPayOrders() {
 app.post('/update-payment-info', async (req, res) => {
     try {
         await cancelWaitPayOrders();
+        await bot.sendMessage(MANAGER_CHAT_ID, 'Реквизиты были изменены.\nВсе неоплаченные заказы удалены.')
 
         return res.status(200).json({ message: 'Реквизиты обновлены и заказы отменены' });
     } catch (error) {
