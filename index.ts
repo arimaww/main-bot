@@ -493,7 +493,16 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                         const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${products.filter(el => el.productCount > 0)
                             .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                            .join("\n")}\n\n\nФИО: ${surName} ${firstName} ${middleName}\nНомер: ${phone}\nДоставка: ${deliverySum} ₽`
+                            .join("\n")}\n\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${selectedCountry === 'RU' ?
+                                 'Россия' : 
+                                 selectedCountry === 'KG' ? 'Кыргызстан' : 
+                                 selectedCountry === 'BY' ? 'Беларусь' : 
+                                 selectedCountry === 'AM' ? 'Армения' : 
+                                 selectedCountry === 'KZ' ? 'Казахстан' : 
+                                 selectedCountry === 'AZ' ? 'Азербайджан' : 
+                                 selectedCountry === 'UZ' ? 'Узбекистан' : 'Неизвестная страна'}
+                                 ${selectedCountry !== 'RU' ? '\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>' : ''}
+                                 \nНомер: ${phone}\nДоставка: ${deliverySum} ₽`
 
 
                         const order = await prisma.order.findFirst({
