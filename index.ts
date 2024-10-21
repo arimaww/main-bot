@@ -339,9 +339,15 @@ const handleScreenshotMessage1 = async (msg: TelegramBot.Message) => {
 
     if (msg.chat.id.toString() === user?.telegramId) {
         if (msg.photo) {
+            bot.removeListener("message", handleScreenshotMessage1);
+
             const fileId = msg.photo[msg.photo.length - 1].file_id;
 
             const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
+
+            const isOrderAlreadyUpdated = await prisma.order.findMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber } })
+
+            if (isOrderAlreadyUpdated[0].fileId) return;
 
             await prisma.order.updateMany({ where: { userId: user?.userId, orderUniqueNumber: orders[0].orderUniqueNumber }, data: { fileId: fileId } })
 
@@ -390,7 +396,7 @@ const handleScreenshotMessage1 = async (msg: TelegramBot.Message) => {
 
                 await bot.sendMessage(parseInt(user?.telegramId!), "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.");
 
-                bot.removeListener("message", handleScreenshotMessage1);
+
             } catch (err) {
                 console.error('Ошибка отправки сообщения:', err);
             }
@@ -483,9 +489,15 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         const handleScreenshotMessage = async (msg: TelegramBot.Message) => {
             if (msg.chat.id === telegramId) {
                 if (msg.photo) {
+                    bot.removeListener("message", handleScreenshotMessage);
+
                     const fileId = msg.photo[msg.photo.length - 1].file_id;
 
                     const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
+
+                    const isOrderAlreadyUpdated = await prisma.order.findMany({ where: { orderUniqueNumber: orderId } })
+
+                    if (isOrderAlreadyUpdated[0].fileId) return;
 
                     await prisma.order.updateMany({ where: { userId: user?.userId, orderUniqueNumber: orderId }, data: { fileId: fileId } })
 
@@ -494,13 +506,13 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${products.filter(el => el.productCount > 0)
                             .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                             .join("\n")}\n\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${selectedCountry === 'RU' ?
-                                 'Россия' : 
-                                 selectedCountry === 'KG' ? 'Кыргызстан' : 
-                                 selectedCountry === 'BY' ? 'Беларусь' : 
-                                 selectedCountry === 'AM' ? 'Армения' : 
-                                 selectedCountry === 'KZ' ? 'Казахстан' : 
-                                 selectedCountry === 'AZ' ? 'Азербайджан' : 
-                                 selectedCountry === 'UZ' ? 'Узбекистан' : 'Неизвестная страна'}
+                                'Россия' :
+                                selectedCountry === 'KG' ? 'Кыргызстан' :
+                                    selectedCountry === 'BY' ? 'Беларусь' :
+                                        selectedCountry === 'AM' ? 'Армения' :
+                                            selectedCountry === 'KZ' ? 'Казахстан' :
+                                                selectedCountry === 'AZ' ? 'Азербайджан' :
+                                                    selectedCountry === 'UZ' ? 'Узбекистан' : 'Неизвестная страна'}
                                  ${selectedCountry !== 'RU' ? '\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>' : ''}
                                  \nНомер: ${phone}\nПрайс: ${totalPrice}\nДоставка: ${deliverySum} ₽`
 
@@ -526,11 +538,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                         // Обработчик callback_query для кнопок "Принять" и "Удалить"
 
+
                         await prisma.order.updateMany({ where: { orderUniqueNumber: orderId }, data: { status: "PENDING" } })
 
                         bot.sendMessage(telegramId, "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.");
 
-                        bot.removeListener("message", handleScreenshotMessage);
                     } catch (err) {
                         console.error('Ошибка отправки сообщения:', err);
                     }
