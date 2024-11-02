@@ -24,6 +24,8 @@ export type TWeb = {
 	deliverySum: number | undefined;
 	selectedPvzCode: string;
 	selectedTariff: string;
+	selectedCity: string;
+	selectedCityName: string;
 	bank: string
 };
 
@@ -43,7 +45,8 @@ export type TRecordOrderInfo = {
 	bankId: number;
 	totalPrice: number;
 	selectedCountry: string | undefined;
-	orderType: "CDEK"
+	orderType: "CDEK",
+	city: string,
 };
 
 export type TDeliveryRequest = {
