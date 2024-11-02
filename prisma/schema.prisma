@@ -8,28 +8,38 @@ datasource db {
 }
 
 model User {
-  userId     Int        @id @default(autoincrement())
-  telegramId String
-  userName   String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @default(now()) @updatedAt
-  basket     Basket[]
-  Keyboard   Keyboard[]
-  order      Order[]
+  userId          Int        @id @default(autoincrement())
+  telegramId      String
+  userName        String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now()) @updatedAt
+  email           String?
+  firstName       String?
+  middleName      String?
+  phone           String?
+  selectedCity    String?
+  selectedCountry String?
+  selectedPvzCode String?
+  selectedRegion  String?
+  surName         String?
+  basket          Basket[]
+  Keyboard        Keyboard[]
+  order           Order[]
 }
 
 model Product {
-  productId   Int      @id @default(autoincrement())
+  productId   Int       @id @default(autoincrement())
   name        String
   synonym     String?
   description String
   picture     String?
   count       Int
   cost        Decimal
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
   primeCost   Decimal?
   basket      Basket[]
+  Discount    Discount?
   order       Order[]
 }
 
@@ -68,6 +78,7 @@ model Order {
   email             String?
   orderType         OrderType?
   messageId         String?
+  city              String?
   Bank              Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
   product           Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
   user              User?       @relation(fields: [userId], references: [userId], onDelete: Cascade)
@@ -116,6 +127,17 @@ model Keyboard {
   messageId  BigInt
   userId     Int
   User       User   @relation(fields: [userId], references: [userId])
+}
+
+model Discount {
+  discountId Int       @unique @default(autoincrement())
+  percent    Int?
+  amount     Int?
+  validDate  DateTime?
+  productId  Int       @unique
+  updatedAt  DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  Product    Product   @relation(fields: [productId], references: [productId])
 }
 
 enum Role {
