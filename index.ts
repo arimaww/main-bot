@@ -421,6 +421,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         products,
         uuid,
         selectedCountry,
+        selectedCity,
+        selectedCityName,
         deliverySum,
         bank
     } = req.body;
@@ -481,6 +483,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     totalPrice: totalPrice,
                     selectedCountry: selectedCountry,
                     orderType: "CDEK",
+                    city: selectedCityName,
                 });
             }
         }
@@ -505,7 +508,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                         const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${products.filter(el => el.productCount > 0)
                             .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                            .join("\n")}\n\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${selectedCountry === 'RU' ?
+                            .join("\n")}\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${selectedCountry === 'RU' ?
                                 'Россия' :
                                 selectedCountry === 'KG' ? 'Кыргызстан' :
                                     selectedCountry === 'BY' ? 'Беларусь' :
@@ -513,7 +516,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                             selectedCountry === 'KZ' ? 'Казахстан' :
                                                 selectedCountry === 'AZ' ? 'Азербайджан' :
                                                     selectedCountry === 'UZ' ? 'Узбекистан' : 'Неизвестная страна'}
-                                 ${selectedCountry !== 'RU' ? '\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>' : ''}
+                                 ${selectedCountry !== 'RU' ? `\nГород: ${selectedCityName}\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>` : `Город: ${selectedCityName}\n`}
                                  \nНомер: ${phone.replace(/[ ()-]/g, '')}\nПрайс: ${totalPrice}\nДоставка: ${deliverySum} ₽`
 
 
@@ -749,6 +752,7 @@ async function getOrderData(orderId: string) {
         selectedCountry: order?.selectedCountry,
         status: order?.status,
         fileId: order?.fileId,
+        cityName: order?.city
     };
 }
 
@@ -821,8 +825,9 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `Трек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n` +
                     `${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` +
                     `Данные клиента:\n` +
-                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n\n` +
-                    `Номер: ${orderData?.phone?.replace(/[ ()-]/g, '')}\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n` +
+                    `Город: ${orderData?.cityName}\n` +
+                    `Номер: ${orderData?.phone?.replace(/[ ()-]/g, '')}\n\n` +
                     `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
                     `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
                     `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`
@@ -851,8 +856,9 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await bot.sendMessage(process.env.CDEK_GROUP_ID!, `Заказ ${orderData?.username ? 
                     `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` + 
                     `Данные клиента:\n` +
-                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n\n` +
-                    `Номер: ${orderData?.phone?.replace(/[ ()-]/g, '')}\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n` +
+                    `Город: ${orderData?.cityName}\n` +
+                    `Номер: ${orderData?.phone?.replace(/[ ()-]/g, '')}\n\n` +
                     `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
                     `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
                     `${timestamp.getMinutes() < 10 ? '0' + timestamp.getMinutes() : timestamp.getMinutes()}`, {
