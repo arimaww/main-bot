@@ -469,6 +469,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
         if (bankId) {
             for (let prod of uniqueProducts) {
+
+                const discount = await prisma.productDiscount.findFirst({ where: { productId: prod?.productId } })
+
                 await recordOrderInfo({
                     userId: user?.userId!,
                     orderUniqueNumber: orderId,
@@ -488,6 +491,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     selectedCountry: selectedCountry,
                     orderType: "CDEK",
                     city: selectedCityName,
+                    productCostWithDiscount: Number(prod.cost) * prod.productCount -
+                        (Number(prod.cost) * Number(prod.productCount) * (Number(discount?.percent) / 100))
                 });
             }
         }
