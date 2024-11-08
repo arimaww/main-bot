@@ -432,7 +432,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
     try {
 
-        console.log(totalPriceWithDiscount)
         const user = await prisma.user.findFirst({
             where: { telegramId: telegramId.toString() },
         });
