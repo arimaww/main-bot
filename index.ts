@@ -424,12 +424,15 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         selectedCity,
         selectedCityName,
         deliverySum,
-        bank
+        bank,
+        totalPriceWithDiscount
     } = req.body;
 
     let errorOrderCreating = null;
 
     try {
+
+        console.log(totalPriceWithDiscount)
         const user = await prisma.user.findFirst({
             where: { telegramId: telegramId.toString() },
         });
@@ -572,7 +575,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     `\nФИО ${surName} ${firstName} ${middleName}` +
                     "\nНомер " + phone +
                     `\n\nДоставка: ${deliverySum} ₽` +
-                    "\n\nПрайс: " + totalPrice,
+                    "\n\nПрайс: " + `${totalPriceWithDiscount && totalPriceWithDiscount !== 0 ? totalPriceWithDiscount : totalPrice}`,
             },
         });
 
@@ -580,7 +583,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
         selectedCountry !== "RU" ?
             await bot.sendMessage(telegramId,
-                `К оплате: ${totalPrice + Number(deliverySum)} ₽` +
+                `К оплате: ${totalPriceWithDiscount && totalPriceWithDiscount !== 0 ? totalPriceWithDiscount + Number(deliverySum) : totalPrice + Number(deliverySum)} ₽` +
                 `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
                 `Банк: ${bankData?.bankName}\n\n` +
                 `Реквизиты: ${bankData?.requisite}\n` +
