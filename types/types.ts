@@ -48,7 +48,7 @@ export type TRecordOrderInfo = {
 	selectedCountry: string | undefined;
 	orderType: "CDEK",
 	city: string,
-	totalPriceWithDiscount: number | undefined
+	totalPriceWithDiscount: number | null
 };
 
 export type TDeliveryRequest = {
