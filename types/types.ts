@@ -26,7 +26,8 @@ export type TWeb = {
 	selectedTariff: string;
 	selectedCity: string;
 	selectedCityName: string;
-	bank: string
+	bank: string;
+	totalPriceWithDiscount: number | undefined
 };
 
 export type TRecordOrderInfo = {
