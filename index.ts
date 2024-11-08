@@ -483,6 +483,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     selectedTariff: parseInt(selectedTariff),
                     bankId: bankId,
                     totalPrice: totalPrice,
+                    totalPriceWithDiscount: totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                        ? totalPriceWithDiscount : null,
                     selectedCountry: selectedCountry,
                     orderType: "CDEK",
                     city: selectedCityName,
@@ -855,8 +857,8 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 // });
 
 
-                await bot.sendMessage(process.env.CDEK_GROUP_ID!, `Заказ ${orderData?.username ? 
-                    `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` + 
+                await bot.sendMessage(process.env.CDEK_GROUP_ID!, `Заказ ${orderData?.username ?
+                    `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` +
                     `Данные клиента:\n` +
                     `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n` +
                     `Город: ${orderData?.cityName}\n` +
