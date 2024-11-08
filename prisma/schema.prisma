@@ -57,34 +57,35 @@ model Basket {
 }
 
 model Order {
-  orderId                Int         @id @default(autoincrement())
-  orderTrackNumber       String?
-  userId                 Int?
-  surName                String?
-  firstName              String?
-  middleName             String?
-  productId              Int?
-  productCount           Int
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @default(now()) @updatedAt
-  status                 OrderStatus @default(WAITPAY)
-  orderUniqueNumber      String?
-  phone                  String?
-  selectedPvzCode        String?
-  selectedTariff         Int?
-  fileId                 String?
-  deliveryCost           Int?
-  bankId                 Int?
-  totalPrice             Int?
-  selectedCountry        String?
-  email                  String?
-  orderType              OrderType?
-  messageId              String?
-  city                   String?
-  totalPriceWithDiscount Decimal?
-  Bank                   Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
-  product                Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
-  user                   User?       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  orderId                 Int         @id @default(autoincrement())
+  orderTrackNumber        String?
+  userId                  Int?
+  surName                 String?
+  firstName               String?
+  middleName              String?
+  productId               Int?
+  productCount            Int
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @default(now()) @updatedAt
+  status                  OrderStatus @default(WAITPAY)
+  orderUniqueNumber       String?
+  phone                   String?
+  selectedPvzCode         String?
+  selectedTariff          Int?
+  fileId                  String?
+  deliveryCost            Int?
+  bankId                  Int?
+  totalPrice              Int?
+  selectedCountry         String?
+  email                   String?
+  orderType               OrderType?
+  messageId               String?
+  city                    String?
+  totalPriceWithDiscount  Decimal?
+  productCostWithDiscount Decimal?
+  Bank                    Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  product                 Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
+  user                    User?       @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model CdekOffice {
