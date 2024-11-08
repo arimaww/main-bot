@@ -589,9 +589,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
         selectedCountry !== "RU" ?
             await bot.sendMessage(telegramId,
-                `К оплате: ${totalPriceWithDiscount && totalPriceWithDiscount !== 0 ? totalPriceWithDiscount + Number(deliverySum) : totalPrice + Number(deliverySum)} ₽` +
+                `К оплате: ${totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                    ? totalPriceWithDiscount + Number(deliverySum) : totalPrice + Number(deliverySum)} ₽\n` +
                 `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
-                `Банк: ${bankData?.bankName}\n\n` +
+                `Банк: ${bankData?.bankName}\n` +
                 `Реквизиты: ${bankData?.requisite}\n` +
                 `Получатель: ${bankData?.recipient}\n\n` +
                 `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
@@ -611,8 +612,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 }))
             :
             await bot.sendMessage(user?.telegramId!,
-                `К оплате: ${totalPrice} ₽\n\n` +
-                `Банк: ${bankData?.bankName}\n\n` +
+                `К оплате: ${totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                    ? totalPriceWithDiscount : totalPrice} ₽\n\n` +
+                `Банк: ${bankData?.bankName}\n` +
                 `Реквизиты: ${bankData?.requisite}\n` +
                 `Получатель: ${bankData?.recipient}\n\n` +
                 `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
