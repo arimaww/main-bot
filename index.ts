@@ -488,7 +488,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     selectedTariff: parseInt(selectedTariff),
                     bankId: bankId,
                     totalPrice: totalPrice,
-                    totalPriceWithDiscount: totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                    totalPriceWithDiscount: totalPriceWithDiscount && totalPriceWithDiscount !== totalPrice && totalPriceWithDiscount !== 0
                         ? totalPriceWithDiscount : null,
                     selectedCountry: selectedCountry,
                     orderType: "CDEK",
