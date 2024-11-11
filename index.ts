@@ -306,7 +306,8 @@ bot.on('message', async (msg: TelegramBot.Message) => {
 
                 const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
                     .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone?.replace(/[ ()-]/g, '')}\nПрайс: ${ord?.totalPrice}\nДоставка: ${ord?.deliveryCost} ₽`
+                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone?.replace(/[ ()-]/g, '')}\n`
+                    + `Прайс: ${ord?.productCostWithDiscount ? ord?.productCostWithDiscount : ord?.totalPrice}\nДоставка: ${ord?.deliveryCost} ₽`
 
 
 
@@ -356,7 +357,8 @@ const handleScreenshotMessage1 = async (msg: TelegramBot.Message) => {
                     ` сделал заказ:\n${orders
                         .filter(order => order.product && order.productCount > 0)
                         .map((order) => `${order.product?.synonym || order.product?.name} - ${order.productCount} шт.`)
-                        .join("\n")}\n\n\nФИО: ${orders[0].surName} ${orders[0].firstName} ${orders[0].middleName}\nНомер: ${orders[0].phone?.replace(/[ ()-]/g, '')}\nПрайс: ${orders[0].totalPrice}\nДоставка: ${orders[0].deliveryCost} ₽`;
+                        .join("\n")}\n\n\nФИО: ${orders[0].surName} ${orders[0].firstName} ${orders[0].middleName}\nНомер: ${orders[0].phone?.replace(/[ ()-]/g, '')}\n` +
+                    `Прайс: ${orders[0]?.totalPriceWithDiscount ? orders[0]?.totalPriceWithDiscount : orders[0].totalPrice}\nДоставка: ${orders[0].deliveryCost} ₽`;
 
                 const order = await prisma.order.findFirst({
                     where: { orderUniqueNumber: orders[0].orderUniqueNumber },
@@ -525,8 +527,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                             selectedCountry === 'KZ' ? 'Казахстан' :
                                                 selectedCountry === 'AZ' ? 'Азербайджан' :
                                                     selectedCountry === 'UZ' ? 'Узбекистан' : 'Неизвестная страна'}
-                                 ${selectedCountry !== 'RU' ? `\nГород: ${selectedCityName}\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>` : `Город: ${selectedCityName}\n`}
-                                 \nНомер: ${phone.replace(/[ ()-]/g, '')}\nПрайс: ${totalPrice}\nДоставка: ${deliverySum} ₽`
+                                 ${selectedCountry !== 'RU' ? `\nГород: ${selectedCityName}\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>` : `\nГород: ${selectedCityName}\n`}
+                                 \nНомер: ${phone.replace(/[ ()-]/g, '')}\nПрайс: ${totalPriceWithDiscount ? totalPriceWithDiscount : totalPrice}\nДоставка: ${deliverySum} ₽`
 
 
                         const order = await prisma.order.findFirst({
@@ -836,8 +838,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `Трек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n` +
                     `${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` +
                     `Данные клиента:\n` +
-                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n` +
-                    `Город: ${orderData?.cityName}\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
                     `Номер: ${orderData?.phone?.replace(/[ ()-]/g, '')}\n\n` +
                     `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
                     `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
@@ -867,8 +868,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await bot.sendMessage(process.env.CDEK_GROUP_ID!, `Заказ ${orderData?.username ?
                     `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` +
                     `Данные клиента:\n` +
-                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\n` +
-                    `Город: ${orderData?.cityName}\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
                     `Номер: ${orderData?.phone?.replace(/[ ()-]/g, '')}\n\n` +
                     `Время: ${timestamp.getDate()}.${timestamp.getMonth() + 1 < 10 ? '0' + (timestamp.getMonth() + 1) : (timestamp.getMonth() + 1)}.` +
                     `${timestamp.getFullYear()}  ${timestamp.getHours() < 10 ? '0' + timestamp.getHours() : timestamp.getHours()}:` +
