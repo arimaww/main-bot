@@ -133,7 +133,7 @@ bot.onText(/\/orders/, async (msg) => {
     }
 })
 
-bot.onText(/\/start( (.+))?/, async (msg, match) => {
+bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExecArray | null) => {
     const chatId = msg.chat.id;
     const telegramId = msg.chat.id;
 
@@ -170,8 +170,6 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                 });
 
                 if (!productExists) {
-                    // bot.sendMessage(chatId, `Товар с ID ${productId} не найден`)
-                    // console.log(`Товар с ID ${productId} не найден.`);
                     continue;
                 }
 
@@ -206,34 +204,8 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                 telegramId: msg.chat.id.toString()
             }
         })
-        const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
 
-        if (isUserDidOrder) {
-            bot.sendMessage(telegramId, 'У вас есть неоплаченный заказ\n\nНапишите /start', {
-                reply_markup: {
-                    keyboard: [[{ text: 'Оплатить заказ' }]],
-                    resize_keyboard: true
-                }
-            }).then(async (sentMessage) => {
-                if (user) {
-                    await prisma.keyboard.upsert({
-                        where: { chatId: parseInt(user?.telegramId)! },
-                        create: {
-                            chatId: telegramId,
-                            messageId: sentMessage.message_id,
-                            title: 'Оплатить заказ',
-                            userId: user?.userId
-                        },
-                        update: {
-                            messageId: sentMessage.message_id
-                        }
-                    }).catch(err => console.log(err))
-                }
-            });
-        }
-
-
-        if (msg.text === "/start" && !isUserDidOrder) {
+        if (msg.text === "/start") {
             const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
 
             if (!user) {
@@ -911,44 +883,6 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await bot.sendMessage(user?.telegramId, 'Заказ успешно удален');
                 await bot.deleteMessage(user?.telegramId, Number(keyboard?.messageId)).catch(err => console.log(err))
                 await prisma.keyboard.delete({ where: { keyboardId: keyboard?.keyboardId } })
-            }
-        }
-        else if (action === "ОплатитьNEOPL") {
-            const orders = await prisma.order.findMany({ where: { orderUniqueNumber: orderUnique } })
-            const user = await prisma.user.findFirst({ where: { userId: orders[0]?.userId! } })
-
-
-            if (orders && user) {
-                const bankData = await prisma.bank.findFirst({ where: { id: orders[0].bankId! } })
-                orders[0]?.selectedCountry !== "RU" ?
-                    await bot.sendMessage(user?.telegramId!, `К оплате: ${orders[0].totalPrice! + Number(orders[0].deliveryCost)} ₽` +
-                        `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
-                        `Банк: ${bankData?.bankName}\n\n` +
-                        `Реквизиты: ${bankData?.requisite}\n` +
-                        `Получатель: ${bankData?.recipient}\n\n` +
-                        `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
-                        `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
-                        `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 60 МИНУТ‼️</b>\n\n` +
-                        `<blockquote>Если вы не успели оплатить заказ за 60 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
-                        `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
-                        { parse_mode: 'HTML' }).then((async sentMessage => {
-                            await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber }, data: { messageId: sentMessage.message_id.toString() } })
-                        }))
-                    :
-                    await bot.sendMessage(user?.telegramId!,
-                        `К оплате: ${orders[0].totalPrice!} ₽\n\n` +
-                        `Банк: ${bankData?.bankName}\n\n` +
-                        `Реквизиты: ${bankData?.requisite}\n` +
-                        `Получатель: ${bankData?.recipient}\n\n` +
-                        `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
-                        `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
-                        `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 60 МИНУТ‼️</b>\n\n` +
-                        `<blockquote>Если вы не успели оплатить заказ за 60 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
-                        `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
-                        { parse_mode: 'HTML' }
-                    ).then((async sentMessage => {
-                        await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber }, data: { messageId: sentMessage.message_id.toString() } })
-                    }));
             }
 
             bot.on('message', handleScreenshotMessage1)
