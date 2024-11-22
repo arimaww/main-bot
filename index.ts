@@ -10,6 +10,8 @@ import cors from 'cors'
 import { Order } from '@prisma/client';
 import { cancelWaitPayOrders } from './helpers/cancel-wait-pay-orders';
 import { botOnStart } from './helpers/bot-on-start';
+import { updateOrdersKeyboard } from './helpers/update-order-keyboard';
+import { ordersKeyboardEvent } from './events/orders-keyboard-event';
 
 
 const token = process.env.TOKEN!;
@@ -29,27 +31,6 @@ app.options("*", cors())
 
 
 botOnStart(bot, MANAGER_CHAT_ID) // Функция, которая запускается при включении бота или перезагрузки
-
-
-const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text: string) => {
-    const seen = new Set();
-    const uniqueOrders = orders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`;
-        const duplicate = seen.has(key);
-        seen.add(key);
-        return !duplicate;
-    });
-
-    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`
-    bot.sendMessage(MANAGER_CHAT_ID, text, {
-        reply_markup: {
-            keyboard: [
-                [{ text: unAcceptedOrders }]
-            ],
-            resize_keyboard: true
-        }
-    })
-}
 
 const timers = new Map(); // Объект для хранения таймеров по id заказа
 
@@ -197,74 +178,7 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
     }
 });
 
-bot.on('message', async (msg: TelegramBot.Message) => {
-    const chatId = msg.chat.id
-    const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
-    const seen = new Set();
-    const uniqueOrders = orders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
-        const duplicate = seen.has(key);
-        seen.add(key);
-        return !duplicate;
-    });
-
-    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`;
-
-    if (msg.text === "/orders") {
-
-        // добавление для менеджера кнопки списка всех неподтвержденных заказов
-        if (chatId.toString() === MANAGER_CHAT_ID) {
-            updatingOrdersKeyboard(orders, msg, "Список обновлён")
-        }
-
-    }
-    if (msg.text == unAcceptedOrders && chatId.toString() === MANAGER_CHAT_ID) {
-        const seen = new Set();
-        const uniqueOrders = orders.filter(order => {
-            const duplicate = seen.has(order.orderUniqueNumber);
-            seen.add(order.orderUniqueNumber);
-            return !duplicate;
-        });
-
-        uniqueOrders.map(async ord => {
-            if (ord.fileId) {
-                const productList = await prisma.product.findMany()
-                const orderList = await prisma.order.findMany({ where: { orderUniqueNumber: ord?.orderUniqueNumber } })
-
-
-                const combinedOrderData = orderList.map(order => {
-                    const product = productList.find(prod => prod.productId === order.productId);
-                    return {
-                        productName: product?.name,
-                        synonym: product?.synonym,
-                        productCount: order.productCount,
-                        deliverySum: 0,
-                    };
-                });
-
-                const user = await prisma.user?.findFirst({ where: { userId: ord?.userId! } })
-
-                const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
-                    .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone?.replace(/[ ()-]/g, '')}\n`
-                    + `Прайс: ${ord?.productCostWithDiscount ? ord?.productCostWithDiscount : ord?.totalPrice}\nДоставка: ${ord?.deliveryCost} ₽`
-
-
-
-
-                await bot.sendPhoto(MANAGER_CHAT_ID, ord.fileId, {
-                    caption: messageToManager,
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: "✅ Принять", callback_data: `Принять_${ord?.orderUniqueNumber}` }, { text: "❌ Удалить", callback_data: `Удалить_${ord?.orderUniqueNumber}` }]
-                        ]
-                    },
-                    parse_mode: "HTML"
-                });
-            }
-        })
-    }
-})
+bot.on('message', (msg) => ordersKeyboardEvent(msg, bot, MANAGER_CHAT_ID))
 
 app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     const {
