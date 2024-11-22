@@ -8,6 +8,10 @@ import { getOrderObjInternation, getOrderObjRu, getOrderTrackNumber, getToken, m
 import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
 import { Order } from '@prisma/client';
+import { cancelWaitPayOrders } from './helpers/cancel-wait-pay-orders';
+import { botOnStart } from './helpers/bot-on-start';
+import { updateOrdersKeyboard } from './helpers/update-order-keyboard';
+import { ordersKeyboardEvent } from './events/orders-keyboard-event';
 
 
 const token = process.env.TOKEN!;
@@ -24,64 +28,9 @@ app.use(express.urlencoded({ extended: true }))
 app.use(morgan('dev'))
 app.options("*", cors())
 
-async function botOnStart() {
-    const orders = await prisma.order.findMany({ where: { status: "WAITPAY" } });
-
-    const seen = new Set();
-    const uniqueOrders = orders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`
-        const duplicate = seen.has(key);
-        seen.add(key)
-        return !duplicate;
-    })
-    for (const ord of orders) {
-        const prod = await prisma.product.findFirst({ where: { productId: ord.productId! } });
-
-        await prisma.product.update({
-            where: { productId: ord.productId! },
-            data: { count: Number(prod?.count) + Number(ord.productCount) }
-        });
-    }
-    for (const ord of uniqueOrders) {
-        const user = await prisma.user.findFirst({ where: { userId: ord?.userId! } })
-        if (user) {
-            await bot.deleteMessage(user?.telegramId!, parseInt(ord?.messageId!)).catch(err => console.log(err))
-            const keyboard = await prisma.keyboard.findFirst({ where: { chatId: parseInt(user?.telegramId!) } })
-
-            if (keyboard) {
-                await bot.deleteMessage(Number(keyboard?.chatId), Number(keyboard?.messageId)).catch(err => console.log(err))
-                await prisma.keyboard.delete({ where: { keyboardId: keyboard?.keyboardId } })
-            }
-
-            await prisma.order.deleteMany({ where: { orderUniqueNumber: ord?.orderUniqueNumber } })
-        }
-    }
-
-    return await bot.sendMessage(MANAGER_CHAT_ID, "Бот был перезапущен.\nВсе неоплаченные заказы были автоматически удалены.")
-}
-
-botOnStart()
 
 
-const updatingOrdersKeyboard = (orders: Order[], msg: TelegramBot.Message, text: string) => {
-    const seen = new Set();
-    const uniqueOrders = orders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`;
-        const duplicate = seen.has(key);
-        seen.add(key);
-        return !duplicate;
-    });
-
-    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`
-    bot.sendMessage(MANAGER_CHAT_ID, text, {
-        reply_markup: {
-            keyboard: [
-                [{ text: unAcceptedOrders }]
-            ],
-            resize_keyboard: true
-        }
-    })
-}
+botOnStart(bot, MANAGER_CHAT_ID) // Функция, которая запускается при включении бота или перезагрузки
 
 const timers = new Map(); // Объект для хранения таймеров по id заказа
 
@@ -133,7 +82,7 @@ bot.onText(/\/orders/, async (msg) => {
     }
 })
 
-bot.onText(/\/start( (.+))?/, async (msg, match) => {
+bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExecArray | null) => {
     const chatId = msg.chat.id;
     const telegramId = msg.chat.id;
 
@@ -170,8 +119,6 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                 });
 
                 if (!productExists) {
-                    // bot.sendMessage(chatId, `Товар с ID ${productId} не найден`)
-                    // console.log(`Товар с ID ${productId} не найден.`);
                     continue;
                 }
 
@@ -206,34 +153,8 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
                 telegramId: msg.chat.id.toString()
             }
         })
-        const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
 
-        if (isUserDidOrder) {
-            bot.sendMessage(telegramId, 'У вас есть неоплаченный заказ\n\nНапишите /start', {
-                reply_markup: {
-                    keyboard: [[{ text: 'Оплатить заказ' }]],
-                    resize_keyboard: true
-                }
-            }).then(async (sentMessage) => {
-                if (user) {
-                    await prisma.keyboard.upsert({
-                        where: { chatId: parseInt(user?.telegramId)! },
-                        create: {
-                            chatId: telegramId,
-                            messageId: sentMessage.message_id,
-                            title: 'Оплатить заказ',
-                            userId: user?.userId
-                        },
-                        update: {
-                            messageId: sentMessage.message_id
-                        }
-                    }).catch(err => console.log(err))
-                }
-            });
-        }
-
-
-        if (msg.text === "/start" && !isUserDidOrder) {
+        if (msg.text === "/start") {
             const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
 
             if (!user) {
@@ -257,156 +178,7 @@ bot.onText(/\/start( (.+))?/, async (msg, match) => {
     }
 });
 
-bot.on('message', async (msg: TelegramBot.Message) => {
-    const chatId = msg.chat.id
-    const orders = await prisma.order.findMany({ where: { status: "PENDING" } })
-    const seen = new Set();
-    const uniqueOrders = orders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`; // Используем id для уникальности
-        const duplicate = seen.has(key);
-        seen.add(key);
-        return !duplicate;
-    });
-
-    const unAcceptedOrders = `Непринятые заказы (${uniqueOrders.length})`;
-
-    if (msg.text === "/orders") {
-
-        // добавление для менеджера кнопки списка всех неподтвержденных заказов
-        if (chatId.toString() === MANAGER_CHAT_ID) {
-            updatingOrdersKeyboard(orders, msg, "Список обновлён")
-        }
-
-    }
-    if (msg.text == unAcceptedOrders && chatId.toString() === MANAGER_CHAT_ID) {
-        const seen = new Set();
-        const uniqueOrders = orders.filter(order => {
-            const duplicate = seen.has(order.orderUniqueNumber);
-            seen.add(order.orderUniqueNumber);
-            return !duplicate;
-        });
-
-        uniqueOrders.map(async ord => {
-            if (ord.fileId) {
-                const productList = await prisma.product.findMany()
-                const orderList = await prisma.order.findMany({ where: { orderUniqueNumber: ord?.orderUniqueNumber } })
-
-
-                const combinedOrderData = orderList.map(order => {
-                    const product = productList.find(prod => prod.productId === order.productId);
-                    return {
-                        productName: product?.name,
-                        synonym: product?.synonym,
-                        productCount: order.productCount,
-                        deliverySum: 0,
-                    };
-                });
-
-                const user = await prisma.user?.findFirst({ where: { userId: ord?.userId! } })
-
-                const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${user?.userName}'>Пользователь</a>` : "Пользователь"}` + ` сделал заказ:\n${combinedOrderData.filter(el => el.productCount > 0)
-                    .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                    .join("\n")}\n\n\nФИО: ${ord?.surName} ${ord?.firstName} ${ord?.middleName}\nНомер: ${ord?.phone?.replace(/[ ()-]/g, '')}\n`
-                    + `Прайс: ${ord?.productCostWithDiscount ? ord?.productCostWithDiscount : ord?.totalPrice}\nДоставка: ${ord?.deliveryCost} ₽`
-
-
-
-
-                await bot.sendPhoto(MANAGER_CHAT_ID, ord.fileId, {
-                    caption: messageToManager,
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: "✅ Принять", callback_data: `Принять_${ord?.orderUniqueNumber}` }, { text: "❌ Удалить", callback_data: `Удалить_${ord?.orderUniqueNumber}` }]
-                        ]
-                    },
-                    parse_mode: "HTML"
-                });
-            }
-        })
-    }
-})
-
-const handleScreenshotMessage1 = async (msg: TelegramBot.Message) => {
-    const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
-    const orders = await prisma.order.findMany({
-        where: {
-            userId: user?.userId,
-            fileId: undefined,
-            status: 'WAITPAY',
-            orderType: 'CDEK'
-        },
-        include: { product: true }
-    });
-
-    if (msg.chat.id.toString() === user?.telegramId) {
-        if (msg.photo) {
-            bot.removeListener("message", handleScreenshotMessage1);
-
-            const fileId = msg.photo[msg.photo.length - 1].file_id;
-
-            const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
-
-            const isOrderAlreadyUpdated = await prisma.order.findMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber } })
-
-            if (isOrderAlreadyUpdated[0].fileId) return;
-
-            await prisma.order.updateMany({ where: { userId: user?.userId, orderUniqueNumber: orders[0].orderUniqueNumber }, data: { fileId: fileId } })
-
-            try {
-                const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` +
-                    ` сделал заказ:\n${orders
-                        .filter(order => order.product && order.productCount > 0)
-                        .map((order) => `${order.product?.synonym || order.product?.name} - ${order.productCount} шт.`)
-                        .join("\n")}\n\n\nФИО: ${orders[0].surName} ${orders[0].firstName} ${orders[0].middleName}\nНомер: ${orders[0].phone?.replace(/[ ()-]/g, '')}\n` +
-                    `Прайс: ${orders[0]?.totalPriceWithDiscount ? orders[0]?.totalPriceWithDiscount : orders[0].totalPrice}\nДоставка: ${orders[0].deliveryCost} ₽`;
-
-                const order = await prisma.order.findFirst({
-                    where: { orderUniqueNumber: orders[0].orderUniqueNumber },
-                });
-
-                const keyboard = await prisma.keyboard.findFirst({ where: { userId: user?.userId } })
-
-                if (user && keyboard) {
-                    bot.deleteMessage(user?.telegramId, Number(keyboard?.messageId))
-                        .then(() => console.log('успешно удален'))
-                        .catch((err) => console.log('ошибка: ' + err))
-                    await prisma.keyboard.delete({ where: { keyboardId: keyboard?.keyboardId } })
-                }
-
-                updatingOrdersKeyboard(orders, msg, "Поступил новый заказ\nПропишите /orders для обновления списка заказов")
-
-
-                if (order && order.status === "WAITPAY") {
-                    await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
-                        caption: messageToManager,
-                        reply_markup: {
-                            inline_keyboard: [
-                                [{ text: "✅ Принять", callback_data: `Принять_${orders[0]?.orderUniqueNumber}` },
-                                { text: "❌ Удалить", callback_data: `Удалить_${orders[0]?.orderUniqueNumber}` }]
-                            ]
-                        },
-                        parse_mode: "HTML"
-                    });
-                } else {
-                    console.log("Этот заказ уже обработан или отправлен.");
-                }
-
-
-                // Обработчик callback_query для кнопок "Принять" и "Удалить"
-
-                await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0]?.orderUniqueNumber }, data: { status: "PENDING" } })
-
-                await bot.sendMessage(parseInt(user?.telegramId!), "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.");
-
-
-            } catch (err) {
-                console.error('Ошибка отправки сообщения:', err);
-            }
-        } else {
-            await bot.sendMessage(parseInt(user?.telegramId!), "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение.")
-        }
-    }
-};
+bot.on('message', (msg) => ordersKeyboardEvent(msg, bot, MANAGER_CHAT_ID))
 
 app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     const {
@@ -769,7 +541,7 @@ async function getOrderData(orderId: string) {
     };
 }
 
-const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
+export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
     const chatId = query.message?.chat.id;
     const messageId = query.message?.message_id;
 
@@ -912,46 +684,7 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await bot.deleteMessage(user?.telegramId, Number(keyboard?.messageId)).catch(err => console.log(err))
                 await prisma.keyboard.delete({ where: { keyboardId: keyboard?.keyboardId } })
             }
-        }
-        else if (action === "ОплатитьNEOPL") {
-            const orders = await prisma.order.findMany({ where: { orderUniqueNumber: orderUnique } })
-            const user = await prisma.user.findFirst({ where: { userId: orders[0]?.userId! } })
 
-
-            if (orders && user) {
-                const bankData = await prisma.bank.findFirst({ where: { id: orders[0].bankId! } })
-                orders[0]?.selectedCountry !== "RU" ?
-                    await bot.sendMessage(user?.telegramId!, `К оплате: ${orders[0].totalPrice! + Number(orders[0].deliveryCost)} ₽` +
-                        `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
-                        `Банк: ${bankData?.bankName}\n\n` +
-                        `Реквизиты: ${bankData?.requisite}\n` +
-                        `Получатель: ${bankData?.recipient}\n\n` +
-                        `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
-                        `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
-                        `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 60 МИНУТ‼️</b>\n\n` +
-                        `<blockquote>Если вы не успели оплатить заказ за 60 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
-                        `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
-                        { parse_mode: 'HTML' }).then((async sentMessage => {
-                            await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber }, data: { messageId: sentMessage.message_id.toString() } })
-                        }))
-                    :
-                    await bot.sendMessage(user?.telegramId!,
-                        `К оплате: ${orders[0].totalPrice!} ₽\n\n` +
-                        `Банк: ${bankData?.bankName}\n\n` +
-                        `Реквизиты: ${bankData?.requisite}\n` +
-                        `Получатель: ${bankData?.recipient}\n\n` +
-                        `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
-                        `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
-                        `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 60 МИНУТ‼️</b>\n\n` +
-                        `<blockquote>Если вы не успели оплатить заказ за 60 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
-                        `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
-                        { parse_mode: 'HTML' }
-                    ).then((async sentMessage => {
-                        await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber }, data: { messageId: sentMessage.message_id.toString() } })
-                    }));
-            }
-
-            bot.on('message', handleScreenshotMessage1)
         }
 
         // Закрываем callback
@@ -963,41 +696,10 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 bot.on("callback_query", handleCallbackQuery);
 
 
-async function cancelWaitPayOrders() {
-    // Логика получения всех заказов со статусом "WAITPAY"
-    const waitPayOrders = await prisma.order.findMany({ where: { status: 'WAITPAY' } });
-
-
-    const seen = new Set();
-    const uniqueOrders = waitPayOrders.filter(order => {
-        const key = `${order.orderUniqueNumber}-${order.orderUniqueNumber}`;
-        const duplicate = seen.has(key);
-        seen.add(key);
-        return !duplicate;
-    });
-    for (const order of uniqueOrders) {
-
-        const message = `Ваш заказ был отменен, так как реквизиты были изменены.`;
-        const user = await prisma.user.findFirst({ where: { userId: order?.userId! } })
-
-        const keyboard = await prisma.keyboard.findFirst({ where: { userId: user?.userId } })
-
-        if (keyboard) {
-            await bot.deleteMessage(user?.telegramId!, Number(keyboard.messageId)).catch(err => console.log(err))
-            await prisma.keyboard.delete({ where: { keyboardId: keyboard.keyboardId } })
-        }
-
-        await bot.sendMessage(user?.telegramId!, message);
-        bot.removeAllListeners()
-        bot.on("callback_query", handleCallbackQuery);
-        // await bot.deleteMessage(user?.telegramId!, parseInt(order?.messageId!)).catch(err => console.log(err))
-        await prisma.order.deleteMany({ where: { orderUniqueNumber: order?.orderUniqueNumber } })
-    }
-}
 
 app.post('/update-payment-info', async (req, res) => {
     try {
-        await cancelWaitPayOrders();
+        await cancelWaitPayOrders(bot, handleCallbackQuery);
         await bot.sendMessage(MANAGER_CHAT_ID, 'Реквизиты были изменены.\nВсе неоплаченные заказы удалены.')
 
         return res.status(200).json({ message: 'Реквизиты обновлены и заказы отменены' });
