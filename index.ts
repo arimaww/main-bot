@@ -298,88 +298,6 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     }
 })
 
-const handleScreenshotMessage1 = async (msg: TelegramBot.Message) => {
-    const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
-    const orders = await prisma.order.findMany({
-        where: {
-            userId: user?.userId,
-            fileId: undefined,
-            status: 'WAITPAY',
-            orderType: 'CDEK'
-        },
-        include: { product: true }
-    });
-
-    if (msg.chat.id.toString() === user?.telegramId) {
-        if (msg.photo) {
-            bot.removeListener("message", handleScreenshotMessage1);
-
-            const fileId = msg.photo[msg.photo.length - 1].file_id;
-
-            const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
-
-            const isOrderAlreadyUpdated = await prisma.order.findMany({ where: { orderUniqueNumber: orders[0].orderUniqueNumber } })
-
-            if (isOrderAlreadyUpdated[0].fileId) return;
-
-            await prisma.order.updateMany({ where: { userId: user?.userId, orderUniqueNumber: orders[0].orderUniqueNumber }, data: { fileId: fileId } })
-
-            try {
-                const messageToManager = `${msg.chat.username ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>` : "Пользователь"}` +
-                    ` сделал заказ:\n${orders
-                        .filter(order => order.product && order.productCount > 0)
-                        .map((order) => `${order.product?.synonym || order.product?.name} - ${order.productCount} шт.`)
-                        .join("\n")}\n\n\nФИО: ${orders[0].surName} ${orders[0].firstName} ${orders[0].middleName}\nНомер: ${orders[0].phone?.replace(/[ ()-]/g, '')}\n` +
-                    `Прайс: ${orders[0]?.totalPriceWithDiscount ? orders[0]?.totalPriceWithDiscount : orders[0].totalPrice}\nДоставка: ${orders[0].deliveryCost} ₽`;
-
-                const order = await prisma.order.findFirst({
-                    where: { orderUniqueNumber: orders[0].orderUniqueNumber },
-                });
-
-                const keyboard = await prisma.keyboard.findFirst({ where: { userId: user?.userId } })
-
-                if (user && keyboard) {
-                    bot.deleteMessage(user?.telegramId, Number(keyboard?.messageId))
-                        .then(() => console.log('успешно удален'))
-                        .catch((err) => console.log('ошибка: ' + err))
-                    await prisma.keyboard.delete({ where: { keyboardId: keyboard?.keyboardId } })
-                }
-
-                updatingOrdersKeyboard(orders, msg, "Поступил новый заказ\nПропишите /orders для обновления списка заказов")
-
-
-                if (order && order.status === "WAITPAY") {
-                    await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
-                        caption: messageToManager,
-                        reply_markup: {
-                            inline_keyboard: [
-                                [{ text: "✅ Принять", callback_data: `Принять_${orders[0]?.orderUniqueNumber}` },
-                                { text: "❌ Удалить", callback_data: `Удалить_${orders[0]?.orderUniqueNumber}` }]
-                            ]
-                        },
-                        parse_mode: "HTML"
-                    });
-                } else {
-                    console.log("Этот заказ уже обработан или отправлен.");
-                }
-
-
-                // Обработчик callback_query для кнопок "Принять" и "Удалить"
-
-                await prisma.order.updateMany({ where: { orderUniqueNumber: orders[0]?.orderUniqueNumber }, data: { status: "PENDING" } })
-
-                await bot.sendMessage(parseInt(user?.telegramId!), "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.");
-
-
-            } catch (err) {
-                console.error('Ошибка отправки сообщения:', err);
-            }
-        } else {
-            await bot.sendMessage(parseInt(user?.telegramId!), "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение.")
-        }
-    }
-};
-
 app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     const {
         selectedPvzCode,
@@ -885,7 +803,6 @@ const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await prisma.keyboard.delete({ where: { keyboardId: keyboard?.keyboardId } })
             }
 
-            bot.on('message', handleScreenshotMessage1)
         }
 
         // Закрываем callback
