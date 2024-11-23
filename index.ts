@@ -7,14 +7,13 @@ import morgan from 'morgan';
 import { getOrderObjInternation, getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber, recordOrderInfo } from './helpers/helpers';
 import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
-import { cancelWaitPayOrders } from './helpers/cancel-wait-pay-orders';
 import { botOnStart } from './helpers/bot-on-start';
 import { ordersKeyboardEvent } from './events/orders-keyboard-event';
+import { updatePaymentInfo } from './controllers/payment-controller';
+import { MANAGER_CHAT_ID, token, WEB_APP } from './config/config';
 
 
-const token = process.env.TOKEN!;
-const WEB_APP = process.env.WEB_APP!;
-const MANAGER_CHAT_ID = process.env.MANAGER_CHAT_ID!;
+
 
 const app = express()
 
@@ -665,17 +664,7 @@ bot.on("callback_query", handleCallbackQuery);
 
 
 
-app.post('/update-payment-info', async (req, res) => {
-    try {
-        await cancelWaitPayOrders(bot, handleCallbackQuery);
-        await bot.sendMessage(MANAGER_CHAT_ID, 'Реквизиты были изменены.\nВсе неоплаченные заказы удалены.')
-        bot.on('message', (msg) => ordersKeyboardEvent(msg, bot, MANAGER_CHAT_ID))
-
-        return res.status(200).json({ message: 'Реквизиты обновлены и заказы отменены' });
-    } catch (error) {
-        res.status(500).json({ message: 'Ошибка обновления реквизитов', error });
-    }
-});
+app.post('/update-payment-info', () => updatePaymentInfo);
 
 
 app.listen(7000, () => {
