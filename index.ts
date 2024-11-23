@@ -4,15 +4,13 @@ import TelegramBot from "node-telegram-bot-api";
 import { prisma } from './prisma/prisma-client';
 import express, { Request, Response } from 'express'
 import morgan from 'morgan';
-import { getOrderObjInternation, getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber, recordOrderInfo } from './helpers/helpers';
+import { getOrderObjInternation, getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber } from './helpers/helpers';
 import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
 import { botOnStart } from './helpers/bot-on-start';
 import { ordersKeyboardEvent } from './events/orders-keyboard-event';
 import { updatePaymentInfo } from './controllers/payment-controller';
 import { MANAGER_CHAT_ID, token, WEB_APP } from './config/config';
-
-
 
 
 const app = express()
@@ -598,16 +596,6 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     parse_mode: "HTML"
                 });
 
-                // await bot.sendMessage(chatId!, acceptOrderMessage, {
-                //     reply_markup: {
-                //         inline_keyboard: [
-                //             [{ text: "❌ Удалить", callback_data: `Удалить_${orderUnique}` }]
-                //         ]
-                //     },
-                //     parse_mode: "HTML",
-                //     disable_web_page_preview: true
-                // });
-
 
                 await bot.sendMessage(process.env.CDEK_GROUP_ID!, `Заказ ${orderData?.username ?
                     `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>` : 'клиента'}` + ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products.map(el => `${el.productCount} шт. | ${el.synonym}`).join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` +
@@ -669,7 +657,7 @@ bot.on("callback_query", handleCallbackQuery);
 
 
 
-app.post('/update-payment-info', () => updatePaymentInfo);
+app.post('/update-payment-info', updatePaymentInfo);
 
 
 app.listen(7000, () => {
