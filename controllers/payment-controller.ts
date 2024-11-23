@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import { cancelWaitPayOrders } from "../helpers/cancel-wait-pay-orders";
-import TelegramBot from "node-telegram-bot-api";
 import { ordersKeyboardEvent } from "../events/orders-keyboard-event";
 import { MANAGER_CHAT_ID, token } from "../config/config";
 import { handleCallbackQuery } from "..";
-const bot = new TelegramBot(token, { polling: true })
+import { bot } from "../bot/bot";
 
 export const updatePaymentInfo = async (req: Request, res: Response) => {
     try {

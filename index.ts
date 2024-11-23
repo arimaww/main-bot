@@ -10,13 +10,10 @@ import cors from 'cors'
 import { botOnStart } from './helpers/bot-on-start';
 import { ordersKeyboardEvent } from './events/orders-keyboard-event';
 import { updatePaymentInfo } from './controllers/payment-controller';
-import { MANAGER_CHAT_ID, token, WEB_APP } from './config/config';
-
+import { MANAGER_CHAT_ID, WEB_APP } from './config/config';
+import { bot } from './bot/bot';
 
 const app = express()
-
-const bot = new TelegramBot(token, { polling: true })
-
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
