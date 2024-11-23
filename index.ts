@@ -7,16 +7,13 @@ import morgan from 'morgan';
 import { getOrderObjInternation, getOrderObjRu, getOrderTrackNumber, getToken, makeTrackNumber, recordOrderInfo } from './helpers/helpers';
 import { TProduct, TWeb } from './types/types';
 import cors from 'cors'
-import { Order } from '@prisma/client';
-import { cancelWaitPayOrders } from './helpers/cancel-wait-pay-orders';
 import { botOnStart } from './helpers/bot-on-start';
-import { updateOrdersKeyboard } from './helpers/update-order-keyboard';
 import { ordersKeyboardEvent } from './events/orders-keyboard-event';
+import { updatePaymentInfo } from './controllers/payment-controller';
+import { MANAGER_CHAT_ID, token, WEB_APP } from './config/config';
 
 
-const token = process.env.TOKEN!;
-const WEB_APP = process.env.WEB_APP!;
-const MANAGER_CHAT_ID = process.env.MANAGER_CHAT_ID!;
+
 
 const app = express()
 
@@ -37,7 +34,6 @@ const timers = new Map(); // Объект для хранения таймеро
 // Сохранение timerId для заказа
 function saveTimerIdForOrder(unique: string, timerId: NodeJS.Timeout) {
     timers.set(unique, timerId);
-    // console.log(`Таймер для заказа ${unique} сохранен с ID: ${timerId}`);
 }
 
 // Получение timerId для заказа
@@ -50,37 +46,6 @@ function removeTimerIdForOrder(unique: string) {
     timers.delete(unique);
     // console.log(`Таймер для заказа ${unique} удален.`);
 }
-
-// Если у клиента есть неоплаченный заказ
-bot.onText(/\/orders/, async (msg) => {
-    const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
-    const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
-
-    if (isUserDidOrder && msg.text === "Оплатить заказ") {
-        const orderList = await prisma.order.findMany({
-            where: { userId: user?.userId, orderType: 'CDEK', fileId: undefined, status: 'WAITPAY' },
-            include: { product: true }
-        })
-
-        const orderText = `\n\nЗаказ:\n${orderList
-            .filter(order => order.product && order.productCount > 0)
-            .map((order) => `${order.product?.synonym || order.product?.name} - ${order.productCount} шт.`)
-            .join("\n")}\n` +
-            `\nФИО ${orderList[0].surName} ${orderList[0].firstName} ${orderList[0].middleName}` +
-            "\nНомер " + orderList[0].phone +
-            `\n\nДоставка: ${orderList[0].deliveryCost} ₽` +
-            "\n\nПрайс: " + orderList[0].totalPrice
-
-        bot.sendMessage(msg.chat.id, orderText, {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: '💵Оплатить', callback_data: `ОплатитьNEOPL_${orderList[0].orderUniqueNumber}` }],
-                    [{ text: '❌Удалить', callback_data: `УдалитьNEOPL_${orderList[0].orderUniqueNumber}` }]
-                ],
-            }
-        })
-    }
-})
 
 bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExecArray | null) => {
     const chatId = msg.chat.id;
@@ -251,28 +216,30 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                 const discount = await prisma.productDiscount.findFirst({ where: { productId: prod?.productId } })
 
-                await recordOrderInfo({
-                    userId: user?.userId!,
-                    orderUniqueNumber: orderId,
-                    productCount: prod.productCount,
-                    productId: prod.productId,
-                    firstName,
-                    middleName,
-                    surName,
-                    phone: phone,
-                    deliveryCost: deliverySum!,
-                    selectedPvzCode: selectedPvzCode,
-                    selectedTariff: parseInt(selectedTariff),
-                    bankId: bankId,
-                    totalPrice: totalPrice,
-                    totalPriceWithDiscount: totalPriceWithDiscount && totalPriceWithDiscount !== totalPrice && totalPriceWithDiscount !== 0
-                        ? totalPriceWithDiscount : null,
-                    selectedCountry: selectedCountry,
-                    orderType: "CDEK",
-                    city: selectedCityName,
-                    productCostWithDiscount: Number(prod.cost) * prod.productCount -
-                        (Number(prod.cost) * Number(prod.productCount) * (Number(discount?.percent) / 100))
-                });
+                await prisma.order.create({
+                    data: {
+                        userId: user?.userId!,
+                        orderUniqueNumber: orderId,
+                        productCount: prod.productCount,
+                        productId: prod.productId,
+                        firstName,
+                        middleName,
+                        surName,
+                        phone: phone,
+                        deliveryCost: deliverySum!,
+                        selectedPvzCode: selectedPvzCode,
+                        selectedTariff: parseInt(selectedTariff),
+                        bankId: bankId,
+                        totalPrice: totalPrice,
+                        totalPriceWithDiscount: totalPriceWithDiscount && totalPriceWithDiscount !== totalPrice && totalPriceWithDiscount !== 0
+                            ? totalPriceWithDiscount : null,
+                        selectedCountry: selectedCountry,
+                        orderType: "CDEK",
+                        city: selectedCityName,
+                        productCostWithDiscount: Number(prod.cost) * prod.productCount -
+                            (Number(prod.cost) * Number(prod.productCount) * (Number(discount?.percent) / 100))
+                    }
+                })
             }
         }
 
@@ -702,16 +669,7 @@ bot.on("callback_query", handleCallbackQuery);
 
 
 
-app.post('/update-payment-info', async (req, res) => {
-    try {
-        await cancelWaitPayOrders(bot, handleCallbackQuery);
-        await bot.sendMessage(MANAGER_CHAT_ID, 'Реквизиты были изменены.\nВсе неоплаченные заказы удалены.')
-
-        return res.status(200).json({ message: 'Реквизиты обновлены и заказы отменены' });
-    } catch (error) {
-        res.status(500).json({ message: 'Ошибка обновления реквизитов', error });
-    }
-});
+app.post('/update-payment-info', () => updatePaymentInfo);
 
 
 app.listen(7000, () => {
