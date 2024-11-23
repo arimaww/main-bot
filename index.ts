@@ -80,6 +80,7 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
         console.log('test2')
         for (const item of itemsArray) {
             
+            console.log('test4')
             
             if (item) {
                 
