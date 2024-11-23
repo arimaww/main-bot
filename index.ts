@@ -48,22 +48,24 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
 
     // bot.sendMessage(chatId, '>> sadasdasd', { parse_mode: 'MarkdownV2' })
 
+    console.log('test')
+    
     const user = await prisma.user.findFirst({
         where: {
             telegramId: telegramId.toString(),
         },
     });
-
+    
     if (match && match[2]) {
         const generatedBasketKey = match[2]
-
+        
         const basketItems = await prisma.generatedBaskets.findFirst({
             where: { cartKey: generatedBasketKey },
             include: { BasketItems: true }, // Подгружаем связанные элементы
-          });
-
+        });
+        
         await prisma.basket.deleteMany({ where: { userId: user?.userId } })
-
+        
         if (!user) {
             await prisma.user.create({
                 data: {
@@ -73,22 +75,23 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
             })
         }
         const itemsArray = basketItems?.BasketItems || [];
-
+        
+        console.log('test2')
         for (const item of itemsArray) {
-
-
+            
+            
             if (item) {
-
+                
                 const productExists = await prisma.product.findFirst({
                     where: { productId: item.gbasketId },
                 });
-
+                
                 if (!productExists) {
                     continue;
                 }
-
+                
                 const userExist = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
-
+                
                 await prisma.basket.create({
                     data: {
                         userId: userExist?.userId!,
@@ -96,13 +99,14 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
                         productCount: item.productCount,
                     },
                 }).catch(err => console.log(err));
-
+                
+                console.log('test3')
 
             } else {
                 console.log(`Неверный формат: ${match[2]}`);
             }
         }
-
+        
         bot.sendMessage(chatId, "Товары успешно добавлены в вашу корзину\nОсталось лишь открыть корзину:", {
             reply_markup: {
                 inline_keyboard: [
