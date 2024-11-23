@@ -35,7 +35,6 @@ const timers = new Map(); // Объект для хранения таймеро
 // Сохранение timerId для заказа
 function saveTimerIdForOrder(unique: string, timerId: NodeJS.Timeout) {
     timers.set(unique, timerId);
-    // console.log(`Таймер для заказа ${unique} сохранен с ID: ${timerId}`);
 }
 
 // Получение timerId для заказа
@@ -244,28 +243,30 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                 const discount = await prisma.productDiscount.findFirst({ where: { productId: prod?.productId } })
 
-                await recordOrderInfo({
-                    userId: user?.userId!,
-                    orderUniqueNumber: orderId,
-                    productCount: prod.productCount,
-                    productId: prod.productId,
-                    firstName,
-                    middleName,
-                    surName,
-                    phone: phone,
-                    deliveryCost: deliverySum!,
-                    selectedPvzCode: selectedPvzCode,
-                    selectedTariff: parseInt(selectedTariff),
-                    bankId: bankId,
-                    totalPrice: totalPrice,
-                    totalPriceWithDiscount: totalPriceWithDiscount && totalPriceWithDiscount !== totalPrice && totalPriceWithDiscount !== 0
-                        ? totalPriceWithDiscount : null,
-                    selectedCountry: selectedCountry,
-                    orderType: "CDEK",
-                    city: selectedCityName,
-                    productCostWithDiscount: Number(prod.cost) * prod.productCount -
-                        (Number(prod.cost) * Number(prod.productCount) * (Number(discount?.percent) / 100))
-                });
+                await prisma.order.create({
+                    data: {
+                        userId: user?.userId!,
+                        orderUniqueNumber: orderId,
+                        productCount: prod.productCount,
+                        productId: prod.productId,
+                        firstName,
+                        middleName,
+                        surName,
+                        phone: phone,
+                        deliveryCost: deliverySum!,
+                        selectedPvzCode: selectedPvzCode,
+                        selectedTariff: parseInt(selectedTariff),
+                        bankId: bankId,
+                        totalPrice: totalPrice,
+                        totalPriceWithDiscount: totalPriceWithDiscount && totalPriceWithDiscount !== totalPrice && totalPriceWithDiscount !== 0
+                            ? totalPriceWithDiscount : null,
+                        selectedCountry: selectedCountry,
+                        orderType: "CDEK",
+                        city: selectedCityName,
+                        productCostWithDiscount: Number(prod.cost) * prod.productCount -
+                            (Number(prod.cost) * Number(prod.productCount) * (Number(discount?.percent) / 100))
+                    }
+                })
             }
         }
 
