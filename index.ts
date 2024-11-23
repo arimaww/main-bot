@@ -85,7 +85,7 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
             if (item) {
                 
                 const productExists = await prisma.product.findFirst({
-                    where: { productId: item.gbasketId },
+                    where: { productId: item.productId },
                 });
                 
                 if (!productExists) {
