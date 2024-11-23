@@ -95,7 +95,12 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
     });
 
     if (match && match[2]) {
-        const productPairs = match[2].split('_');
+        const generatedBasketKey = match[2]
+
+        const basketItems = await prisma.generatedBaskets.findFirst({
+            where: { cartKey: generatedBasketKey },
+            include: { BasketItems: true }, // Подгружаем связанные элементы
+          });
 
         await prisma.basket.deleteMany({ where: { userId: user?.userId } })
 
@@ -107,15 +112,15 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
                 }
             })
         }
+        const itemsArray = basketItems?.BasketItems || [];
 
-        for (const pair of productPairs) {
-            const [productId, productCount] = pair.split('-').map(Number);
+        for (const item of itemsArray) {
 
 
-            if (!isNaN(productId) && !isNaN(productCount)) {
+            if (item) {
 
                 const productExists = await prisma.product.findFirst({
-                    where: { productId: productId },
+                    where: { productId: item.gbasketId },
                 });
 
                 if (!productExists) {
@@ -127,14 +132,14 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
                 await prisma.basket.create({
                     data: {
                         userId: userExist?.userId!,
-                        productId: productId,
-                        productCount: productCount,
+                        productId: item.productId,
+                        productCount: item.productCount,
                     },
                 }).catch(err => console.log(err));
 
 
             } else {
-                console.log(`Неверный формат: ${pair}`);
+                console.log(`Неверный формат: ${match[2]}`);
             }
         }
 
