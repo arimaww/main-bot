@@ -48,37 +48,6 @@ function removeTimerIdForOrder(unique: string) {
     // console.log(`Таймер для заказа ${unique} удален.`);
 }
 
-// Если у клиента есть неоплаченный заказ
-bot.onText(/\/orders/, async (msg) => {
-    const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
-    const isUserDidOrder = await prisma.order.findFirst({ where: { status: "WAITPAY", userId: user?.userId } })
-
-    if (isUserDidOrder && msg.text === "Оплатить заказ") {
-        const orderList = await prisma.order.findMany({
-            where: { userId: user?.userId, orderType: 'CDEK', fileId: undefined, status: 'WAITPAY' },
-            include: { product: true }
-        })
-
-        const orderText = `\n\nЗаказ:\n${orderList
-            .filter(order => order.product && order.productCount > 0)
-            .map((order) => `${order.product?.synonym || order.product?.name} - ${order.productCount} шт.`)
-            .join("\n")}\n` +
-            `\nФИО ${orderList[0].surName} ${orderList[0].firstName} ${orderList[0].middleName}` +
-            "\nНомер " + orderList[0].phone +
-            `\n\nДоставка: ${orderList[0].deliveryCost} ₽` +
-            "\n\nПрайс: " + orderList[0].totalPrice
-
-        bot.sendMessage(msg.chat.id, orderText, {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: '💵Оплатить', callback_data: `ОплатитьNEOPL_${orderList[0].orderUniqueNumber}` }],
-                    [{ text: '❌Удалить', callback_data: `УдалитьNEOPL_${orderList[0].orderUniqueNumber}` }]
-                ],
-            }
-        })
-    }
-})
-
 bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExecArray | null) => {
     const chatId = msg.chat.id;
     const telegramId = msg.chat.id;
