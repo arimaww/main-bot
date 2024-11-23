@@ -152,6 +152,33 @@ model ProductSet {
   Product   Product @relation(fields: [productId], references: [productId])
 }
 
+model BasketItems {
+  id               Int              @unique @default(autoincrement())
+  productId        Int
+  productCount     Int
+  gbasketId        Int
+  createdAt        DateTime         @default(now())
+  GeneratedBaskets GeneratedBaskets @relation(fields: [gbasketId], references: [gbasketId])
+}
+
+model GeneratedBaskets {
+  gbasketId   Int           @unique @default(autoincrement())
+  cartKey     String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  BasketItems BasketItems[]
+}
+
+model Promocodes {
+  promocodeId    Int      @unique @default(autoincrement())
+  title          String
+  uses           Int
+  percent        Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+  fromWhatAmount Int
+}
+
 enum Role {
   ADMIN
   MODERATOR
