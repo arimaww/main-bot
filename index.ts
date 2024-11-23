@@ -57,7 +57,7 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
     });
     
     if (match && match[2]) {
-        console.log(match)
+
         const generatedBasketKey = match[2]
         
         const basketItems = await prisma.generatedBaskets.findFirst({
@@ -77,10 +77,7 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
         }
         const itemsArray = basketItems?.BasketItems || [];
         
-        console.log('test2')
         for (const item of itemsArray) {
-            
-            console.log('test4')
             
             if (item) {
                 
@@ -102,7 +99,6 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
                     },
                 }).catch(err => console.log(err));
                 
-                console.log('test3')
 
             } else {
                 console.log(`Неверный формат: ${match[2]}`);
