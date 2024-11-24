@@ -46,9 +46,6 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
     const chatId = msg.chat.id;
     const telegramId = msg.chat.id;
 
-    // bot.sendMessage(chatId, '>> sadasdasd', { parse_mode: 'MarkdownV2' })
-
-    console.log('test')
     
     const user = await prisma.user.findFirst({
         where: {
