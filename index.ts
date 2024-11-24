@@ -115,12 +115,6 @@ bot.onText(/\/start( (.+))?/, async (msg: TelegramBot.Message, match: RegExpExec
     } else {
         const chatId = msg.chat.id;
 
-        const user = await prisma.user.findFirst({
-            where: {
-                telegramId: msg.chat.id.toString()
-            }
-        })
-
         if (msg.text === "/start") {
             const user = await prisma.user.findFirst({ where: { telegramId: msg.chat.id.toString() } })
 
