@@ -327,7 +327,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     ? totalPriceWithDiscount + Number(deliverySum) : totalPrice + Number(deliverySum)} ₽\n` +
                 `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
                 `Банк: ${bankData?.bankName}\n` +
-                `Реквизиты: ${bankData?.requisite}\n` +
+                `Номер карты: ${bankData?.requisite}\n` +
+                `${bankData?.sbpNumber && bankData?.sbpNumber?.length > 0 ? `Перевод по СБП: ${bankData?.sbpNumber}\n` : ''}` +
                 `Получатель: ${bankData?.recipient}\n\n` +
                 `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
                 `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
@@ -349,7 +350,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 `К оплате: ${totalPriceWithDiscount && totalPriceWithDiscount !== 0
                     ? totalPriceWithDiscount : totalPrice} ₽\n\n` +
                 `Банк: ${bankData?.bankName}\n` +
-                `Реквизиты: ${bankData?.requisite}\n` +
+                `Номер карты: ${bankData?.requisite}\n` +
+                `${bankData?.sbpNumber && bankData?.sbpNumber?.length > 0 ? `Перевод по СБП: ${bankData?.sbpNumber}\n` : ''}` +
                 `Получатель: ${bankData?.recipient}\n\n` +
                 `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
                 `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +

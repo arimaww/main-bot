@@ -121,6 +121,7 @@ model Bank {
   recipient String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+  sbpNumber String?
   Order     Order[]
 }
 
