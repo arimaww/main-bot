@@ -179,6 +179,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         uuid,
         selectedCountry,
         selectedCity,
+        promocodeId,
         selectedCityName,
         deliverySum,
         bank,
@@ -235,6 +236,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     where: { productId: prod?.productId },
                 });
 
+                console.log('totalPriceWithDiscount  ' + totalPriceWithDiscount)
+
+                console.log('totalPrice  ' + totalPrice)
+
                 await prisma.order.create({
                     data: {
                         userId: user?.userId!,
@@ -258,6 +263,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 : null,
                         selectedCountry: selectedCountry,
                         orderType: "CDEK",
+                        promocodeId: promocodeId,
                         city: selectedCityName,
                         productCostWithDiscount:
                             Number(prod.cost) * prod.productCount -
@@ -295,6 +301,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     });
 
                     try {
+                        const promocode = await prisma.promocodes.findFirst({where: {promocodeId: promocodeId}})
                         const messageToManager =
                             `${
                                 msg.chat.username
@@ -338,7 +345,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 totalPriceWithDiscount
                                     ? totalPriceWithDiscount
                                     : totalPrice
-                            }\nДоставка: ${deliverySum} ₽`;
+                            }\n\n<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>\n\nДоставка: ${deliverySum} ₽`;
 
                         const order = await prisma.order.findFirst({
                             where: { orderUniqueNumber: orderId },
