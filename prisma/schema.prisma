@@ -46,14 +46,16 @@ model Product {
 }
 
 model Basket {
-  basketId     Int      @id @default(autoincrement())
+  basketId     Int         @id @default(autoincrement())
   userId       Int
   productId    Int
   productCount Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
-  product      Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
-  user         User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now()) @updatedAt
+  promocodeId  Int?
+  product      Product     @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  Promocodes   Promocodes? @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model Order {
@@ -83,8 +85,10 @@ model Order {
   city                    String?
   totalPriceWithDiscount  Decimal?
   productCostWithDiscount Decimal?
+  promocodeId             Int?
   Bank                    Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
   product                 Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
+  Promocodes              Promocodes? @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
   user                    User?       @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
@@ -178,6 +182,8 @@ model Promocodes {
   createdAt      DateTime @default(now())
   updatedAt      DateTime
   fromWhatAmount Int
+  Basket         Basket[]
+  Order          Order[]
 }
 
 enum Role {
