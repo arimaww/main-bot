@@ -301,7 +301,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     });
 
                     try {
-                        const promocode = await prisma.promocodes.findFirst({where: {promocodeId: promocodeId}})
+                        const promocode = promocodeId ? await prisma.promocodes.findFirst({where: {promocodeId: promocodeId}}) : undefined;
                         const messageToManager =
                             `${
                                 msg.chat.username
@@ -345,7 +345,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 totalPriceWithDiscount
                                     ? totalPriceWithDiscount
                                     : totalPrice
-                            }\n\n<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>\n\nДоставка: ${deliverySum} ₽`;
+                            }\n\n` + `${promocode ? `<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>\n\nДоставка: ${deliverySum} ₽` : ''}`;
 
                         const order = await prisma.order.findFirst({
                             where: { orderUniqueNumber: orderId },
