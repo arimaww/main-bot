@@ -91,9 +91,11 @@ bot.onText(
                         continue;
                     }
 
-                    if(secretDiscount?.type === 'USED')
-                        return bot.sendMessage(chatId,
-                            "Данная корзина уже была использована.",)
+                    if (secretDiscount?.type === "USED")
+                        return bot.sendMessage(
+                            chatId,
+                            "Данная корзина уже была использована."
+                        );
 
                     const userExist = await prisma.user.findFirst({
                         where: { telegramId: msg.chat.id.toString() },
@@ -191,7 +193,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         deliverySum,
         bank,
         totalPriceWithDiscount,
-        secretDiscountId
+        secretDiscountId,
     } = req.body;
 
     let errorOrderCreating = null;
@@ -237,7 +239,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         const bankId = await prisma.bank
             .findFirst({ where: { bankName: bank } })
             .then((el) => el?.id);
-
+            const secret = await prisma.secretDiscount.findFirst({
+                where: { id: secretDiscountId },
+            });
         if (bankId) {
             for (let prod of uniqueProducts) {
                 const discount = await prisma.productDiscount.findFirst({
@@ -249,9 +253,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 );
 
                 console.log("totalPrice  " + totalPrice);
-
-
-                const secret = await prisma.secretDiscount.findFirst({where: {id: secretDiscountId}})
+                console.log('secretDiscountId: ' + secretDiscountId)
+                
 
                 await prisma.order.create({
                     data: {
@@ -278,7 +281,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         orderType: "CDEK",
                         promocodeId: promocodeId,
                         city: selectedCityName,
-                        secretDiscountPercent: secret?.percent,
+                        secretDiscountPercent: secretDiscountId ? secret?.percent : null,
                         productCostWithDiscount:
                             Number(prod.cost) * prod.productCount -
                             Number(prod.cost) *
@@ -363,10 +366,14 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 totalPriceWithDiscount
                                     ? totalPriceWithDiscount
                                     : totalPrice
-                            }\n\n` +
+                            }\n` + `\Доставка: ${deliverySum} ₽` + `${
+                                secretDiscountId
+                                    ? `<blockquote>У данного клиента скидка на ${secret?.percent}%. Корзина сгенерирована менеджером.</blockquote>`
+                                    : ""
+                            }` +
                             `${
                                 promocode
-                                    ? `<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>\n\nДоставка: ${deliverySum} ₽`
+                                    ? `\n\n<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>`
                                     : ""
                             }`;
 
@@ -405,11 +412,12 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             where: { orderUniqueNumber: orderId },
                             data: { status: "PENDING" },
                         });
- 
-                        await prisma.secretDiscount.update({
-                            where: { id: secretDiscountId },
-                            data: { type: "USED" },
-                        });
+
+                        if (secretDiscountId)
+                            await prisma.secretDiscount.update({
+                                where: { id: secretDiscountId },
+                                data: { type: "USED" },
+                            });
                         bot.sendMessage(
                             telegramId,
                             "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером."
