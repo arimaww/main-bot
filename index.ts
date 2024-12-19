@@ -246,15 +246,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             for (let prod of uniqueProducts) {
                 const discount = await prisma.productDiscount.findFirst({
                     where: { productId: prod?.productId },
-                });
-
-                console.log(
-                    "totalPriceWithDiscount  " + totalPriceWithDiscount
-                );
-
-                console.log("totalPrice  " + totalPrice);
-                console.log('secretDiscountId: ' + secretDiscountId)
-                
+                }); 
 
                 await prisma.order.create({
                     data: {
