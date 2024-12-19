@@ -91,6 +91,10 @@ bot.onText(
                         continue;
                     }
 
+                    if(secretDiscount?.type === 'USED')
+                        return bot.sendMessage(chatId,
+                            "Данная корзина уже была использована.",)
+
                     const userExist = await prisma.user.findFirst({
                         where: { telegramId: msg.chat.id.toString() },
                     });
@@ -246,6 +250,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
                 console.log("totalPrice  " + totalPrice);
 
+
+                const secret = await prisma.secretDiscount.findFirst({where: {id: secretDiscountId}})
+
                 await prisma.order.create({
                     data: {
                         userId: user?.userId!,
@@ -271,6 +278,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         orderType: "CDEK",
                         promocodeId: promocodeId,
                         city: selectedCityName,
+                        secretDiscountPercent: secret?.percent,
                         productCostWithDiscount:
                             Number(prod.cost) * prod.productCount -
                             Number(prod.cost) *
