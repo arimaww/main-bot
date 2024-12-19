@@ -29,6 +29,7 @@ export type TWeb = {
 	selectedCityName: string;
 	bank: string;
 	totalPriceWithDiscount: number | undefined
+	secretDiscountId: number | undefined
 };
 
 export type TRecordOrderInfo = {
