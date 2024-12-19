@@ -46,16 +46,18 @@ model Product {
 }
 
 model Basket {
-  basketId     Int         @id @default(autoincrement())
-  userId       Int
-  productId    Int
-  productCount Int
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @default(now()) @updatedAt
-  promocodeId  Int?
-  product      Product     @relation(fields: [productId], references: [productId], onDelete: Cascade)
-  Promocodes   Promocodes? @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
-  user         User        @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  basketId         Int             @id @default(autoincrement())
+  userId           Int
+  productId        Int
+  productCount     Int
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @default(now()) @updatedAt
+  promocodeId      Int?
+  secretDiscountId Int?
+  product          Product         @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  Promocodes       Promocodes?     @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
+  SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
+  user             User            @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model Order {
@@ -86,6 +88,7 @@ model Order {
   totalPriceWithDiscount  Decimal?
   productCostWithDiscount Decimal?
   promocodeId             Int?
+  secretDiscountPercent   Int?
   Bank                    Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
   product                 Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
   Promocodes              Promocodes? @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
@@ -167,11 +170,13 @@ model BasketItems {
 }
 
 model GeneratedBaskets {
-  gbasketId   Int           @unique @default(autoincrement())
-  cartKey     String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime
-  BasketItems BasketItems[]
+  gbasketId        Int             @unique @default(autoincrement())
+  cartKey          String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  secretDiscountId Int?            @unique
+  BasketItems      BasketItems[]
+  SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
 }
 
 model Promocodes {
@@ -184,6 +189,14 @@ model Promocodes {
   fromWhatAmount Int
   Basket         Basket[]
   Order          Order[]
+}
+
+model SecretDiscount {
+  id               Int                  @unique @default(autoincrement())
+  percent          Int
+  type             SecretDiscountStatus @default(PENDING)
+  Basket           Basket[]
+  GeneratedBaskets GeneratedBaskets?
 }
 
 enum Role {
@@ -203,4 +216,9 @@ enum OrderType {
   MAIL
   MINIBUS
   PICKUP
+}
+
+enum SecretDiscountStatus {
+  PENDING
+  USED
 }
