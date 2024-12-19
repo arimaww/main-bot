@@ -64,7 +64,7 @@ bot.onText(
 
             const basketItems = await prisma.generatedBaskets.findFirst({
                 where: { cartKey: generatedBasketKey },
-                include: { BasketItems: true }, // Подгружаем связанные элементы
+                include: { BasketItems: true, SecretDiscount: true }, // Подгружаем связанные элементы
             });
 
             await prisma.basket.deleteMany({ where: { userId: user?.userId } });
@@ -78,6 +78,8 @@ bot.onText(
                 });
             }
             const itemsArray = basketItems?.BasketItems || [];
+
+            const secretDiscount = basketItems?.SecretDiscount;
 
             for (const item of itemsArray) {
                 if (item) {
@@ -99,6 +101,7 @@ bot.onText(
                                 userId: userExist?.userId!,
                                 productId: item.productId,
                                 productCount: item.productCount,
+                                secretDiscountId: secretDiscount?.id,
                             },
                         })
                         .catch((err) => console.log(err));
@@ -184,6 +187,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         deliverySum,
         bank,
         totalPriceWithDiscount,
+        secretDiscountId
     } = req.body;
 
     let errorOrderCreating = null;
@@ -236,9 +240,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     where: { productId: prod?.productId },
                 });
 
-                console.log('totalPriceWithDiscount  ' + totalPriceWithDiscount)
+                console.log(
+                    "totalPriceWithDiscount  " + totalPriceWithDiscount
+                );
 
-                console.log('totalPrice  ' + totalPrice)
+                console.log("totalPrice  " + totalPrice);
 
                 await prisma.order.create({
                     data: {
@@ -301,7 +307,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     });
 
                     try {
-                        const promocode = promocodeId ? await prisma.promocodes.findFirst({where: {promocodeId: promocodeId}}) : undefined;
+                        const promocode = promocodeId
+                            ? await prisma.promocodes.findFirst({
+                                  where: { promocodeId: promocodeId },
+                              })
+                            : undefined;
                         const messageToManager =
                             `${
                                 msg.chat.username
@@ -345,7 +355,12 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 totalPriceWithDiscount
                                     ? totalPriceWithDiscount
                                     : totalPrice
-                            }\n\n` + `${promocode ? `<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>\n\nДоставка: ${deliverySum} ₽` : ''}`;
+                            }\n\n` +
+                            `${
+                                promocode
+                                    ? `<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>\n\nДоставка: ${deliverySum} ₽`
+                                    : ""
+                            }`;
 
                         const order = await prisma.order.findFirst({
                             where: { orderUniqueNumber: orderId },
@@ -382,7 +397,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             where: { orderUniqueNumber: orderId },
                             data: { status: "PENDING" },
                         });
-
+ 
+                        await prisma.secretDiscount.update({
+                            where: { id: secretDiscountId },
+                            data: { type: "USED" },
+                        });
                         bot.sendMessage(
                             telegramId,
                             "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером."
