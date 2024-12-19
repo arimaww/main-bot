@@ -25,9 +25,11 @@ export type TWeb = {
 	selectedPvzCode: string;
 	selectedTariff: string;
 	selectedCity: string;
+	promocodeId: number
 	selectedCityName: string;
 	bank: string;
 	totalPriceWithDiscount: number | undefined
+	secretDiscountId: number | undefined
 };
 
 export type TRecordOrderInfo = {

@@ -64,7 +64,7 @@ bot.onText(
 
             const basketItems = await prisma.generatedBaskets.findFirst({
                 where: { cartKey: generatedBasketKey },
-                include: { BasketItems: true }, // Подгружаем связанные элементы
+                include: { BasketItems: true, SecretDiscount: true }, // Подгружаем связанные элементы
             });
 
             await prisma.basket.deleteMany({ where: { userId: user?.userId } });
@@ -79,6 +79,8 @@ bot.onText(
             }
             const itemsArray = basketItems?.BasketItems || [];
 
+            const secretDiscount = basketItems?.SecretDiscount;
+
             for (const item of itemsArray) {
                 if (item) {
                     const productExists = await prisma.product.findFirst({
@@ -88,6 +90,12 @@ bot.onText(
                     if (!productExists) {
                         continue;
                     }
+
+                    if (secretDiscount?.type === "USED")
+                        return bot.sendMessage(
+                            chatId,
+                            "Данная корзина уже была использована."
+                        );
 
                     const userExist = await prisma.user.findFirst({
                         where: { telegramId: msg.chat.id.toString() },
@@ -99,6 +107,7 @@ bot.onText(
                                 userId: userExist?.userId!,
                                 productId: item.productId,
                                 productCount: item.productCount,
+                                secretDiscountId: secretDiscount?.id,
                             },
                         })
                         .catch((err) => console.log(err));
@@ -179,10 +188,12 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         uuid,
         selectedCountry,
         selectedCity,
+        promocodeId,
         selectedCityName,
         deliverySum,
         bank,
         totalPriceWithDiscount,
+        secretDiscountId,
     } = req.body;
 
     let errorOrderCreating = null;
@@ -228,12 +239,14 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         const bankId = await prisma.bank
             .findFirst({ where: { bankName: bank } })
             .then((el) => el?.id);
-
+            const secret = await prisma.secretDiscount.findFirst({
+                where: { id: secretDiscountId },
+            });
         if (bankId) {
             for (let prod of uniqueProducts) {
                 const discount = await prisma.productDiscount.findFirst({
                     where: { productId: prod?.productId },
-                });
+                }); 
 
                 await prisma.order.create({
                     data: {
@@ -258,7 +271,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 : null,
                         selectedCountry: selectedCountry,
                         orderType: "CDEK",
+                        promocodeId: promocodeId,
                         city: selectedCityName,
+                        secretDiscountPercent: secretDiscountId ? secret?.percent : null,
                         productCostWithDiscount:
                             Number(prod.cost) * prod.productCount -
                             Number(prod.cost) *
@@ -295,6 +310,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     });
 
                     try {
+                        const promocode = promocodeId
+                            ? await prisma.promocodes.findFirst({
+                                  where: { promocodeId: promocodeId },
+                              })
+                            : undefined;
                         const messageToManager =
                             `${
                                 msg.chat.username
@@ -338,7 +358,16 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 totalPriceWithDiscount
                                     ? totalPriceWithDiscount
                                     : totalPrice
-                            }\nДоставка: ${deliverySum} ₽`;
+                            }\n` + `\Доставка: ${deliverySum} ₽` + `${
+                                secretDiscountId
+                                    ? `<blockquote>У данного клиента скидка на ${secret?.percent}%. Корзина сгенерирована менеджером.</blockquote>`
+                                    : ""
+                            }` +
+                            `${
+                                promocode
+                                    ? `\n\n<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>`
+                                    : ""
+                            }`;
 
                         const order = await prisma.order.findFirst({
                             where: { orderUniqueNumber: orderId },
@@ -376,6 +405,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             data: { status: "PENDING" },
                         });
 
+                        if (secretDiscountId)
+                            await prisma.secretDiscount.update({
+                                where: { id: secretDiscountId },
+                                data: { type: "USED" },
+                            });
                         bot.sendMessage(
                             telegramId,
                             "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером."
