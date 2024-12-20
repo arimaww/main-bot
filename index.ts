@@ -712,6 +712,7 @@ async function getOrderData(orderId: string) {
         status: order?.status,
         fileId: order?.fileId,
         cityName: order?.city,
+        secretDiscountPercent: order?.secretDiscountPercent,
     };
 }
 
@@ -836,6 +837,11 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `Данные клиента:\n` +
                     `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
                     `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
+                    `${
+                        orderData?.secretDiscountPercent
+                            ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent}%. Корзина сгенерирована менеджером.</blockquote>`
+                            : ""
+                    }` +
                     `Время: ${timestamp.getDate()}.${
                         timestamp.getMonth() + 1 < 10
                             ? "0" + (timestamp.getMonth() + 1)
@@ -889,6 +895,11 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             /[ ()-]/g,
                             ""
                         )}\n\n` +
+                        `${
+                            orderData?.secretDiscountPercent
+                                ? `<blockquote>Скидка ${orderData?.secretDiscountPercent}% на корзину.</blockquote>`
+                                : ""
+                        }` +
                         `Время: ${timestamp.getDate()}.${
                             timestamp.getMonth() + 1 < 10
                                 ? "0" + (timestamp.getMonth() + 1)
