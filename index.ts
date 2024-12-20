@@ -239,14 +239,14 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         const bankId = await prisma.bank
             .findFirst({ where: { bankName: bank } })
             .then((el) => el?.id);
-            const secret = await prisma.secretDiscount.findFirst({
-                where: { id: secretDiscountId },
-            });
+        const secret = await prisma.secretDiscount.findFirst({
+            where: { id: secretDiscountId },
+        });
         if (bankId) {
             for (let prod of uniqueProducts) {
                 const discount = await prisma.productDiscount.findFirst({
                     where: { productId: prod?.productId },
-                }); 
+                });
 
                 await prisma.order.create({
                     data: {
@@ -273,7 +273,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         orderType: "CDEK",
                         promocodeId: promocodeId,
                         city: selectedCityName,
-                        secretDiscountPercent: secretDiscountId ? secret?.percent : null,
+                        secretDiscountPercent: secretDiscountId
+                            ? secret?.percent
+                            : null,
                         productCostWithDiscount:
                             Number(prod.cost) * prod.productCount -
                             Number(prod.cost) *
@@ -358,7 +360,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 totalPriceWithDiscount
                                     ? totalPriceWithDiscount
                                     : totalPrice
-                            }\n` + `\Доставка: ${deliverySum} ₽` + `${
+                            }\n` +
+                            `\Доставка: ${deliverySum} ₽` +
+                            `${
                                 secretDiscountId
                                     ? `<blockquote>У данного клиента скидка на ${secret?.percent}%. Корзина сгенерирована менеджером.</blockquote>`
                                     : ""
@@ -701,12 +705,14 @@ async function getOrderData(orderId: string) {
         selectedPvzCode: order?.selectedPvzCode,
         selectedTariff: order?.selectedTariff,
         totalPrice: order?.totalPrice,
+        totalPriceWithDiscount: order?.totalPriceWithDiscount,
         deliveryCost: order?.deliveryCost,
         username: user?.userName,
         selectedCountry: order?.selectedCountry,
         status: order?.status,
         fileId: order?.fileId,
         cityName: order?.city,
+        secretDiscountPercent: order?.secretDiscountPercent,
     };
 }
 
@@ -823,10 +829,19 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `Трек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n` +
                     `${orderData.products
                         .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                        .join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` +
+                        .join("\n")}\n\nПрайс: ${
+                        orderData?.totalPriceWithDiscount
+                            ? orderData?.totalPriceWithDiscount
+                            : orderData?.totalPrice
+                    }\n\n` +
                     `Данные клиента:\n` +
                     `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
                     `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
+                    `${
+                        orderData?.secretDiscountPercent
+                            ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent}%. Корзина сгенерирована менеджером.</blockquote>`
+                            : ""
+                    }` +
                     `Время: ${timestamp.getDate()}.${
                         timestamp.getMonth() + 1 < 10
                             ? "0" + (timestamp.getMonth() + 1)
@@ -870,7 +885,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 (el) => `${el.productCount} шт. | ${el.synonym}`
                             )
                             .join("\n")}\n\nПрайс: ${
-                            orderData?.totalPrice
+                            orderData?.totalPriceWithDiscount
+                                ? orderData?.totalPriceWithDiscount
+                                : orderData?.totalPrice
                         }\n\n` +
                         `Данные клиента:\n` +
                         `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
@@ -878,6 +895,11 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             /[ ()-]/g,
                             ""
                         )}\n\n` +
+                        `${
+                            orderData?.secretDiscountPercent
+                                ? `<blockquote>Скидка ${orderData?.secretDiscountPercent}% на корзину.</blockquote>`
+                                : ""
+                        }` +
                         `Время: ${timestamp.getDate()}.${
                             timestamp.getMonth() + 1 < 10
                                 ? "0" + (timestamp.getMonth() + 1)
