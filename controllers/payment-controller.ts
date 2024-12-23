@@ -2,12 +2,11 @@ import { Request, Response } from "express";
 import { cancelWaitPayOrders } from "../helpers/cancel-wait-pay-orders";
 import { ordersKeyboardEvent } from "../events/orders-keyboard-event";
 import { MANAGER_CHAT_ID, token } from "../config/config";
-import { handleCallbackQuery } from "..";
 import { bot } from "../bot/bot";
 
 export const updatePaymentInfo = async (req: Request, res: Response) => {
     try {
-        await cancelWaitPayOrders(bot, handleCallbackQuery);
+        await cancelWaitPayOrders(bot);
         await bot.sendMessage(MANAGER_CHAT_ID, 'Реквизиты были изменены.\nВсе неоплаченные заказы удалены.')
         bot.on('message', (msg) => ordersKeyboardEvent(msg, bot, MANAGER_CHAT_ID))
 

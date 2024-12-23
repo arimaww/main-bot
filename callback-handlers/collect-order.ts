@@ -38,7 +38,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                     chat_id: callbackQuery.message?.chat.id,
                     message_id: callbackQuery.message?.message_id,
                 }
-            );
+            ).catch(err => console.log(err));
             break;
 
         case "confirm_collect":
@@ -51,7 +51,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                     chat_id: callbackQuery.message?.chat.id,
                     message_id: callbackQuery.message?.message_id,
                 }
-            );
+            ).catch(err => console.log(err));
             const order = await prisma.order.findFirst({
                 where: { orderTrackNumber: orderTrackNumber },
             });
@@ -70,13 +70,13 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                         chat_id: callbackQuery.message?.chat.id || 0,
                         message_id: callbackQuery.message?.message_id || 0,
                     }
-                );
+                ).catch(err => console.log(err));
                 await bot.sendMessage(
                     user.telegramId,
                     "Ваш закан успешно собран и в ближайшее время будет передан в доставку!\n" +
                         `Следующие изменения статуса отслеживайте через сайт <a href="https://www.cdek.ru/ru/tracking/">СДЭК</a> по вашему трек номеру: ${orderTrackNumber}`,
                     { parse_mode: "HTML", disable_web_page_preview: true }
-                );
+                ).catch(err => console.log(err));
             }
             break;
 
@@ -91,7 +91,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                         chat_id: callbackQuery.message?.chat.id,
                         message_id: callbackQuery.message?.message_id,
                     }
-                );
+                ).catch(err => console.log(err));
 
                 const order = await prisma.order.findFirst({
                     where: { orderTrackNumber: orderTrackNumber },
@@ -119,7 +119,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                             chat_id: callbackQuery.message?.chat.id || 0,
                             message_id: callbackQuery.message?.message_id || 0,
                         }
-                    );
+                    ).catch(err => console.log(err));
                 }
             }
 
@@ -142,10 +142,10 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                     chat_id: callbackQuery.message?.chat.id,
                     message_id: callbackQuery.message?.message_id,
                 }
-            );
+            ).catch(err => console.log(err));
             break;
     }
 
     // Подтверждаем callback
-    await bot.answerCallbackQuery(callbackQuery.id);
+    await bot.answerCallbackQuery(callbackQuery.id).catch(err => console.log(err));
 }

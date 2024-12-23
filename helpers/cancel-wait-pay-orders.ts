@@ -1,13 +1,10 @@
 import TelegramBot from "node-telegram-bot-api";
 import { prisma } from "../prisma/prisma-client";
 import { handleCollectOrder } from "../callback-handlers/collect-order";
+import { handleCallbackQuery } from "..";
 
 export async function cancelWaitPayOrders(
-    bot: TelegramBot,
-    handleCallbackQuery: (
-        query: TelegramBot.CallbackQuery
-    ) => Promise<TelegramBot.Message | undefined>
-) {
+    bot: TelegramBot) {
     // Полученрие всех заказов со статусом WAITPAY
     const waitPayOrders = await prisma.order.findMany({
         where: { status: "WAITPAY" },
@@ -39,7 +36,7 @@ export async function cancelWaitPayOrders(
             });
         }
 
-        await bot.sendMessage(user?.telegramId!, message);
+        await bot.sendMessage(user?.telegramId!, message).catch(err => console.log(err));
         bot.removeAllListeners();
         bot.on("callback_query", handleCollectOrder);
         bot.on("callback_query", handleCallbackQuery);
