@@ -65,7 +65,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                 callbackQuery.message?.message_id
             ) {
                 await bot.editMessageText(
-                    `Заказ с номером ${orderTrackNumber} был успешно собран!\nСообщение удалится через 60 минут автоматически`,
+                    `Заказ с номером ${orderTrackNumber} был успешно собран!\nСообщение можно удалять.`,
                     {
                         chat_id: callbackQuery.message?.chat.id || 0,
                         message_id: callbackQuery.message?.message_id || 0,
