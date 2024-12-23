@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.options("*", cors());
 
-botOnStart(bot, MANAGER_CHAT_ID); // Функция, которая запускается при включении бота или перезагрузки
+setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
 
 const timers = new Map(); // Объект для хранения таймеров по id заказа
 
