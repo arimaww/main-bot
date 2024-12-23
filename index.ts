@@ -364,7 +364,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             `\Доставка: ${deliverySum} ₽` +
                             `${
                                 secretDiscountId
-                                    ? `<blockquote>У данного клиента скидка на ${secret?.percent}%. Корзина сгенерирована менеджером.</blockquote>`
+                                    ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
                                     : ""
                             }` +
                             `${
@@ -839,7 +839,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
                     `${
                         orderData?.secretDiscountPercent
-                            ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent}%. Корзина сгенерирована менеджером.</blockquote>`
+                            ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent} ₽. Корзина сгенерирована менеджером.</blockquote>`
                             : ""
                     }` +
                     `Время: ${timestamp.getDate()}.${
@@ -897,7 +897,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                         )}\n\n` +
                         `${
                             orderData?.secretDiscountPercent
-                                ? `<blockquote>Скидка ${orderData?.secretDiscountPercent}% на корзину.</blockquote>`
+                                ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
                                 : ""
                         }` +
                         `Время: ${timestamp.getDate()}.${
