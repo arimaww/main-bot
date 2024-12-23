@@ -226,7 +226,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     message_text:
                         "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
                 },
-            });
+            }).catch(err => console.log(err));
             return res
                 .status(400)
                 .json({ message: "Все поля обязательны для заполнения" });
@@ -395,7 +395,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                     ],
                                 },
                                 parse_mode: "HTML",
-                            });
+                            }).catch(err => console.log(err));
                         } else {
                             console.log(
                                 "Этот заказ уже обработан или отправлен."
@@ -458,7 +458,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             : totalPrice
                     }`,
             },
-        });
+        }).catch(err => console.log(err));
 
         const bankData = await prisma.bank.findFirst({
             where: { bankName: bank },
@@ -509,7 +509,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                               messageId: sentMessage.message_id.toString(),
                           },
                       });
-                  })
+                  }).catch(err => console.log(err))
             : await bot
                   .sendMessage(
                       user?.telegramId!,
@@ -552,7 +552,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                           data: {
                               messageId: sentMessage.message_id.toString(),
                           },
-                      });
+                      }).catch(err => console.log(err));
                   });
 
         const timerId = setTimeout(async () => {
@@ -573,7 +573,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 await bot.sendMessage(
                     user?.telegramId!,
                     "Ваш заказ был автоматически отменен из-за отсутствия оплаты."
-                );
+                ).catch(err => console.log(err));
             }
         }, 5400000); // 90 мин = 5400000 миллисекунд
 
@@ -744,7 +744,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 return bot.sendMessage(
                     MANAGER_CHAT_ID,
                     "Данный заказ уже принят"
-                );
+                ).catch(err => console.log(err));
 
             const getobj =
                 orderData?.selectedCountry === "RU"
@@ -811,7 +811,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                         parse_mode: "HTML",
                         disable_web_page_preview: true,
                     }
-                );
+                ).catch(err => console.log(err));
 
                 const timestamp = new Date();
 
@@ -871,7 +871,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                         ],
                     },
                     parse_mode: "HTML",
-                });
+                }).catch(err => console.log(err));
 
                 await bot.sendMessage(
                     process.env.CDEK_GROUP_ID!,
@@ -929,7 +929,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             ],
                         },
                     }
-                );
+                ).catch(err => console.log(err));
             }
         } else if (action === "Удалить") {
             // Действие для удаления заказа
@@ -950,12 +950,12 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await bot.sendMessage(
                     user?.telegramId,
                     "К сожалению ваш заказ был удалён"
-                );
+                ).catch(err => console.log(err));
 
             await bot.editMessageCaption("Заказ был удален.", {
                 chat_id: chatId,
                 message_id: messageId,
-            });
+            }).catch(err => console.log(err));
         } else if (action === "УдалитьNEOPL") {
             const orders = await prisma.order.findMany({
                 where: { orderUniqueNumber: orderUnique },
@@ -972,7 +972,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     where: { orderUniqueNumber: orderUnique },
                 });
 
-                await bot.sendMessage(user?.telegramId, "Заказ успешно удален");
+                await bot.sendMessage(user?.telegramId, "Заказ успешно удален").catch(err => console.log(err));
                 await bot
                     .deleteMessage(
                         user?.telegramId,
@@ -986,7 +986,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         }
 
         // Закрываем callback
-        await bot.answerCallbackQuery(query.id);
+        await bot.answerCallbackQuery(query.id).catch(err => console.log(err));
     } catch (err) {
         console.error("Ошибка обработки заказа:", err);
     }
