@@ -13,45 +13,49 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
     switch (action) {
         case "collect_order":
             // Меняем клавиатуру на новую с подтверждением
-            await bot.editMessageReplyMarkup(
-                {
-                    inline_keyboard: [
-                        [
-                            {
-                                text: "Да",
-                                callback_data: `confirm_collect:${orderTrackNumber}`,
-                            },
-                            {
-                                text: "Нет",
-                                callback_data: `reject_collect:${orderTrackNumber}`,
-                            },
+            await bot
+                .editMessageReplyMarkup(
+                    {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: "Да",
+                                    callback_data: `confirm_collect:${orderTrackNumber}`,
+                                },
+                                {
+                                    text: "Нет",
+                                    callback_data: `reject_collect:${orderTrackNumber}`,
+                                },
+                            ],
+                            [
+                                {
+                                    text: "Назад",
+                                    callback_data: `go_back:${orderTrackNumber}`,
+                                },
+                            ],
                         ],
-                        [
-                            {
-                                text: "Назад",
-                                callback_data: `go_back:${orderTrackNumber}`,
-                            },
-                        ],
-                    ],
-                },
-                {
-                    chat_id: callbackQuery.message?.chat.id,
-                    message_id: callbackQuery.message?.message_id,
-                }
-            ).catch(err => console.log(err));
+                    },
+                    {
+                        chat_id: callbackQuery.message?.chat.id,
+                        message_id: callbackQuery.message?.message_id,
+                    }
+                )
+                .catch((err) => console.log(err));
             break;
 
         case "confirm_collect":
             // Логика подтверждения сбора заказа
-            await bot.editMessageReplyMarkup(
-                {
-                    inline_keyboard: [],
-                },
-                {
-                    chat_id: callbackQuery.message?.chat.id,
-                    message_id: callbackQuery.message?.message_id,
-                }
-            ).catch(err => console.log(err));
+            await bot
+                .editMessageReplyMarkup(
+                    {
+                        inline_keyboard: [],
+                    },
+                    {
+                        chat_id: callbackQuery.message?.chat.id,
+                        message_id: callbackQuery.message?.message_id,
+                    }
+                )
+                .catch((err) => console.log(err));
             const order = await prisma.order.findFirst({
                 where: { orderTrackNumber: orderTrackNumber },
             });
@@ -64,34 +68,48 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                 callbackQuery.message?.chat.id &&
                 callbackQuery.message?.message_id
             ) {
-                await bot.editMessageText(
-                    `Заказ с номером ${orderTrackNumber} был успешно собран!\nСообщение можно удалять.`,
-                    {
-                        chat_id: callbackQuery.message?.chat.id || 0,
-                        message_id: callbackQuery.message?.message_id || 0,
-                    }
-                ).catch(err => console.log(err));
-                await bot.sendMessage(
-                    user.telegramId,
-                    "Ваш закан успешно собран и в ближайшее время будет передан в доставку!\n" +
-                        `Следующие изменения статуса отслеживайте через сайт <a href="https://www.cdek.ru/ru/tracking/">СДЭК</a> по вашему трек номеру: ${orderTrackNumber}`,
-                    { parse_mode: "HTML", disable_web_page_preview: true }
-                ).catch(err => console.log(err));
+                await bot
+                    .editMessageText(
+                            `Заказ с номером ${orderTrackNumber} был успешно собран!\nСообщение удалится через 10 сек.`,
+                        {
+                            chat_id: callbackQuery.message?.chat.id || 0,
+                            message_id: callbackQuery.message?.message_id || 0,
+                        }
+                    )
+                    .catch((err) => console.log(err));
+
+                setTimeout(
+                    async () =>
+                        await bot.deleteMessage(
+                            callbackQuery.message?.chat.id || 0,
+                            callbackQuery.message?.message_id || 0
+                        ).catch(err => console.log(err)), 10000
+                );
+                await bot
+                    .sendMessage(
+                        user.telegramId,
+                        "Ваш закан успешно собран и в ближайшее время будет передан в доставку!\n" +
+                            `Следующие изменения статуса отслеживайте через сайт <a href="https://www.cdek.ru/ru/tracking/">СДЭК</a> по вашему трек номеру: ${orderTrackNumber}`,
+                        { parse_mode: "HTML", disable_web_page_preview: true }
+                    )
+                    .catch((err) => console.log(err));
             }
             break;
 
         case "reject_collect":
             {
                 // Логика отказа от сбора заказа
-                await bot.editMessageReplyMarkup(
-                    {
-                        inline_keyboard: [], // Пустая клавиатура, чтобы скрыть ее
-                    },
-                    {
-                        chat_id: callbackQuery.message?.chat.id,
-                        message_id: callbackQuery.message?.message_id,
-                    }
-                ).catch(err => console.log(err));
+                await bot
+                    .editMessageReplyMarkup(
+                        {
+                            inline_keyboard: [], // Пустая клавиатура, чтобы скрыть ее
+                        },
+                        {
+                            chat_id: callbackQuery.message?.chat.id,
+                            message_id: callbackQuery.message?.message_id,
+                        }
+                    )
+                    .catch((err) => console.log(err));
 
                 const order = await prisma.order.findFirst({
                     where: { orderTrackNumber: orderTrackNumber },
@@ -113,13 +131,16 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                         user?.telegramId,
                         `Ваш заказ с трек номером: ${orderTrackNumber} был отменён.`
                     );
-                    await bot.editMessageText(
-                        `Сбор заказа с номером ${orderTrackNumber} был отменён.`,
-                        {
-                            chat_id: callbackQuery.message?.chat.id || 0,
-                            message_id: callbackQuery.message?.message_id || 0,
-                        }
-                    ).catch(err => console.log(err));
+                    await bot
+                        .editMessageText(
+                            `Сбор заказа с номером ${orderTrackNumber} был отменён.`,
+                            {
+                                chat_id: callbackQuery.message?.chat.id || 0,
+                                message_id:
+                                    callbackQuery.message?.message_id || 0,
+                            }
+                        )
+                        .catch((err) => console.log(err));
                 }
             }
 
@@ -127,25 +148,29 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
 
         case "go_back":
             // Возврат к начальному состоянию клавиатуры
-            await bot.editMessageReplyMarkup(
-                {
-                    inline_keyboard: [
-                        [
-                            {
-                                text: "Собрать заказ",
-                                callback_data: `collect_order:${orderTrackNumber}`,
-                            },
+            await bot
+                .editMessageReplyMarkup(
+                    {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: "Собрать заказ",
+                                    callback_data: `collect_order:${orderTrackNumber}`,
+                                },
+                            ],
                         ],
-                    ],
-                },
-                {
-                    chat_id: callbackQuery.message?.chat.id,
-                    message_id: callbackQuery.message?.message_id,
-                }
-            ).catch(err => console.log(err));
+                    },
+                    {
+                        chat_id: callbackQuery.message?.chat.id,
+                        message_id: callbackQuery.message?.message_id,
+                    }
+                )
+                .catch((err) => console.log(err));
             break;
     }
 
     // Подтверждаем callback
-    await bot.answerCallbackQuery(callbackQuery.id).catch(err => console.log(err));
-}
+    await bot
+        .answerCallbackQuery(callbackQuery.id)
+        .catch((err) => console.log(err));
+};
