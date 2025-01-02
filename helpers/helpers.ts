@@ -1,5 +1,11 @@
 import request from "request";
-import { ResponseAuthData, TCdekUser, TDeliveryRequest, TDeliveryResponse, TRecordOrderInfo } from "../types/types";
+import {
+    ResponseAuthData,
+    TCdekUser,
+    TDeliveryRequest,
+    TDeliveryResponse,
+    TRecordOrderInfo,
+} from "../types/types";
 
 export const recordOrderInfo = async (body: TRecordOrderInfo) => {
     try {
@@ -21,7 +27,10 @@ export const recordOrderInfo = async (body: TRecordOrderInfo) => {
     }
 };
 
-export const getOrderTrackNumber = (uuid: string, token: string): Promise<string> => {
+export const getOrderTrackNumber = (
+    uuid: string,
+    token: string
+): Promise<string> => {
     return new Promise((resolve, reject) => {
         const options = {
             url: `${process.env.SERVER_API_URL}/orders/info/`,
@@ -56,118 +65,152 @@ export const getOrderTrackNumber = (uuid: string, token: string): Promise<string
     });
 };
 
-
-
-export const getOrderObjRu = async (access_token: string | undefined, uuidCdek: string, totalPrice: any,
-    surName: string, firstName: string, middleName: string,
-    phone: string, selectedPvzCode: string, deliverySum: number, selectedTariff: number): Promise<TDeliveryRequest> => {
+export const getOrderObjRu = async (
+    access_token: string | undefined,
+    uuidCdek: string,
+    totalPrice: any,
+    surName: string,
+    firstName: string,
+    middleName: string,
+    phone: string,
+    selectedPvzCode: string,
+    deliverySum: number,
+    selectedTariff: number
+): Promise<TDeliveryRequest> => {
     return {
         token: access_token,
         number: uuidCdek,
         type: 1,
         delivery_recipient_cost: {
-            value: 0
+            value: 0,
         },
-        delivery_recipient_cost_adv: [{
-            sum: deliverySum,
-            threshold: 1
-        }],
-        packages: [{
-            number: "1",
-            comment: "Упаковка",
-            height: 10,
-            items: [{
-                ware_key: "1",
-                payment: {
-                    value: 0.1
-                },
-                name: "Пищевые добавки",
-                cost: Number(totalPrice),
-                amount: 1,
+        delivery_recipient_cost_adv: [
+            {
+                sum: deliverySum,
+                threshold: 1,
+            },
+        ],
+        packages: [
+            {
+                number: "1",
+                comment: "Упаковка",
+                height: 10,
+                items: [
+                    {
+                        ware_key: "1",
+                        payment: {
+                            value: 0.1,
+                        },
+                        name: "Пищевые добавки",
+                        cost: Number(totalPrice),
+                        amount: 1,
+                        weight: 1200,
+                    },
+                ],
+                length: 30,
                 weight: 1200,
-            }],
-            length: 30,
-            weight: 1200,
-            width: 20
-        }],
+                width: 20,
+            },
+        ],
         recipient: {
             name: `${surName} ${firstName} ${middleName}`,
-            phones: [{
-                number: phone
-            }]
+            phones: [
+                {
+                    number: phone,
+                },
+            ],
         },
         sender: {
-            name: "Зубаиров Заур Залбегович"
+            name: "Зубаиров Заур Залбегович",
         },
-        services: [{
-            code: "INSURANCE",
-            parameter: '0'
-        }],
+        services: [
+            {
+                code: "INSURANCE",
+                parameter: "0",
+            },
+        ],
         tariff_code: selectedTariff,
         shipment_point: process.env.SHIPMENT_POINT!,
-        delivery_point: selectedPvzCode
+        delivery_point: selectedPvzCode,
     };
-}
+};
 
-
-
-export const getOrderObjInternation = async (access_token: string | undefined, uuidCdek: string, totalPrice: any,
-    surName: string, firstName: string, middleName: string,
-    phone: string, selectedPvzCode: string, deliverySum: number, selectedTariff: number): Promise<TDeliveryRequest> => {
+export const getOrderObjInternation = async (
+    access_token: string | undefined,
+    uuidCdek: string,
+    totalPrice: any,
+    surName: string,
+    firstName: string,
+    middleName: string,
+    phone: string,
+    selectedPvzCode: string,
+    deliverySum: number,
+    selectedTariff: number
+): Promise<TDeliveryRequest> => {
     return {
         token: access_token,
         number: uuidCdek,
         type: 1,
-        date_invoice: `${new Date().getFullYear()}-${new Date().getMonth()+1 < 10 ? '0'+ new Date().getMonth()+1 : new Date().getMonth()+1}` 
-        + `-${new Date().getDate() < 10 ? '0' + new Date().getDate() : new Date().getDate()}`,
+        date_invoice: `${new Date().getFullYear()}-${String(
+            new Date().getMonth() + 1
+        ).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`,
         shipper_address: "г. Кизилюрт, площадь Героев 1",
         delivery_recipient_cost: {
-            value: 0
+            value: 0,
         },
         seller: {
-            address: "г. Кизилюрт, площадь Героев 1"
+            address: "г. Кизилюрт, площадь Героев 1",
         },
         shipper_name: "Vorobei Shop",
-        packages: [{
-            number: "1",
-            comment: "Упаковка",
-            height: 10,
-            items: [{
-                ware_key: "1",
-                payment: {
-                    value: 0
-                },
-                name: "Пищевые добавки",
-                cost: Number(totalPrice),
-                amount: 1,
+        packages: [
+            {
+                number: "1",
+                comment: "Упаковка",
+                height: 10,
+                items: [
+                    {
+                        ware_key: "1",
+                        payment: {
+                            value: 0,
+                        },
+                        name: "Пищевые добавки",
+                        cost: Number(totalPrice),
+                        amount: 1,
+                        weight: 1200,
+                        weight_gross: 1300,
+                    },
+                ],
+                length: 30,
                 weight: 1200,
-                weight_gross: 1300
-            }],
-            length: 30,
-            weight: 1200,
-            width: 20
-        }],
+                width: 20,
+            },
+        ],
         recipient: {
             name: `${surName} ${firstName} ${middleName}`,
-            phones: [{
-                number: phone
-            }]
+            phones: [
+                {
+                    number: phone,
+                },
+            ],
         },
         sender: {
-            name: "Зубаиров Заур Залбегович"
+            name: "Зубаиров Заур Залбегович",
         },
-        services: [{
-            code: "INSURANCE",
-            parameter: '0'
-        }],
+        services: [
+            {
+                code: "INSURANCE",
+                parameter: "0",
+            },
+        ],
         tariff_code: selectedTariff,
         shipment_point: process.env.SHIPMENT_POINT!,
-        delivery_point: selectedPvzCode
+        delivery_point: selectedPvzCode,
     };
-}
+};
 
-
-export const makeTrackNumber = async (body: TDeliveryRequest): Promise<TDeliveryResponse | undefined> => {
+export const makeTrackNumber = async (
+    body: TDeliveryRequest
+): Promise<TDeliveryResponse | undefined> => {
     try {
         const options = {
             url: `${process.env.SERVER_API_URL}/orders`,
@@ -190,7 +233,7 @@ export const makeTrackNumber = async (body: TDeliveryRequest): Promise<TDelivery
                     const data = JSON.parse(body);
                     resolve(data);
                 } catch (parseError) {
-                    console.log('json parse error');
+                    console.log("json parse error");
                     reject(parseError);
                 }
             });
@@ -201,8 +244,9 @@ export const makeTrackNumber = async (body: TDeliveryRequest): Promise<TDelivery
     }
 };
 
-
-export const getToken = async (body: TCdekUser): Promise<ResponseAuthData | undefined> => {
+export const getToken = async (
+    body: TCdekUser
+): Promise<ResponseAuthData | undefined> => {
     try {
         const options = {
             url: `${process.env.SERVER_API_URL}/oauth/token`,
@@ -229,7 +273,6 @@ export const getToken = async (body: TCdekUser): Promise<ResponseAuthData | unde
                 }
             });
         });
-
     } catch (err) {
         console.log(err);
         return undefined;
