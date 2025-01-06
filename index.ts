@@ -218,15 +218,17 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         }
 
         if (!basket || !queryId || !totalPrice) {
-            await bot.answerWebAppQuery(queryId, {
-                type: "article",
-                id: queryId,
-                title: "Не удалось приобрести товар",
-                input_message_content: {
-                    message_text:
-                        "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
-                },
-            }).catch(err => console.log(err));
+            await bot
+                .answerWebAppQuery(queryId, {
+                    type: "article",
+                    id: queryId,
+                    title: "Не удалось приобрести товар",
+                    input_message_content: {
+                        message_text:
+                            "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
+                    },
+                })
+                .catch((err) => console.log(err));
             return res
                 .status(400)
                 .json({ message: "Все поля обязательны для заполнения" });
@@ -378,24 +380,26 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         });
 
                         if (order && order.status === "WAITPAY") {
-                            await bot.sendPhoto(MANAGER_CHAT_ID, fileId, {
-                                caption: messageToManager,
-                                reply_markup: {
-                                    inline_keyboard: [
-                                        [
-                                            {
-                                                text: "✅ Принять",
-                                                callback_data: `Принять_${orderId}`,
-                                            },
-                                            {
-                                                text: "❌ Удалить",
-                                                callback_data: `Удалить_${orderId}`,
-                                            },
+                            await bot
+                                .sendPhoto(MANAGER_CHAT_ID, fileId, {
+                                    caption: messageToManager,
+                                    reply_markup: {
+                                        inline_keyboard: [
+                                            [
+                                                {
+                                                    text: "✅ Принять",
+                                                    callback_data: `Принять_${orderId}`,
+                                                },
+                                                {
+                                                    text: "❌ Удалить",
+                                                    callback_data: `Удалить_${orderId}`,
+                                                },
+                                            ],
                                         ],
-                                    ],
-                                },
-                                parse_mode: "HTML",
-                            }).catch(err => console.log(err));
+                                    },
+                                    parse_mode: "HTML",
+                                })
+                                .catch((err) => console.log(err));
                         } else {
                             console.log(
                                 "Этот заказ уже обработан или отправлен."
@@ -434,31 +438,34 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             }
         };
 
-        await bot.answerWebAppQuery(queryId, {
-            type: "article",
-            id: queryId,
-            title: "Ваш заказ",
-            input_message_content: {
-                message_text:
-                    `\n\nЗаказ:\n${products
-                        .filter((el: any) => el.productCount > 0)
-                        .map(
-                            (el: any) =>
-                                `${el.productCount} шт. | ${el.synonym}`
-                        )
-                        .join("\n")}\n` +
-                    `\nФИО ${surName} ${firstName} ${middleName}` +
-                    "\nНомер " +
-                    phone +
-                    `\n\nДоставка: ${deliverySum} ₽` +
-                    "\n\nПрайс: " +
-                    `${
-                        totalPriceWithDiscount && totalPriceWithDiscount !== 0
-                            ? totalPriceWithDiscount
-                            : totalPrice
-                    }`,
-            },
-        }).catch(err => console.log(err));
+        await bot
+            .answerWebAppQuery(queryId, {
+                type: "article",
+                id: queryId,
+                title: "Ваш заказ",
+                input_message_content: {
+                    message_text:
+                        `\n\nЗаказ:\n${products
+                            .filter((el: any) => el.productCount > 0)
+                            .map(
+                                (el: any) =>
+                                    `${el.productCount} шт. | ${el.synonym}`
+                            )
+                            .join("\n")}\n` +
+                        `\nФИО ${surName} ${firstName} ${middleName}` +
+                        "\nНомер " +
+                        phone +
+                        `\n\nДоставка: ${deliverySum} ₽` +
+                        "\n\nПрайс: " +
+                        `${
+                            totalPriceWithDiscount &&
+                            totalPriceWithDiscount !== 0
+                                ? totalPriceWithDiscount
+                                : totalPrice
+                        }`,
+                },
+            })
+            .catch((err) => console.log(err));
 
         const bankData = await prisma.bank.findFirst({
             where: { bankName: bank },
@@ -474,15 +481,25 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                               : totalPrice + Number(deliverySum)
                       } ₽\n` +
                           `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
-                          `Банк: ${bankData?.bankName}\n` +
-                          `Номер карты: ${bankData?.requisite}\n` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Банк: ${bankData?.bankName}\n`
+                                  : `Сеть: ${bankData?.bankName}`
+                          }` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Номер карты: ${bankData?.requisite}\n`
+                                  : `Адрес кошелька: ${bankData?.requisite}`
+                          }` +
                           `${
                               bankData?.sbpNumber &&
-                              bankData?.sbpNumber?.length > 0
+                              bankData?.sbpNumber?.length > 0 &&
+                              bankData?.paymentType === "BANK"
                                   ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
                                   : ""
                           }` +
                           `Получатель: ${bankData?.recipient}\n\n` +
+                          `<blockquote>${bankData?.comments}</blockquote>` +
                           `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
                           `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
                           `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
@@ -509,7 +526,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                               messageId: sentMessage.message_id.toString(),
                           },
                       });
-                  }).catch(err => console.log(err))
+                  })
+                  .catch((err) => console.log(err))
             : await bot
                   .sendMessage(
                       user?.telegramId!,
@@ -518,15 +536,25 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                               ? totalPriceWithDiscount
                               : totalPrice
                       } ₽\n\n` +
-                          `Банк: ${bankData?.bankName}\n` +
-                          `Номер карты: ${bankData?.requisite}\n` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Банк: ${bankData?.bankName}\n`
+                                  : `Сеть: ${bankData?.bankName}\n`
+                          }` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Номер карты: ${bankData?.requisite}\n`
+                                  : `Адрес кошелька: ${bankData?.requisite}\n`
+                          }` +
                           `${
                               bankData?.sbpNumber &&
-                              bankData?.sbpNumber?.length > 0
+                              bankData?.sbpNumber?.length > 0 &&
+                              bankData?.paymentType === "BANK"
                                   ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
                                   : ""
                           }` +
                           `Получатель: ${bankData?.recipient}\n\n` +
+                          `<blockquote>${bankData?.comments}</blockquote>` +
                           `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
                           `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
                           `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
@@ -547,12 +575,14 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                       }
                   )
                   .then(async (sentMessage) => {
-                      await prisma.order.updateMany({
-                          where: { orderUniqueNumber: orderId },
-                          data: {
-                              messageId: sentMessage.message_id.toString(),
-                          },
-                      }).catch(err => console.log(err));
+                      await prisma.order
+                          .updateMany({
+                              where: { orderUniqueNumber: orderId },
+                              data: {
+                                  messageId: sentMessage.message_id.toString(),
+                              },
+                          })
+                          .catch((err) => console.log(err));
                   });
 
         const timerId = setTimeout(async () => {
@@ -570,10 +600,12 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     .catch((err) => console.log(err));
                 await cancelOrder(orderId);
                 bot.removeListener("message", handleScreenshotMessage);
-                await bot.sendMessage(
-                    user?.telegramId!,
-                    "Ваш заказ был автоматически отменен из-за отсутствия оплаты."
-                ).catch(err => console.log(err));
+                await bot
+                    .sendMessage(
+                        user?.telegramId!,
+                        "Ваш заказ был автоматически отменен из-за отсутствия оплаты."
+                    )
+                    .catch((err) => console.log(err));
             }
         }, 5400000); // 90 мин = 5400000 миллисекунд
 
@@ -741,10 +773,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             const orderData = await getOrderData(orderUnique);
 
             if (orderData?.status === "SUCCESS")
-                return bot.sendMessage(
-                    MANAGER_CHAT_ID,
-                    "Данный заказ уже принят"
-                ).catch(err => console.log(err));
+                return bot
+                    .sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
+                    .catch((err) => console.log(err));
 
             const getobj =
                 orderData?.selectedCountry === "RU"
@@ -794,24 +825,27 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     },
                 });
                 // --------------------------------------------------
-                await bot.sendMessage(
-                    orderData.telegramId!,
-                    `Ваш заказ принят!\nВот трек-номер: ${orderTrackNumberForUser}\n\n` +
-                        `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!\n\n` +
-                        `Ваш заказ:\n${orderData.products
-                            .map(
-                                (el) => `${el.productCount} шт. | ${el.synonym}`
-                            )
-                            .join("\n")}\n\n` +
-                        `Отправка посылки осуществляется в течение 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
-                        `Если в течение 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
-                        `Ссылка на чат наших клиентов:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
-                        `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
-                    {
-                        parse_mode: "HTML",
-                        disable_web_page_preview: true,
-                    }
-                ).catch(err => console.log(err));
+                await bot
+                    .sendMessage(
+                        orderData.telegramId!,
+                        `Ваш заказ принят!\nВот трек-номер: ${orderTrackNumberForUser}\n\n` +
+                            `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!\n\n` +
+                            `Ваш заказ:\n${orderData.products
+                                .map(
+                                    (el) =>
+                                        `${el.productCount} шт. | ${el.synonym}`
+                                )
+                                .join("\n")}\n\n` +
+                            `Отправка посылки осуществляется в течение 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
+                            `Если в течение 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
+                            `Ссылка на чат наших клиентов:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
+                            `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
+                        {
+                            parse_mode: "HTML",
+                            disable_web_page_preview: true,
+                        }
+                    )
+                    .catch((err) => console.log(err));
 
                 const timestamp = new Date();
 
@@ -858,78 +892,83 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             : timestamp.getMinutes()
                     }`;
 
-                await bot.sendPhoto(chatId!, orderData?.fileId!, {
-                    caption: acceptOrderMessage,
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                {
-                                    text: "❌ Удалить",
-                                    callback_data: `Удалить_${orderData?.im_number}`,
-                                },
-                            ],
-                        ],
-                    },
-                    parse_mode: "HTML",
-                }).catch(err => console.log(err));
-
-                await bot.sendMessage(
-                    process.env.CDEK_GROUP_ID!,
-                    `Заказ ${
-                        orderData?.username
-                            ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
-                            : "клиента"
-                    }` +
-                        ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products
-                            .map(
-                                (el) => `${el.productCount} шт. | ${el.synonym}`
-                            )
-                            .join("\n")}\n\nПрайс: ${
-                            orderData?.totalPriceWithDiscount
-                                ? orderData?.totalPriceWithDiscount
-                                : orderData?.totalPrice
-                        }\n\n` +
-                        `Данные клиента:\n` +
-                        `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
-                        `Номер: ${orderData?.phone?.replace(
-                            /[ ()-]/g,
-                            ""
-                        )}\n\n` +
-                        `${
-                            orderData?.secretDiscountPercent
-                                ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
-                                : ""
-                        }` +
-                        `Время: ${timestamp.getDate()}.${
-                            timestamp.getMonth() + 1 < 10
-                                ? "0" + (timestamp.getMonth() + 1)
-                                : timestamp.getMonth() + 1
-                        }.` +
-                        `${timestamp.getFullYear()}  ${
-                            timestamp.getHours() < 10
-                                ? "0" + timestamp.getHours()
-                                : timestamp.getHours()
-                        }:` +
-                        `${
-                            timestamp.getMinutes() < 10
-                                ? "0" + timestamp.getMinutes()
-                                : timestamp.getMinutes()
-                        }`,
-                    {
-                        parse_mode: "HTML",
-                        disable_web_page_preview: true,
+                await bot
+                    .sendPhoto(chatId!, orderData?.fileId!, {
+                        caption: acceptOrderMessage,
                         reply_markup: {
                             inline_keyboard: [
                                 [
                                     {
-                                        text: "Собрать заказ",
-                                        callback_data: `collect_order:${orderTrackNumberForUser}`,
+                                        text: "❌ Удалить",
+                                        callback_data: `Удалить_${orderData?.im_number}`,
                                     },
                                 ],
                             ],
                         },
-                    }
-                ).catch(err => console.log(err));
+                        parse_mode: "HTML",
+                    })
+                    .catch((err) => console.log(err));
+
+                await bot
+                    .sendMessage(
+                        process.env.CDEK_GROUP_ID!,
+                        `Заказ ${
+                            orderData?.username
+                                ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
+                                : "клиента"
+                        }` +
+                            ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products
+                                .map(
+                                    (el) =>
+                                        `${el.productCount} шт. | ${el.synonym}`
+                                )
+                                .join("\n")}\n\nПрайс: ${
+                                orderData?.totalPriceWithDiscount
+                                    ? orderData?.totalPriceWithDiscount
+                                    : orderData?.totalPrice
+                            }\n\n` +
+                            `Данные клиента:\n` +
+                            `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
+                            `Номер: ${orderData?.phone?.replace(
+                                /[ ()-]/g,
+                                ""
+                            )}\n\n` +
+                            `${
+                                orderData?.secretDiscountPercent
+                                    ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
+                                    : ""
+                            }` +
+                            `Время: ${timestamp.getDate()}.${
+                                timestamp.getMonth() + 1 < 10
+                                    ? "0" + (timestamp.getMonth() + 1)
+                                    : timestamp.getMonth() + 1
+                            }.` +
+                            `${timestamp.getFullYear()}  ${
+                                timestamp.getHours() < 10
+                                    ? "0" + timestamp.getHours()
+                                    : timestamp.getHours()
+                            }:` +
+                            `${
+                                timestamp.getMinutes() < 10
+                                    ? "0" + timestamp.getMinutes()
+                                    : timestamp.getMinutes()
+                            }`,
+                        {
+                            parse_mode: "HTML",
+                            disable_web_page_preview: true,
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [
+                                        {
+                                            text: "Собрать заказ",
+                                            callback_data: `collect_order:${orderTrackNumberForUser}`,
+                                        },
+                                    ],
+                                ],
+                            },
+                        }
+                    )
+                    .catch((err) => console.log(err));
             }
         } else if (action === "Удалить") {
             // Действие для удаления заказа
@@ -947,15 +986,19 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             });
 
             if (user)
-                await bot.sendMessage(
-                    user?.telegramId,
-                    "К сожалению ваш заказ был удалён"
-                ).catch(err => console.log(err));
+                await bot
+                    .sendMessage(
+                        user?.telegramId,
+                        "К сожалению ваш заказ был удалён"
+                    )
+                    .catch((err) => console.log(err));
 
-            await bot.editMessageCaption("Заказ был удален.", {
-                chat_id: chatId,
-                message_id: messageId,
-            }).catch(err => console.log(err));
+            await bot
+                .editMessageCaption("Заказ был удален.", {
+                    chat_id: chatId,
+                    message_id: messageId,
+                })
+                .catch((err) => console.log(err));
         } else if (action === "УдалитьNEOPL") {
             const orders = await prisma.order.findMany({
                 where: { orderUniqueNumber: orderUnique },
@@ -972,7 +1015,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     where: { orderUniqueNumber: orderUnique },
                 });
 
-                await bot.sendMessage(user?.telegramId, "Заказ успешно удален").catch(err => console.log(err));
+                await bot
+                    .sendMessage(user?.telegramId, "Заказ успешно удален")
+                    .catch((err) => console.log(err));
                 await bot
                     .deleteMessage(
                         user?.telegramId,
@@ -986,7 +1031,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         }
 
         // Закрываем callback
-        await bot.answerCallbackQuery(query.id).catch(err => console.log(err));
+        await bot
+            .answerCallbackQuery(query.id)
+            .catch((err) => console.log(err));
     } catch (err) {
         console.error("Ошибка обработки заказа:", err);
     }
