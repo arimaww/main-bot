@@ -19,6 +19,7 @@ import { updatePaymentInfo } from "./controllers/payment-controller";
 import { MANAGER_CHAT_ID, WEB_APP } from "./config/config";
 import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
+import { generateBarcode } from "./helpers/generate-barcode";
 
 const app = express();
 
@@ -909,53 +910,57 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     })
                     .catch((err) => console.log(err));
 
+                const orderAcceptCaption =
+                    `Заказ ${
+                        orderData?.username
+                            ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
+                            : "клиента"
+                    }` +
+                    ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products
+                        .map((el) => `${el.productCount} шт. | ${el.synonym}`)
+                        .join("\n")}\n\nПрайс: ${
+                        orderData?.totalPriceWithDiscount
+                            ? orderData?.totalPriceWithDiscount
+                            : orderData?.totalPrice
+                    }\n\n` +
+                    `Данные клиента:\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
+                    `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
+                    `${
+                        orderData?.secretDiscountPercent
+                            ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
+                            : ""
+                    }` +
+                    `Время: ${timestamp.getDate()}.${
+                        timestamp.getMonth() + 1 < 10
+                            ? "0" + (timestamp.getMonth() + 1)
+                            : timestamp.getMonth() + 1
+                    }.` +
+                    `${timestamp.getFullYear()}  ${
+                        timestamp.getHours() < 10
+                            ? "0" + timestamp.getHours()
+                            : timestamp.getHours()
+                    }:` +
+                    `${
+                        timestamp.getMinutes() < 10
+                            ? "0" + timestamp.getMinutes()
+                            : timestamp.getMinutes()
+                    }`;
+
+                const barcode = await generateBarcode(
+                    orderTrackNumberForUser,
+                    chatId!,
+                    ""
+                ).catch((err) => console.log(err));
+                console.log(orderTrackNumberForUser, "barcode: " + barcode);
+
                 await bot
-                    .sendMessage(
+                    .sendDocument(
                         process.env.CDEK_GROUP_ID!,
-                        `Заказ ${
-                            orderData?.username
-                                ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
-                                : "клиента"
-                        }` +
-                            ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products
-                                .map(
-                                    (el) =>
-                                        `${el.productCount} шт. | ${el.synonym}`
-                                )
-                                .join("\n")}\n\nПрайс: ${
-                                orderData?.totalPriceWithDiscount
-                                    ? orderData?.totalPriceWithDiscount
-                                    : orderData?.totalPrice
-                            }\n\n` +
-                            `Данные клиента:\n` +
-                            `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
-                            `Номер: ${orderData?.phone?.replace(
-                                /[ ()-]/g,
-                                ""
-                            )}\n\n` +
-                            `${
-                                orderData?.secretDiscountPercent
-                                    ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
-                                    : ""
-                            }` +
-                            `Время: ${timestamp.getDate()}.${
-                                timestamp.getMonth() + 1 < 10
-                                    ? "0" + (timestamp.getMonth() + 1)
-                                    : timestamp.getMonth() + 1
-                            }.` +
-                            `${timestamp.getFullYear()}  ${
-                                timestamp.getHours() < 10
-                                    ? "0" + timestamp.getHours()
-                                    : timestamp.getHours()
-                            }:` +
-                            `${
-                                timestamp.getMinutes() < 10
-                                    ? "0" + timestamp.getMinutes()
-                                    : timestamp.getMinutes()
-                            }`,
+                        barcode?.pdfBuffer!,
                         {
+                            caption: orderAcceptCaption,
                             parse_mode: "HTML",
-                            disable_web_page_preview: true,
                             reply_markup: {
                                 inline_keyboard: [
                                     [
@@ -966,6 +971,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                     ],
                                 ],
                             },
+                        },
+                        {
+                            filename: barcode?.filename,
+                            contentType: barcode?.contentType,
                         }
                     )
                     .catch((err) => console.log(err));
