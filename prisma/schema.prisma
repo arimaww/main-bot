@@ -39,8 +39,12 @@ model Product {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @default(now()) @updatedAt
   primeCost       Decimal?
+  categoryId      Int?
+  longDescription String?
+  sostav          String?
   basket          Basket[]
   order           Order[]
+  Category        Category?        @relation(fields: [categoryId], references: [id])
   ProductDiscount ProductDiscount?
   ProductSet      ProductSet[]
 }
@@ -89,10 +93,10 @@ model Order {
   productCostWithDiscount Decimal?
   promocodeId             Int?
   secretDiscountPercent   Int?
-  Bank                    Bank?       @relation(fields: [bankId], references: [id], onDelete: Cascade)
-  product                 Product?    @relation(fields: [productId], references: [productId], onDelete: SetDefault)
-  Promocodes              Promocodes? @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
-  user                    User?       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  Bank                    Bank?       @relation(fields: [bankId], references: [id])
+  product                 Product?    @relation(fields: [productId], references: [productId])
+  Promocodes              Promocodes? @relation(fields: [promocodeId], references: [promocodeId])
+  user                    User?       @relation(fields: [userId], references: [userId])
 }
 
 model CdekOffice {
@@ -122,14 +126,16 @@ model UserCrm {
 }
 
 model Bank {
-  id        Int      @id @unique @default(autoincrement())
-  bankName  String
-  requisite String
-  recipient String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  sbpNumber String?
-  Order     Order[]
+  id          Int          @id @unique @default(autoincrement())
+  bankName    String
+  requisite   String
+  recipient   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  sbpNumber   String?
+  comments    String?
+  paymentType PAYMENT_TYPE @default(BANK)
+  Order       Order[]
 }
 
 model Keyboard {
@@ -199,6 +205,14 @@ model SecretDiscount {
   GeneratedBaskets GeneratedBaskets?
 }
 
+model Category {
+  id        Int       @unique @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  Product   Product[]
+}
+
 enum Role {
   ADMIN
   MODERATOR
@@ -221,4 +235,9 @@ enum OrderType {
 enum SecretDiscountStatus {
   PENDING
   USED
+}
+
+enum PAYMENT_TYPE {
+  BANK
+  CRYPTO
 }
