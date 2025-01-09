@@ -25,7 +25,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ limit: '1000mb', extended: true }));
 app.use(morgan("dev"));
-app.options("*", cors());
+app.use(cors({
+    origin: 'https://client.triplehh.ru', // Замените на URL вашего фронтенда
+    methods: ['POST'],
+    allowedHeaders: ['Content-Type']
+}));
 
 
 app.use((req, res, next) => {
