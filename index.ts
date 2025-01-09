@@ -212,6 +212,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
     let errorOrderCreating = null;
 
+    const requestSize = req.headers['content-length'];
+console.log(`Request size: ${requestSize} bytes`);
+    console.log('доходит')
     try {
         const user = await prisma.user.findFirst({
             where: { telegramId: telegramId.toString() },
@@ -220,6 +223,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         const isUserDidOrder = await prisma.order.findFirst({
             where: { status: "WAITPAY", userId: user?.userId },
         });
+
 
         if (isUserDidOrder) {
             bot.sendMessage(
