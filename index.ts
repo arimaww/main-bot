@@ -24,12 +24,10 @@ import bodyParser from "body-parser";
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ limit: '1000mb', extended: true }));
 app.use(morgan("dev"));
 app.options("*", cors());
 
-app.use(bodyParser.json({ limit: '50mb' })); // Установите лимит в 50MB
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use((req, res, next) => {
     // Логируем размер тела запроса
