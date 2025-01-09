@@ -18,8 +18,8 @@ export async function generateBarcode(
         const barcodeBuffer = await bwipjs.toBuffer({
             bcid: "code128",
             text: String(orderNumber),
-            scale: 3,
-            height: 10,
+            scale: 2, // Уменьшите масштаб
+            height: 8, // Уменьшите высоту
             includetext: true,
             textxalign: "center",
         });
