@@ -27,11 +27,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.options("*", cors());
-app.use(bodyParser.json({ limit: "50mb" })); // Увеличьте лимит для JSON
-app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(bodyParser.json({ limit: '50mb' })); // Установите лимит в 50MB
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+app.use((req, res, next) => {
+    // Логируем размер тела запроса
+    if (req.body && req.body.length) {
+      console.log(`Размер тела запроса: ${Buffer.byteLength(JSON.stringify(req.body))} байт`);
+    } else {
+      console.log('Тело запроса пустое');
+    }
+    next();
+  });
 
 setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
 
