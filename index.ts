@@ -950,13 +950,13 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             : timestamp.getMinutes()
                     }`;
 
-                const barcode = await generateBarcode(
-                    orderTrackNumberForUser,
-                    chatId!,
-                    ""
-                ).catch((err) => console.log(err));
+                // const barcode = await generateBarcode(
+                //     orderTrackNumberForUser,
+                //     chatId!,
+                //     ""
+                // ).catch((err) => console.log(err));
                 
-                console.log("Размер PDF:", barcode?.pdfBuffer.length, "байт");
+                // console.log("Размер PDF:", barcode?.pdfBuffer.length, "байт");
 
 
                 // await bot
