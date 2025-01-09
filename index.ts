@@ -187,526 +187,526 @@ bot.onText(
 
 bot.on("message", (msg) => ordersKeyboardEvent(msg, bot, MANAGER_CHAT_ID));
 
-// app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
-//     const {
-//         selectedPvzCode,
-//         selectedTariff,
-//         telegramId,
-//         basket,
-//         queryId,
-//         totalPrice,
-//         surName,
-//         firstName,
-//         middleName,
-//         phone,
-//         products,
-//         uuid,
-//         selectedCountry,
-//         selectedCity,
-//         promocodeId,
-//         selectedCityName,
-//         deliverySum,
-//         bank,
-//         totalPriceWithDiscount,
-//         secretDiscountId,
-//     } = req.body;
+app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
+    const {
+        selectedPvzCode,
+        selectedTariff,
+        telegramId,
+        basket,
+        queryId,
+        totalPrice,
+        surName,
+        firstName,
+        middleName,
+        phone,
+        products,
+        uuid,
+        selectedCountry,
+        selectedCity,
+        promocodeId,
+        selectedCityName,
+        deliverySum,
+        bank,
+        totalPriceWithDiscount,
+        secretDiscountId,
+    } = req.body;
 
-//     let errorOrderCreating = null;
+    let errorOrderCreating = null;
 
-//     const requestSize = req.headers['content-length'];
-// console.log(`Request size: ${requestSize} bytes`);
-//     console.log('доходит')
-//     try {
-//         const user = await prisma.user.findFirst({
-//             where: { telegramId: telegramId.toString() },
-//         });
+    const requestSize = req.headers['content-length'];
+console.log(`Request size: ${requestSize} bytes`);
+    console.log('доходит')
+    try {
+        const user = await prisma.user.findFirst({
+            where: { telegramId: telegramId.toString() },
+        });
 
-//         const isUserDidOrder = await prisma.order.findFirst({
-//             where: { status: "WAITPAY", userId: user?.userId },
-//         });
-
-
-//         if (isUserDidOrder) {
-//             bot.sendMessage(
-//                 telegramId,
-//                 "У вас есть неоплаченный заказ\n\nНапишите /start"
-//             );
-//             return res
-//                 .status(400)
-//                 .json({ message: "Ожидание оплаты предыдущего заказа" });
-//         }
-
-//         if (!basket || !queryId || !totalPrice) {
-//             await bot
-//                 .answerWebAppQuery(queryId, {
-//                     type: "article",
-//                     id: queryId,
-//                     title: "Не удалось приобрести товар",
-//                     input_message_content: {
-//                         message_text:
-//                             "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
-//                     },
-//                 })
-//                 .catch((err) => console.log(err));
-//             return res
-//                 .status(400)
-//                 .json({ message: "Все поля обязательны для заполнения" });
-//         }
-
-//         const uniqueProducts = products.filter((prod) => prod.productCount > 0);
-
-//         const orderId = uuid;
-
-//         const bankId = await prisma.bank
-//             .findFirst({ where: { bankName: bank } })
-//             .then((el) => el?.id);
-//         const secret = await prisma.secretDiscount.findFirst({
-//             where: { id: secretDiscountId },
-//         });
-//         if (bankId) {
-//             for (let prod of uniqueProducts) {
-//                 const discount = await prisma.productDiscount.findFirst({
-//                     where: { productId: prod?.productId },
-//                 });
-
-//                 await prisma.order.create({
-//                     data: {
-//                         userId: user?.userId!,
-//                         orderUniqueNumber: orderId,
-//                         productCount: prod.productCount,
-//                         productId: prod.productId,
-//                         firstName,
-//                         middleName,
-//                         surName,
-//                         phone: phone,
-//                         deliveryCost: deliverySum!,
-//                         selectedPvzCode: selectedPvzCode,
-//                         selectedTariff: parseInt(selectedTariff),
-//                         bankId: bankId,
-//                         totalPrice: totalPrice,
-//                         totalPriceWithDiscount:
-//                             totalPriceWithDiscount &&
-//                             totalPriceWithDiscount !== totalPrice &&
-//                             totalPriceWithDiscount !== 0
-//                                 ? totalPriceWithDiscount
-//                                 : null,
-//                         selectedCountry: selectedCountry,
-//                         orderType: "CDEK",
-//                         promocodeId: promocodeId,
-//                         city: selectedCityName,
-//                         secretDiscountPercent: secretDiscountId
-//                             ? secret?.percent
-//                             : null,
-//                         productCostWithDiscount:
-//                             Number(prod.cost) * prod.productCount -
-//                             Number(prod.cost) *
-//                                 Number(prod.productCount) *
-//                                 (Number(discount?.percent) / 100),
-//                     },
-//                 });
-//             }
-//         }
-
-//         const handleScreenshotMessage = async (msg: TelegramBot.Message) => {
-//             if (msg.chat.id === telegramId) {
-//                 if (msg.photo) {
-//                     bot.removeListener("message", handleScreenshotMessage);
-
-//                     const fileId = msg.photo[msg.photo.length - 1].file_id;
-
-//                     const user = await prisma.user.findFirst({
-//                         where: { telegramId: msg.chat.id.toString() },
-//                     });
-
-//                     const isOrderAlreadyUpdated = await prisma.order.findMany({
-//                         where: { orderUniqueNumber: orderId },
-//                     });
-
-//                     if (isOrderAlreadyUpdated[0].fileId) return;
-
-//                     await prisma.order.updateMany({
-//                         where: {
-//                             userId: user?.userId,
-//                             orderUniqueNumber: orderId,
-//                         },
-//                         data: { fileId: fileId },
-//                     });
-
-//                     try {
-//                         const promocode = promocodeId
-//                             ? await prisma.promocodes.findFirst({
-//                                   where: { promocodeId: promocodeId },
-//                               })
-//                             : undefined;
-//                         const messageToManager =
-//                             `${
-//                                 msg.chat.username
-//                                     ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>`
-//                                     : "Пользователь"
-//                             }` +
-//                             ` сделал заказ:\n${products
-//                                 .filter((el) => el.productCount > 0)
-//                                 .map(
-//                                     (el) =>
-//                                         `${el.productCount} шт. | ${el.synonym}`
-//                                 )
-//                                 .join(
-//                                     "\n"
-//                                 )}\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${
-//                                 selectedCountry === "RU"
-//                                     ? "Россия"
-//                                     : selectedCountry === "KG"
-//                                     ? "Кыргызстан"
-//                                     : selectedCountry === "BY"
-//                                     ? "Беларусь"
-//                                     : selectedCountry === "AM"
-//                                     ? "Армения"
-//                                     : selectedCountry === "KZ"
-//                                     ? "Казахстан"
-//                                     : selectedCountry === "AZ"
-//                                     ? "Азербайджан"
-//                                     : selectedCountry === "UZ"
-//                                     ? "Узбекистан"
-//                                     : "Неизвестная страна"
-//                             }
-//                                  ${
-//                                      selectedCountry !== "RU"
-//                                          ? `\nГород: ${selectedCityName}\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>`
-//                                          : `\nГород: ${selectedCityName}\n`
-//                                  }
-//                                  \nНомер: ${phone.replace(
-//                                      /[ ()-]/g,
-//                                      ""
-//                                  )}\nПрайс: ${
-//                                 totalPriceWithDiscount
-//                                     ? totalPriceWithDiscount
-//                                     : totalPrice
-//                             }\n` +
-//                             `\Доставка: ${deliverySum} ₽` +
-//                             `${
-//                                 secretDiscountId
-//                                     ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
-//                                     : ""
-//                             }` +
-//                             `${
-//                                 promocode
-//                                     ? `\n\n<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>`
-//                                     : ""
-//                             }`;
-
-//                         const order = await prisma.order.findFirst({
-//                             where: { orderUniqueNumber: orderId },
-//                         });
-
-//                         if (order && order.status === "WAITPAY") {
-//                             await bot
-//                                 .sendPhoto(MANAGER_CHAT_ID, fileId, {
-//                                     caption: messageToManager,
-//                                     reply_markup: {
-//                                         inline_keyboard: [
-//                                             [
-//                                                 {
-//                                                     text: "✅ Принять",
-//                                                     callback_data: `Принять_${orderId}`,
-//                                                 },
-//                                                 {
-//                                                     text: "❌ Удалить",
-//                                                     callback_data: `Удалить_${orderId}`,
-//                                                 },
-//                                             ],
-//                                         ],
-//                                     },
-//                                     parse_mode: "HTML",
-//                                 })
-//                                 .catch((err) => console.log(err));
-//                         } else {
-//                             console.log(
-//                                 "Этот заказ уже обработан или отправлен."
-//                             );
-//                         }
-
-//                         // Обработчик callback_query для кнопок "Принять" и "Удалить"
-
-//                         await prisma.order.updateMany({
-//                             where: { orderUniqueNumber: orderId },
-//                             data: { status: "PENDING" },
-//                         });
-
-//                         if (secretDiscountId)
-//                             await prisma.secretDiscount.update({
-//                                 where: { id: secretDiscountId },
-//                                 data: { type: "USED" },
-//                             });
-//                         bot.sendMessage(
-//                             telegramId,
-//                             "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером."
-//                         );
-//                     } catch (err) {
-//                         console.error("Ошибка отправки сообщения:", err);
-//                     }
-//                 } else {
-//                     setTimeout(
-//                         () =>
-//                             bot.sendMessage(
-//                                 telegramId,
-//                                 "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение."
-//                             ),
-//                         500
-//                     );
-//                 }
-//             }
-//         };
-
-//         await bot
-//             .answerWebAppQuery(queryId, {
-//                 type: "article",
-//                 id: queryId,
-//                 title: "Ваш заказ",
-//                 input_message_content: {
-//                     message_text:
-//                         `\n\nЗаказ:\n${products
-//                             .filter((el: any) => el.productCount > 0)
-//                             .map(
-//                                 (el: any) =>
-//                                     `${el.productCount} шт. | ${el.synonym}`
-//                             )
-//                             .join("\n")}\n` +
-//                         `\nФИО ${surName} ${firstName} ${middleName}` +
-//                         "\nНомер " +
-//                         phone +
-//                         `\n\nДоставка: ${deliverySum} ₽` +
-//                         "\n\nПрайс: " +
-//                         `${
-//                             totalPriceWithDiscount &&
-//                             totalPriceWithDiscount !== 0
-//                                 ? totalPriceWithDiscount
-//                                 : totalPrice
-//                         }`,
-//                 },
-//             })
-//             .catch((err) => console.log(err));
-
-//         const bankData = await prisma.bank.findFirst({
-//             where: { bankName: bank },
-//         });
-
-//         selectedCountry !== "RU"
-//             ? await bot
-//                   .sendMessage(
-//                       telegramId,
-//                       `К оплате: ${
-//                           totalPriceWithDiscount && totalPriceWithDiscount !== 0
-//                               ? totalPriceWithDiscount + Number(deliverySum)
-//                               : totalPrice + Number(deliverySum)
-//                       } ₽\n` +
-//                           `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
-//                           `${
-//                               bankData?.paymentType === "BANK"
-//                                   ? `Банк: ${bankData?.bankName}\n`
-//                                   : `Сеть: ${bankData?.bankName}`
-//                           }` +
-//                           `${
-//                               bankData?.paymentType === "BANK"
-//                                   ? `Номер карты: ${bankData?.requisite}\n`
-//                                   : `Адрес кошелька: ${bankData?.requisite}`
-//                           }` +
-//                           `${
-//                               bankData?.sbpNumber &&
-//                               bankData?.sbpNumber?.length > 0 &&
-//                               bankData?.paymentType === "BANK"
-//                                   ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
-//                                   : ""
-//                           }` +
-//                           `Получатель: ${bankData?.recipient}\n\n` +
-//                           `<blockquote>${bankData?.comments}</blockquote>` +
-//                           `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
-//                           `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
-//                           `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
-//                           `<blockquote>Если вы не успели оплатить заказ за 90 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
-//                           `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
-//                       {
-//                           parse_mode: "HTML",
-//                           reply_markup: {
-//                               inline_keyboard: [
-//                                   [
-//                                       {
-//                                           text: "Без оплаты - отменится через 90 мин.",
-//                                           callback_data: "отмена",
-//                                       },
-//                                   ],
-//                               ],
-//                           },
-//                       }
-//                   )
-//                   .then(async (sentMessage) => {
-//                       await prisma.order.updateMany({
-//                           where: { orderUniqueNumber: orderId },
-//                           data: {
-//                               messageId: sentMessage.message_id.toString(),
-//                           },
-//                       });
-//                   })
-//                   .catch((err) => console.log(err))
-//             : await bot
-//                   .sendMessage(
-//                       user?.telegramId!,
-//                       `К оплате: ${
-//                           totalPriceWithDiscount && totalPriceWithDiscount !== 0
-//                               ? totalPriceWithDiscount
-//                               : totalPrice
-//                       } ₽\n\n` +
-//                           `${
-//                               bankData?.paymentType === "BANK"
-//                                   ? `Банк: ${bankData?.bankName}\n`
-//                                   : `Сеть: ${bankData?.bankName}\n`
-//                           }` +
-//                           `${
-//                               bankData?.paymentType === "BANK"
-//                                   ? `Номер карты: ${bankData?.requisite}\n`
-//                                   : `Адрес кошелька: ${bankData?.requisite}\n`
-//                           }` +
-//                           `${
-//                               bankData?.sbpNumber &&
-//                               bankData?.sbpNumber?.length > 0 &&
-//                               bankData?.paymentType === "BANK"
-//                                   ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
-//                                   : ""
-//                           }` +
-//                           `Получатель: ${bankData?.recipient}\n\n` +
-//                           `<blockquote>${bankData?.comments}</blockquote>` +
-//                           `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
-//                           `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
-//                           `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
-//                           `<blockquote>Если вы не успели оплатить заказ за 90 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
-//                           `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
-//                       {
-//                           parse_mode: "HTML",
-//                           reply_markup: {
-//                               inline_keyboard: [
-//                                   [
-//                                       {
-//                                           text: "Без оплаты - отменится через 90 мин.",
-//                                           callback_data: "отмена",
-//                                       },
-//                                   ],
-//                               ],
-//                           },
-//                       }
-//                   )
-//                   .then(async (sentMessage) => {
-//                       await prisma.order
-//                           .updateMany({
-//                               where: { orderUniqueNumber: orderId },
-//                               data: {
-//                                   messageId: sentMessage.message_id.toString(),
-//                               },
-//                           })
-//                           .catch((err) => console.log(err));
-//                   });
-
-//         const timerId = setTimeout(async () => {
-//             // Проверяем, поступил ли чек об оплате
-//             const order = await checkOrderStatus(orderId);
-//             if (!order?.isPaid) {
-//                 const existingOrder = await prisma.order.findFirst({
-//                     where: { userId: user?.userId },
-//                 });
-//                 await bot
-//                     .deleteMessage(
-//                         user?.telegramId!,
-//                         Number(existingOrder?.messageId)
-//                     )
-//                     .catch((err) => console.log(err));
-//                 await cancelOrder(orderId);
-//                 bot.removeListener("message", handleScreenshotMessage);
-//                 await bot
-//                     .sendMessage(
-//                         user?.telegramId!,
-//                         "Ваш заказ был автоматически отменен из-за отсутствия оплаты."
-//                     )
-//                     .catch((err) => console.log(err));
-//             }
-//         }, 5400000); // 90 мин = 5400000 миллисекунд
-
-//         saveTimerIdForOrder(orderId, timerId);
-
-//         async function onPaymentReceived(unique: string) {
-//             // Получаем timerId из базы или переменной
-//             const timerId = getTimerIdForOrder(unique);
-//             if (timerId) {
-//                 // console.log(`Таймер для заказа ${unique} отменен, оплата получена.`);
-//                 clearTimeout(timerId);
-//                 removeTimerIdForOrder(unique);
-//             }
-//         }
-
-//         // Пример функций отмены заказа и проверки статуса
-//         async function cancelOrder(unique: string) {
-//             const order = await prisma.order.findFirst({
-//                 where: { orderUniqueNumber: unique },
-//             });
-//             const orderList = await prisma.order.findMany({
-//                 where: { orderUniqueNumber: unique },
-//             });
-//             const user = await prisma.user.findFirst({
-//                 where: { userId: order?.userId! },
-//             });
-//             const keyboard = await prisma.keyboard.findFirst({
-//                 where: { userId: order?.userId! },
-//             });
-
-//             if (keyboard) {
-//                 await prisma.keyboard.deleteMany({
-//                     where: { userId: order?.userId! },
-//                 });
-//                 bot.deleteMessage(
-//                     user?.telegramId!,
-//                     Number(keyboard?.messageId!)
-//                 ).catch((err) => console.log(err));
-//             }
-
-//             for (const ord of orderList) {
-//                 const prod = await prisma.product.findFirst({
-//                     where: { productId: ord.productId! },
-//                 });
-
-//                 await prisma.product.update({
-//                     where: { productId: ord.productId! },
-//                     data: {
-//                         count: Number(prod?.count) + Number(ord.productCount),
-//                     },
-//                 });
-//             }
-//             removeTimerIdForOrder(order?.orderUniqueNumber!);
-//             await prisma.order.deleteMany({
-//                 where: { orderUniqueNumber: unique },
-//             });
-//             // console.log(`Заказ ${unique} был отменен.`);
-//         }
-//         async function checkOrderStatus(unique: string) {
-//             const order = await prisma.order.findFirst({
-//                 where: { orderUniqueNumber: unique },
-//             });
-
-//             if (order?.status === "WAITPAY") {
-//                 return { isPaid: false }; // Здесь возвращаем статус заказа
-//             } else if (order?.status === "PENDING") {
-//                 onPaymentReceived(unique); // Если оплата получена, отменяем таймер
-//             }
-//             return { isPaid: true };
-//         }
-//         bot.on("message", handleScreenshotMessage);
-
-//         await prisma.basket.deleteMany({ where: { userId: user?.userId } });
-//         return res.status(200).json({ message: "Заказ успешно оформлен" });
-//     } catch (err) {
-//         console.error("Ошибка в процессе выполнения:", err);
-//         return res.status(500).json({ message: "Внутренняя ошибка сервера" });
-//     }
-// });
+        const isUserDidOrder = await prisma.order.findFirst({
+            where: { status: "WAITPAY", userId: user?.userId },
+        });
 
 
-app.post('/', async (req, res) => console.log('запрос принимается'))
+        if (isUserDidOrder) {
+            bot.sendMessage(
+                telegramId,
+                "У вас есть неоплаченный заказ\n\nНапишите /start"
+            );
+            return res
+                .status(400)
+                .json({ message: "Ожидание оплаты предыдущего заказа" });
+        }
+
+        if (!basket || !queryId || !totalPrice) {
+            await bot
+                .answerWebAppQuery(queryId, {
+                    type: "article",
+                    id: queryId,
+                    title: "Не удалось приобрести товар",
+                    input_message_content: {
+                        message_text:
+                            "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
+                    },
+                })
+                .catch((err) => console.log(err));
+            return res
+                .status(400)
+                .json({ message: "Все поля обязательны для заполнения" });
+        }
+
+        const uniqueProducts = products.filter((prod) => prod.productCount > 0);
+
+        const orderId = uuid;
+
+        const bankId = await prisma.bank
+            .findFirst({ where: { bankName: bank } })
+            .then((el) => el?.id);
+        const secret = await prisma.secretDiscount.findFirst({
+            where: { id: secretDiscountId },
+        });
+        if (bankId) {
+            for (let prod of uniqueProducts) {
+                const discount = await prisma.productDiscount.findFirst({
+                    where: { productId: prod?.productId },
+                });
+
+                await prisma.order.create({
+                    data: {
+                        userId: user?.userId!,
+                        orderUniqueNumber: orderId,
+                        productCount: prod.productCount,
+                        productId: prod.productId,
+                        firstName,
+                        middleName,
+                        surName,
+                        phone: phone,
+                        deliveryCost: deliverySum!,
+                        selectedPvzCode: selectedPvzCode,
+                        selectedTariff: parseInt(selectedTariff),
+                        bankId: bankId,
+                        totalPrice: totalPrice,
+                        totalPriceWithDiscount:
+                            totalPriceWithDiscount &&
+                            totalPriceWithDiscount !== totalPrice &&
+                            totalPriceWithDiscount !== 0
+                                ? totalPriceWithDiscount
+                                : null,
+                        selectedCountry: selectedCountry,
+                        orderType: "CDEK",
+                        promocodeId: promocodeId,
+                        city: selectedCityName,
+                        secretDiscountPercent: secretDiscountId
+                            ? secret?.percent
+                            : null,
+                        productCostWithDiscount:
+                            Number(prod.cost) * prod.productCount -
+                            Number(prod.cost) *
+                                Number(prod.productCount) *
+                                (Number(discount?.percent) / 100),
+                    },
+                });
+            }
+        }
+
+        const handleScreenshotMessage = async (msg: TelegramBot.Message) => {
+            if (msg.chat.id === telegramId) {
+                if (msg.photo) {
+                    bot.removeListener("message", handleScreenshotMessage);
+
+                    const fileId = msg.photo[msg.photo.length - 1].file_id;
+
+                    const user = await prisma.user.findFirst({
+                        where: { telegramId: msg.chat.id.toString() },
+                    });
+
+                    const isOrderAlreadyUpdated = await prisma.order.findMany({
+                        where: { orderUniqueNumber: orderId },
+                    });
+
+                    if (isOrderAlreadyUpdated[0].fileId) return;
+
+                    await prisma.order.updateMany({
+                        where: {
+                            userId: user?.userId,
+                            orderUniqueNumber: orderId,
+                        },
+                        data: { fileId: fileId },
+                    });
+
+                    try {
+                        const promocode = promocodeId
+                            ? await prisma.promocodes.findFirst({
+                                  where: { promocodeId: promocodeId },
+                              })
+                            : undefined;
+                        const messageToManager =
+                            `${
+                                msg.chat.username
+                                    ? `<a href='https://t.me/${msg.chat.username}'>Пользователь</a>`
+                                    : "Пользователь"
+                            }` +
+                            ` сделал заказ:\n${products
+                                .filter((el) => el.productCount > 0)
+                                .map(
+                                    (el) =>
+                                        `${el.productCount} шт. | ${el.synonym}`
+                                )
+                                .join(
+                                    "\n"
+                                )}\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${
+                                selectedCountry === "RU"
+                                    ? "Россия"
+                                    : selectedCountry === "KG"
+                                    ? "Кыргызстан"
+                                    : selectedCountry === "BY"
+                                    ? "Беларусь"
+                                    : selectedCountry === "AM"
+                                    ? "Армения"
+                                    : selectedCountry === "KZ"
+                                    ? "Казахстан"
+                                    : selectedCountry === "AZ"
+                                    ? "Азербайджан"
+                                    : selectedCountry === "UZ"
+                                    ? "Узбекистан"
+                                    : "Неизвестная страна"
+                            }
+                                 ${
+                                     selectedCountry !== "RU"
+                                         ? `\nГород: ${selectedCityName}\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>`
+                                         : `\nГород: ${selectedCityName}\n`
+                                 }
+                                 \nНомер: ${phone.replace(
+                                     /[ ()-]/g,
+                                     ""
+                                 )}\nПрайс: ${
+                                totalPriceWithDiscount
+                                    ? totalPriceWithDiscount
+                                    : totalPrice
+                            }\n` +
+                            `\Доставка: ${deliverySum} ₽` +
+                            `${
+                                secretDiscountId
+                                    ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
+                                    : ""
+                            }` +
+                            `${
+                                promocode
+                                    ? `\n\n<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>`
+                                    : ""
+                            }`;
+
+                        const order = await prisma.order.findFirst({
+                            where: { orderUniqueNumber: orderId },
+                        });
+
+                        if (order && order.status === "WAITPAY") {
+                            await bot
+                                .sendPhoto(MANAGER_CHAT_ID, fileId, {
+                                    caption: messageToManager,
+                                    reply_markup: {
+                                        inline_keyboard: [
+                                            [
+                                                {
+                                                    text: "✅ Принять",
+                                                    callback_data: `Принять_${orderId}`,
+                                                },
+                                                {
+                                                    text: "❌ Удалить",
+                                                    callback_data: `Удалить_${orderId}`,
+                                                },
+                                            ],
+                                        ],
+                                    },
+                                    parse_mode: "HTML",
+                                })
+                                .catch((err) => console.log(err));
+                        } else {
+                            console.log(
+                                "Этот заказ уже обработан или отправлен."
+                            );
+                        }
+
+                        // Обработчик callback_query для кнопок "Принять" и "Удалить"
+
+                        await prisma.order.updateMany({
+                            where: { orderUniqueNumber: orderId },
+                            data: { status: "PENDING" },
+                        });
+
+                        if (secretDiscountId)
+                            await prisma.secretDiscount.update({
+                                where: { id: secretDiscountId },
+                                data: { type: "USED" },
+                            });
+                        bot.sendMessage(
+                            telegramId,
+                            "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером."
+                        );
+                    } catch (err) {
+                        console.error("Ошибка отправки сообщения:", err);
+                    }
+                } else {
+                    setTimeout(
+                        () =>
+                            bot.sendMessage(
+                                telegramId,
+                                "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение."
+                            ),
+                        500
+                    );
+                }
+            }
+        };
+
+        await bot
+            .answerWebAppQuery(queryId, {
+                type: "article",
+                id: queryId,
+                title: "Ваш заказ",
+                input_message_content: {
+                    message_text:
+                        `\n\nЗаказ:\n${products
+                            .filter((el: any) => el.productCount > 0)
+                            .map(
+                                (el: any) =>
+                                    `${el.productCount} шт. | ${el.synonym}`
+                            )
+                            .join("\n")}\n` +
+                        `\nФИО ${surName} ${firstName} ${middleName}` +
+                        "\nНомер " +
+                        phone +
+                        `\n\nДоставка: ${deliverySum} ₽` +
+                        "\n\nПрайс: " +
+                        `${
+                            totalPriceWithDiscount &&
+                            totalPriceWithDiscount !== 0
+                                ? totalPriceWithDiscount
+                                : totalPrice
+                        }`,
+                },
+            })
+            .catch((err) => console.log(err));
+
+        const bankData = await prisma.bank.findFirst({
+            where: { bankName: bank },
+        });
+
+        selectedCountry !== "RU"
+            ? await bot
+                  .sendMessage(
+                      telegramId,
+                      `К оплате: ${
+                          totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                              ? totalPriceWithDiscount + Number(deliverySum)
+                              : totalPrice + Number(deliverySum)
+                      } ₽\n` +
+                          `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Банк: ${bankData?.bankName}\n`
+                                  : `Сеть: ${bankData?.bankName}`
+                          }` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Номер карты: ${bankData?.requisite}\n`
+                                  : `Адрес кошелька: ${bankData?.requisite}`
+                          }` +
+                          `${
+                              bankData?.sbpNumber &&
+                              bankData?.sbpNumber?.length > 0 &&
+                              bankData?.paymentType === "BANK"
+                                  ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
+                                  : ""
+                          }` +
+                          `Получатель: ${bankData?.recipient}\n\n` +
+                          `<blockquote>${bankData?.comments}</blockquote>` +
+                          `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
+                          `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
+                          `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
+                          `<blockquote>Если вы не успели оплатить заказ за 90 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
+                          `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
+                      {
+                          parse_mode: "HTML",
+                          reply_markup: {
+                              inline_keyboard: [
+                                  [
+                                      {
+                                          text: "Без оплаты - отменится через 90 мин.",
+                                          callback_data: "отмена",
+                                      },
+                                  ],
+                              ],
+                          },
+                      }
+                  )
+                  .then(async (sentMessage) => {
+                      await prisma.order.updateMany({
+                          where: { orderUniqueNumber: orderId },
+                          data: {
+                              messageId: sentMessage.message_id.toString(),
+                          },
+                      });
+                  })
+                  .catch((err) => console.log(err))
+            : await bot
+                  .sendMessage(
+                      user?.telegramId!,
+                      `К оплате: ${
+                          totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                              ? totalPriceWithDiscount
+                              : totalPrice
+                      } ₽\n\n` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Банк: ${bankData?.bankName}\n`
+                                  : `Сеть: ${bankData?.bankName}\n`
+                          }` +
+                          `${
+                              bankData?.paymentType === "BANK"
+                                  ? `Номер карты: ${bankData?.requisite}\n`
+                                  : `Адрес кошелька: ${bankData?.requisite}\n`
+                          }` +
+                          `${
+                              bankData?.sbpNumber &&
+                              bankData?.sbpNumber?.length > 0 &&
+                              bankData?.paymentType === "BANK"
+                                  ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
+                                  : ""
+                          }` +
+                          `Получатель: ${bankData?.recipient}\n\n` +
+                          `<blockquote>${bankData?.comments}</blockquote>` +
+                          `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
+                          `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
+                          `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
+                          `<blockquote>Если вы не успели оплатить заказ за 90 минут, напишите менеджеру для повторного оформления заказа.</blockquote>\n\n` +
+                          `Заказ оплачивается не позднее 23:59 (по московскому времени) текущего дня.`,
+                      {
+                          parse_mode: "HTML",
+                          reply_markup: {
+                              inline_keyboard: [
+                                  [
+                                      {
+                                          text: "Без оплаты - отменится через 90 мин.",
+                                          callback_data: "отмена",
+                                      },
+                                  ],
+                              ],
+                          },
+                      }
+                  )
+                  .then(async (sentMessage) => {
+                      await prisma.order
+                          .updateMany({
+                              where: { orderUniqueNumber: orderId },
+                              data: {
+                                  messageId: sentMessage.message_id.toString(),
+                              },
+                          })
+                          .catch((err) => console.log(err));
+                  });
+
+        const timerId = setTimeout(async () => {
+            // Проверяем, поступил ли чек об оплате
+            const order = await checkOrderStatus(orderId);
+            if (!order?.isPaid) {
+                const existingOrder = await prisma.order.findFirst({
+                    where: { userId: user?.userId },
+                });
+                await bot
+                    .deleteMessage(
+                        user?.telegramId!,
+                        Number(existingOrder?.messageId)
+                    )
+                    .catch((err) => console.log(err));
+                await cancelOrder(orderId);
+                bot.removeListener("message", handleScreenshotMessage);
+                await bot
+                    .sendMessage(
+                        user?.telegramId!,
+                        "Ваш заказ был автоматически отменен из-за отсутствия оплаты."
+                    )
+                    .catch((err) => console.log(err));
+            }
+        }, 5400000); // 90 мин = 5400000 миллисекунд
+
+        saveTimerIdForOrder(orderId, timerId);
+
+        async function onPaymentReceived(unique: string) {
+            // Получаем timerId из базы или переменной
+            const timerId = getTimerIdForOrder(unique);
+            if (timerId) {
+                // console.log(`Таймер для заказа ${unique} отменен, оплата получена.`);
+                clearTimeout(timerId);
+                removeTimerIdForOrder(unique);
+            }
+        }
+
+        // Пример функций отмены заказа и проверки статуса
+        async function cancelOrder(unique: string) {
+            const order = await prisma.order.findFirst({
+                where: { orderUniqueNumber: unique },
+            });
+            const orderList = await prisma.order.findMany({
+                where: { orderUniqueNumber: unique },
+            });
+            const user = await prisma.user.findFirst({
+                where: { userId: order?.userId! },
+            });
+            const keyboard = await prisma.keyboard.findFirst({
+                where: { userId: order?.userId! },
+            });
+
+            if (keyboard) {
+                await prisma.keyboard.deleteMany({
+                    where: { userId: order?.userId! },
+                });
+                bot.deleteMessage(
+                    user?.telegramId!,
+                    Number(keyboard?.messageId!)
+                ).catch((err) => console.log(err));
+            }
+
+            for (const ord of orderList) {
+                const prod = await prisma.product.findFirst({
+                    where: { productId: ord.productId! },
+                });
+
+                await prisma.product.update({
+                    where: { productId: ord.productId! },
+                    data: {
+                        count: Number(prod?.count) + Number(ord.productCount),
+                    },
+                });
+            }
+            removeTimerIdForOrder(order?.orderUniqueNumber!);
+            await prisma.order.deleteMany({
+                where: { orderUniqueNumber: unique },
+            });
+            // console.log(`Заказ ${unique} был отменен.`);
+        }
+        async function checkOrderStatus(unique: string) {
+            const order = await prisma.order.findFirst({
+                where: { orderUniqueNumber: unique },
+            });
+
+            if (order?.status === "WAITPAY") {
+                return { isPaid: false }; // Здесь возвращаем статус заказа
+            } else if (order?.status === "PENDING") {
+                onPaymentReceived(unique); // Если оплата получена, отменяем таймер
+            }
+            return { isPaid: true };
+        }
+        bot.on("message", handleScreenshotMessage);
+
+        await prisma.basket.deleteMany({ where: { userId: user?.userId } });
+        return res.status(200).json({ message: "Заказ успешно оформлен" });
+    } catch (err) {
+        console.error("Ошибка в процессе выполнения:", err);
+        return res.status(500).json({ message: "Внутренняя ошибка сервера" });
+    }
+});
+
+
+// app.post('/', async (req, res) => console.log('запрос принимается'))
 
 async function getOrderData(orderId: string) {
     // Предполагаем, что данные заказов хранятся в базе данных
