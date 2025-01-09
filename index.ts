@@ -20,6 +20,7 @@ import { MANAGER_CHAT_ID, WEB_APP } from "./config/config";
 import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
 import { generateBarcode } from "./helpers/generate-barcode";
+import bodyParser from "body-parser";
 
 const app = express();
 
@@ -27,6 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.options("*", cors());
+app.use(bodyParser.json({ limit: "10mb" })); // Увеличьте лимит для JSON
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 
 setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
 
@@ -952,7 +955,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     chatId!,
                     ""
                 ).catch((err) => console.log(err));
-                console.log(orderTrackNumberForUser, "barcode: " + barcode);
+                
+                console.log("Размер PDF:", barcode?.pdfBuffer.length, "байт");
+
 
                 // await bot
                 //     .sendDocument(
