@@ -19,7 +19,6 @@ import { updatePaymentInfo } from "./controllers/payment-controller";
 import { MANAGER_CHAT_ID, WEB_APP } from "./config/config";
 import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
-import { generateBarcode } from "./helpers/generate-barcode";
 import bodyParser from "body-parser";
 
 const app = express();
