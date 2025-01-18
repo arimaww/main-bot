@@ -22,18 +22,17 @@ import { handleCollectOrder } from "./callback-handlers/collect-order";
 
 const app = express();
 
-app.use(express.json({ limit: '50mb' }));  // Можно установить другой размер по нуждам
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(morgan("dev"));
 app.use(cors({
-    origin: 'https://client.triplehh.ru', // Замените на URL вашего фронтенда
+    origin: '*',
     methods: ['POST'],
     allowedHeaders: ['Content-Type']
 }));
 
 
 app.use((req, res, next) => {
-    // Логируем размер тела запроса
     if (req.body && req.body.length) {
       console.log(`Размер тела запроса: ${Buffer.byteLength(JSON.stringify(req.body))} байт`);
     } else {
@@ -214,8 +213,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     let errorOrderCreating = null;
 
     const requestSize = req.headers['content-length'];
-console.log(`Request size: ${requestSize} bytes`);
-    console.log('доходит')
     try {
         const user = await prisma.user.findFirst({
             where: { telegramId: telegramId.toString() },
