@@ -19,27 +19,32 @@ import { updatePaymentInfo } from "./controllers/payment-controller";
 import { MANAGER_CHAT_ID, WEB_APP } from "./config/config";
 import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
+import { generateBarcode } from "./helpers/generate-barcode";
+import { gettingBarcode, pollForBarcode } from "./helpers/getting-barcode";
 
 const app = express();
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(morgan("dev"));
-app.use(cors({
-    origin: '*',
-    methods: ['POST'],
-    allowedHeaders: ['Content-Type']
-}));
-
+app.use(
+    cors({
+        origin: "*",
+        methods: ["POST"],
+        allowedHeaders: ["Content-Type"],
+    })
+);
 
 app.use((req, res, next) => {
     if (req.body && req.body.length) {
-      console.log(`Размер тела запроса: ${Buffer.byteLength(JSON.stringify(req.body))} байт`);
+        console.log(
+            `Размер тела запроса: ${Buffer.byteLength(JSON.stringify(req.body))} байт`
+        );
     } else {
-      console.log('Тело запроса пустое');
+        console.log("Тело запроса пустое");
     }
     next();
-  });
+});
 
 setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
 
@@ -212,7 +217,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
     let errorOrderCreating = null;
 
-    const requestSize = req.headers['content-length'];
+    const requestSize = req.headers["content-length"];
     try {
         const user = await prisma.user.findFirst({
             where: { telegramId: telegramId.toString() },
@@ -221,7 +226,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         const isUserDidOrder = await prisma.order.findFirst({
             where: { status: "WAITPAY", userId: user?.userId },
         });
-
 
         if (isUserDidOrder) {
             bot.sendMessage(
@@ -353,18 +357,18 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 selectedCountry === "RU"
                                     ? "Россия"
                                     : selectedCountry === "KG"
-                                    ? "Кыргызстан"
-                                    : selectedCountry === "BY"
-                                    ? "Беларусь"
-                                    : selectedCountry === "AM"
-                                    ? "Армения"
-                                    : selectedCountry === "KZ"
-                                    ? "Казахстан"
-                                    : selectedCountry === "AZ"
-                                    ? "Азербайджан"
-                                    : selectedCountry === "UZ"
-                                    ? "Узбекистан"
-                                    : "Неизвестная страна"
+                                      ? "Кыргызстан"
+                                      : selectedCountry === "BY"
+                                        ? "Беларусь"
+                                        : selectedCountry === "AM"
+                                          ? "Армения"
+                                          : selectedCountry === "KZ"
+                                            ? "Казахстан"
+                                            : selectedCountry === "AZ"
+                                              ? "Азербайджан"
+                                              : selectedCountry === "UZ"
+                                                ? "Узбекистан"
+                                                : "Неизвестная страна"
                             }
                                  ${
                                      selectedCountry !== "RU"
@@ -375,10 +379,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                      /[ ()-]/g,
                                      ""
                                  )}\nПрайс: ${
-                                totalPriceWithDiscount
-                                    ? totalPriceWithDiscount
-                                    : totalPrice
-                            }\n` +
+                                     totalPriceWithDiscount
+                                         ? totalPriceWithDiscount
+                                         : totalPrice
+                                 }\n` +
                             `\Доставка: ${deliverySum} ₽` +
                             `${
                                 secretDiscountId
@@ -702,7 +706,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     }
 });
 
-
 // app.post('/', async (req, res) => console.log('запрос принимается'))
 
 async function getOrderData(orderId: string) {
@@ -831,10 +834,12 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             if (orderData && orderData.im_number) {
                 await delay(2000);
 
-                const orderTrackNumberForUser = await getOrderTrackNumber(
+                const orderCdekData = await getOrderTrackNumber(
                     orderData?.im_number,
                     authData?.access_token!
-                );
+                ).then((order) => order.entity);
+
+                const orderTrackNumberForUser = orderCdekData.cdek_number;
 
                 await prisma.order.updateMany({
                     where: { orderUniqueNumber: orderData?.im_number },
@@ -928,77 +933,16 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     })
                     .catch((err) => console.log(err));
 
-                const orderAcceptCaption =
-                    `Заказ ${
-                        orderData?.username
-                            ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
-                            : "клиента"
-                    }` +
-                    ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products
-                        .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                        .join("\n")}\n\nПрайс: ${
-                        orderData?.totalPriceWithDiscount
-                            ? orderData?.totalPriceWithDiscount
-                            : orderData?.totalPrice
-                    }\n\n` +
-                    `Данные клиента:\n` +
-                    `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
-                    `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
-                    `${
-                        orderData?.secretDiscountPercent
-                            ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
-                            : ""
-                    }` +
-                    `Время: ${timestamp.getDate()}.${
-                        timestamp.getMonth() + 1 < 10
-                            ? "0" + (timestamp.getMonth() + 1)
-                            : timestamp.getMonth() + 1
-                    }.` +
-                    `${timestamp.getFullYear()}  ${
-                        timestamp.getHours() < 10
-                            ? "0" + timestamp.getHours()
-                            : timestamp.getHours()
-                    }:` +
-                    `${
-                        timestamp.getMinutes() < 10
-                            ? "0" + timestamp.getMinutes()
-                            : timestamp.getMinutes()
-                    }`;
 
-                // const barcode = await generateBarcode(
-                //     orderTrackNumberForUser,
-                //     chatId!,
-                //     ""
-                // ).catch((err) => console.log(err));
-                
-                // console.log("Размер PDF:", barcode?.pdfBuffer.length, "байт");
+                const barcode_uuid = await generateBarcode(
+                    orderCdekData.uuid,
+                    authData?.access_token
+                ).then((barcode) => barcode.entity.uuid);
 
 
-                // await bot
-                //     .sendDocument(
-                //         process.env.CDEK_GROUP_ID!,
-                //         barcode?.pdfBuffer!,
-                //         {
-                //             caption: orderAcceptCaption,
-                //             parse_mode: "HTML",
-                //             reply_markup: {
-                //                 inline_keyboard: [
-                //                     [
-                //                         {
-                //                             text: "Собрать заказ",
-                //                             callback_data: `collect_order:${orderTrackNumberForUser}`,
-                //                         },
-                //                     ],
-                //                 ],
-                //             },
-                //         },
-                //         {
-                //             filename: barcode?.filename,
-                //             contentType: barcode?.contentType,
-                //         }
-                //     )
-                //     .catch((err) => console.log(err));
-                    await bot
+                const barcode_url = await pollForBarcode(barcode_uuid, authData?.access_token!);
+
+                await bot
                     .sendMessage(
                         process.env.CDEK_GROUP_ID!,
                         `Заказ ${
@@ -1006,7 +950,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
                                 : "клиента"
                         }` +
-                            ` принят.\n\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n${orderData.products
+                            ` принят.\n\nТрек-номер: ${orderTrackNumberForUser}. <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
                                 .map(
                                     (el) =>
                                         `${el.productCount} шт. | ${el.synonym}`
