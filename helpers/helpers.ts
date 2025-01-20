@@ -6,6 +6,7 @@ import {
     TDeliveryResponse,
     TRecordOrderInfo,
 } from "../types/types";
+import axios from "axios";
 
 export const recordOrderInfo = async (body: TRecordOrderInfo) => {
     try {
@@ -27,42 +28,28 @@ export const recordOrderInfo = async (body: TRecordOrderInfo) => {
     }
 };
 
-export const getOrderTrackNumber = (
+export const getOrderTrackNumber = async (
     uuid: string,
     token: string
-): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const options = {
-            url: `${process.env.SERVER_API_URL}/orders/info/`,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-            body: JSON.stringify({ im_number: uuid, token: token }),
-        };
-
-        request(options, (error, _, body) => {
-            if (error) {
-                return reject("Ошибка при запросе к CDEK API: " + error);
+): Promise<{ entity: { uuid: string; cdek_number: string } }> => {
+    try {
+        const response = await axios.post(
+            `${process.env.SERVER_API_URL}/orders/info/`,
+            { im_number: uuid, token: token },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
             }
+        );
 
-            let data;
-            try {
-                data = JSON.parse(body);
-            } catch (parseError) {
-                return reject("Error parsing JSON");
-            }
+        const data = response.data;
 
-            if (data.entity && data.entity.cdek_number) {
-                return resolve(data.entity.cdek_number);
-            } else if (data.requests[0].errors) {
-                reject("Ошибка: " + data.requests[0].errors[0].message);
-            } else {
-                return reject("cdek_number not found");
-            }
-        });
-    });
+        return data;
+    } catch (error: any) {
+        throw new Error("Ошибка при запросе к CDEK API: " + error.message);
+    }
 };
 
 export const getOrderObjRu = async (
