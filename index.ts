@@ -933,14 +933,28 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     })
                     .catch((err) => console.log(err));
 
-
                 const barcode_uuid = await generateBarcode(
                     orderCdekData.uuid,
                     authData?.access_token
                 ).then((barcode) => barcode.entity.uuid);
 
+                const barcode_url = await pollForBarcode(
+                    barcode_uuid,
+                    authData?.access_token!
+                );
 
-                const barcode_url = await pollForBarcode(barcode_uuid, authData?.access_token!);
+                // Записываем barcode в бд
+
+                const barcodeId = await prisma.orderBarcode
+                    .create({ data: { url: barcode_url } })
+                    .then((el) => el.id);
+
+                // записываем barcodeId в Order
+
+                await prisma.order.updateMany({
+                    where: { orderUniqueNumber: orderData?.im_number },
+                    data: { orderBarcodeId: barcodeId },
+                }).catch(err => console.log(err));
 
                 await bot
                     .sendMessage(

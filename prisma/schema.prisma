@@ -65,7 +65,7 @@ model Basket {
 }
 
 model Order {
-  orderId                 Int         @id @default(autoincrement())
+  orderId                 Int           @id @default(autoincrement())
   orderTrackNumber        String?
   userId                  Int?
   surName                 String?
@@ -73,9 +73,9 @@ model Order {
   middleName              String?
   productId               Int?
   productCount            Int
-  createdAt               DateTime    @default(now())
-  updatedAt               DateTime    @default(now()) @updatedAt
-  status                  OrderStatus @default(WAITPAY)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @default(now()) @updatedAt
+  status                  OrderStatus   @default(WAITPAY)
   orderUniqueNumber       String?
   phone                   String?
   selectedPvzCode         String?
@@ -93,10 +93,12 @@ model Order {
   productCostWithDiscount Decimal?
   promocodeId             Int?
   secretDiscountPercent   Int?
-  Bank                    Bank?       @relation(fields: [bankId], references: [id])
-  product                 Product?    @relation(fields: [productId], references: [productId])
-  Promocodes              Promocodes? @relation(fields: [promocodeId], references: [promocodeId])
-  user                    User?       @relation(fields: [userId], references: [userId])
+  orderBarcodeId          Int?
+  Bank                    Bank?         @relation(fields: [bankId], references: [id])
+  OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
+  product                 Product?      @relation(fields: [productId], references: [productId])
+  Promocodes              Promocodes?   @relation(fields: [promocodeId], references: [promocodeId])
+  user                    User?         @relation(fields: [userId], references: [userId])
 }
 
 model CdekOffice {
@@ -211,6 +213,14 @@ model Category {
   createdAt DateTime  @default(now())
   updatedAt DateTime
   Product   Product[]
+}
+
+model OrderBarcode {
+  id        Int      @id @default(autoincrement())
+  url       String
+  createdAt DateTime @default(now())
+  updateAt  DateTime @default(now())
+  Order     Order[]
 }
 
 enum Role {
