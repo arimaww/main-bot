@@ -19,13 +19,9 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                         inline_keyboard: [
                             [
                                 {
-                                    text: "Да",
+                                    text: "Точно собрать? (Да)",
                                     callback_data: `confirm_collect:${orderTrackNumber}`,
-                                },
-                                {
-                                    text: "Нет",
-                                    callback_data: `reject_collect:${orderTrackNumber}`,
-                                },
+                                }
                             ],
                             [
                                 {
@@ -96,55 +92,55 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
             }
             break;
 
-        case "reject_collect":
-            {
-                // Логика отказа от сбора заказа
-                await bot
-                    .editMessageReplyMarkup(
-                        {
-                            inline_keyboard: [], // Пустая клавиатура, чтобы скрыть ее
-                        },
-                        {
-                            chat_id: callbackQuery.message?.chat.id,
-                            message_id: callbackQuery.message?.message_id,
-                        }
-                    )
-                    .catch((err) => console.log(err));
+        // case "reject_collect":
+        //     {
+        //         // Логика отказа от сбора заказа
+        //         await bot
+        //             .editMessageReplyMarkup(
+        //                 {
+        //                     inline_keyboard: [], // Пустая клавиатура, чтобы скрыть ее
+        //                 },
+        //                 {
+        //                     chat_id: callbackQuery.message?.chat.id,
+        //                     message_id: callbackQuery.message?.message_id,
+        //                 }
+        //             )
+        //             .catch((err) => console.log(err));
 
-                const order = await prisma.order.findFirst({
-                    where: { orderTrackNumber: orderTrackNumber },
-                });
-                const user = await prisma.user.findFirst({
-                    where: { userId: Number(order?.userId) },
-                });
+        //         const order = await prisma.order.findFirst({
+        //             where: { orderTrackNumber: orderTrackNumber },
+        //         });
+        //         const user = await prisma.user.findFirst({
+        //             where: { userId: Number(order?.userId) },
+        //         });
 
-                if (
-                    order &&
-                    user &&
-                    callbackQuery.message?.chat.id &&
-                    callbackQuery.message?.message_id
-                ) {
-                    await prisma.order.deleteMany({
-                        where: { orderTrackNumber: orderTrackNumber },
-                    });
-                    await bot.sendMessage(
-                        user?.telegramId,
-                        `Ваш заказ с трек номером: ${orderTrackNumber} был отменён.`
-                    );
-                    await bot
-                        .editMessageText(
-                            `Сбор заказа с номером ${orderTrackNumber} был отменён.`,
-                            {
-                                chat_id: callbackQuery.message?.chat.id || 0,
-                                message_id:
-                                    callbackQuery.message?.message_id || 0,
-                            }
-                        )
-                        .catch((err) => console.log(err));
-                }
-            }
+        //         if (
+        //             order &&
+        //             user &&
+        //             callbackQuery.message?.chat.id &&
+        //             callbackQuery.message?.message_id
+        //         ) {
+        //             await prisma.order.deleteMany({
+        //                 where: { orderTrackNumber: orderTrackNumber },
+        //             });
+        //             await bot.sendMessage(
+        //                 user?.telegramId,
+        //                 `Ваш заказ с трек номером: ${orderTrackNumber} был отменён.`
+        //             );
+        //             await bot
+        //                 .editMessageText(
+        //                     `Сбор заказа с номером ${orderTrackNumber} был отменён.`,
+        //                     {
+        //                         chat_id: callbackQuery.message?.chat.id || 0,
+        //                         message_id:
+        //                             callbackQuery.message?.message_id || 0,
+        //                     }
+        //                 )
+        //                 .catch((err) => console.log(err));
+        //         }
+        //     }
 
-            break;
+        //     break;
 
         case "go_back":
             // Возврат к начальному состоянию клавиатуры
