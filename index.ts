@@ -21,6 +21,7 @@ import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
 import { generateBarcode } from "./helpers/generate-barcode";
 import { gettingBarcode, pollForBarcode } from "./helpers/getting-barcode";
+import { createHash, createHmac } from "crypto";
 
 const app = express();
 
@@ -65,6 +66,26 @@ function removeTimerIdForOrder(unique: string) {
     timers.delete(unique);
     // console.log(`Таймер для заказа ${unique} удален.`);
 }
+
+bot.on('message', async (message: TelegramBot.Message) => {
+    if (String(message.chat.id) === MANAGER_CHAT_ID && message.text?.startsWith('/sendMessage')) {
+        const regex = /\/sendMessage\s+(\d+)\s+["“”]?([^"“”]+)["“”]?/;
+        const match = message.text.match(regex);
+
+        if (!match) {
+            await bot.sendMessage(
+                message.chat.id,
+                'Формат команды: /sendMessage [telegramId] "[message]" (вводить без скобок)'
+            );
+            return;
+        }
+
+        const [, telegramId, msg] = match;
+
+        await bot.sendMessage(telegramId, msg);
+    }
+});
+
 
 bot.onText(
     /\/start( (.+))?/,
@@ -860,8 +881,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                         `${el.productCount} шт. | ${el.synonym}`
                                 )
                                 .join("\n")}\n\n` +
-                            `Отправка посылки осуществляется в течение 3х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
-                            `Если в течение 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
+                            `Отправка посылки осуществляется в течение 4х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
+                            `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
                             `Ссылка на чат наших клиентов:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
                             `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
                         {
@@ -873,9 +894,6 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 const timestamp = new Date();
 
-                await bot
-                    .deleteMessage(chatId!, messageId!)
-                    .catch((err) => console.log(err));
 
                 const acceptOrderMessage =
                     `Заказ ${
@@ -916,9 +934,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             : timestamp.getMinutes()
                     }`;
 
-                await bot
-                    .sendPhoto(chatId!, orderData?.fileId!, {
-                        caption: acceptOrderMessage,
+                    await bot.editMessageCaption(acceptOrderMessage, {
+                        message_id: messageId,
+                        chat_id: chatId,
                         reply_markup: {
                             inline_keyboard: [
                                 [
@@ -929,9 +947,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 ],
                             ],
                         },
-                        parse_mode: "HTML",
-                    })
-                    .catch((err) => console.log(err));
+                        parse_mode: 'HTML'
+                    }).catch(async (err) => await bot.sendMessage(MANAGER_CHAT_ID, '[ЛОГИ]: Ошибка: ' + err));
 
                 const barcode_uuid = await generateBarcode(
                     orderCdekData.uuid,

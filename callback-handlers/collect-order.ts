@@ -66,7 +66,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
             ) {
                 await bot
                     .editMessageText(
-                            `Заказ с номером ${orderTrackNumber} был успешно собран!\nСообщение удалится через 10 сек.`,
+                            `Заказ с номером ${orderTrackNumber} был успешно собран!\n`,
                         {
                             chat_id: callbackQuery.message?.chat.id || 0,
                             message_id: callbackQuery.message?.message_id || 0,
@@ -74,13 +74,6 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                     )
                     .catch((err) => console.log(err));
 
-                setTimeout(
-                    async () =>
-                        await bot.deleteMessage(
-                            callbackQuery.message?.chat.id || 0,
-                            callbackQuery.message?.message_id || 0
-                        ).catch(err => console.log(err)), 10000
-                );
                 await bot
                     .sendMessage(
                         user.telegramId,
