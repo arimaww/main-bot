@@ -83,6 +83,7 @@ bot.on('message', async (message: TelegramBot.Message) => {
         const [, telegramId, msg] = match;
 
         await bot.sendMessage(telegramId, msg);
+        await bot.sendMessage(MANAGER_CHAT_ID, 'Сообщение успешно отправлено')
     }
 });
 
@@ -374,7 +375,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 )
                                 .join(
                                     "\n"
-                                )}\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${
+                                )}\nTelegram ID: ${telegramId}\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${
                                 selectedCountry === "RU"
                                     ? "Россия"
                                     : selectedCountry === "KG"
@@ -901,8 +902,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
                             : "клиента"
                     }` +
-                    ` принят.\n\n` +
-                    `Трек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n` +
+                    ` принят.\nTelegram ID: ${orderData?.telegramId}\n\n` +
+                    `\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n` +
                     `${orderData.products
                         .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                         .join("\n")}\n\nПрайс: ${
@@ -981,7 +982,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
                                 : "клиента"
                         }` +
-                            ` принят.\n\nТрек-номер: ${orderTrackNumberForUser}. <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
+                            ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}. <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
                                 .map(
                                     (el) =>
                                         `${el.productCount} шт. | ${el.synonym}`
