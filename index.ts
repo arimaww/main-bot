@@ -67,8 +67,11 @@ function removeTimerIdForOrder(unique: string) {
     // console.log(`Таймер для заказа ${unique} удален.`);
 }
 
-bot.on('message', async (message: TelegramBot.Message) => {
-    if (String(message.chat.id) === MANAGER_CHAT_ID && message.text?.startsWith('/sendMessage')) {
+bot.on("message", async (message: TelegramBot.Message) => {
+    if (
+        String(message.chat.id) === MANAGER_CHAT_ID &&
+        message.text?.startsWith("/sendMessage")
+    ) {
         const regex = /\/sendMessage\s+(\d+)\s+["“”]?([^"“”]+)["“”]?/;
         const match = message.text.match(regex);
 
@@ -82,11 +85,24 @@ bot.on('message', async (message: TelegramBot.Message) => {
 
         const [, telegramId, msg] = match;
 
-        await bot.sendMessage(telegramId, msg);
-        await bot.sendMessage(MANAGER_CHAT_ID, 'Сообщение успешно отправлено')
+        await bot.sendMessage(telegramId, msg).catch(
+            async (err) =>
+                await bot.sendMessage(
+                    MANAGER_CHAT_ID,
+                    "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err
+                )
+        )
+        await bot
+            .sendMessage(MANAGER_CHAT_ID, "Сообщение успешно отправлено")
+            .catch(
+                async (err) =>
+                    await bot.sendMessage(
+                        MANAGER_CHAT_ID,
+                        "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err
+                    )
+            );
     }
 });
-
 
 bot.onText(
     /\/start( (.+))?/,
@@ -895,7 +911,6 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 const timestamp = new Date();
 
-
                 const acceptOrderMessage =
                     `Заказ ${
                         orderData?.username
@@ -935,7 +950,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             : timestamp.getMinutes()
                     }`;
 
-                    await bot.editMessageCaption(acceptOrderMessage, {
+                await bot
+                    .editMessageCaption(acceptOrderMessage, {
                         message_id: messageId,
                         chat_id: chatId,
                         reply_markup: {
@@ -948,8 +964,15 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 ],
                             ],
                         },
-                        parse_mode: 'HTML'
-                    }).catch(async (err) => await bot.sendMessage(MANAGER_CHAT_ID, '[ЛОГИ]: Ошибка: ' + err));
+                        parse_mode: "HTML",
+                    })
+                    .catch(
+                        async (err) =>
+                            await bot.sendMessage(
+                                MANAGER_CHAT_ID,
+                                "[ЛОГИ]: Ошибка: " + err
+                            )
+                    );
 
                 const barcode_uuid = await generateBarcode(
                     orderCdekData.uuid,
@@ -969,10 +992,12 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 // записываем barcodeId в Order
 
-                await prisma.order.updateMany({
-                    where: { orderUniqueNumber: orderData?.im_number },
-                    data: { orderBarcodeId: barcodeId },
-                }).catch(err => console.log(err));
+                await prisma.order
+                    .updateMany({
+                        where: { orderUniqueNumber: orderData?.im_number },
+                        data: { orderBarcodeId: barcodeId },
+                    })
+                    .catch((err) => console.log(err));
 
                 await bot
                     .sendMessage(
