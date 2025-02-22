@@ -42,6 +42,7 @@ model Product {
   categoryId      Int?
   longDescription String?
   sostav          String?
+  is_archived     Boolean          @default(false)
   basket          Basket[]
   order           Order[]
   Category        Category?        @relation(fields: [categoryId], references: [id])
@@ -94,7 +95,9 @@ model Order {
   promocodeId             Int?
   secretDiscountPercent   Int?
   orderBarcodeId          Int?
+  messagesId              String?
   Bank                    Bank?         @relation(fields: [bankId], references: [id])
+  Messages                Messages?     @relation(fields: [messagesId], references: [id])
   OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
   product                 Product?      @relation(fields: [productId], references: [productId])
   Promocodes              Promocodes?   @relation(fields: [promocodeId], references: [promocodeId])
@@ -221,6 +224,15 @@ model OrderBarcode {
   createdAt DateTime @default(now())
   updateAt  DateTime @default(now())
   Order     Order[]
+}
+
+model Messages {
+  id                String   @id
+  cdek_group_msg_id String
+  bot_msg_id        String
+  createdAt         DateTime @default(now())
+  updateAt          DateTime @default(now())
+  Order             Order[]
 }
 
 enum Role {
