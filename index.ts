@@ -20,8 +20,8 @@ import { MANAGER_CHAT_ID, WEB_APP } from "./config/config";
 import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
 import { generateBarcode } from "./helpers/generate-barcode";
-import { gettingBarcode, pollForBarcode } from "./helpers/getting-barcode";
-import { createHash, createHmac } from "crypto";
+import { pollForBarcode } from "./helpers/getting-barcode";
+import { orderRoutes } from "./routes/order-routes";
 
 const app = express();
 
@@ -46,6 +46,8 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 
 setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
 
@@ -85,20 +87,24 @@ bot.on("message", async (message: TelegramBot.Message) => {
 
         const [, telegramId, msg] = match;
 
-        await bot.sendMessage(telegramId, msg).catch(
-            async (err) =>
-                await bot.sendMessage(
-                    MANAGER_CHAT_ID,
-                    "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err
-                )
-        )
+        await bot
+            .sendMessage(telegramId, msg)
+            .catch(
+                async (err) =>
+                    await bot.sendMessage(
+                        MANAGER_CHAT_ID,
+                        "[ЛОГИ]: Произошла ошибка при отправке сообщения: " +
+                            err
+                    )
+            );
         await bot
             .sendMessage(MANAGER_CHAT_ID, "Сообщение успешно отправлено")
             .catch(
                 async (err) =>
                     await bot.sendMessage(
                         MANAGER_CHAT_ID,
-                        "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err
+                        "[ЛОГИ]: Произошла ошибка при отправке сообщения: " +
+                            err
                     )
             );
     }
@@ -1054,6 +1060,12 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                             callback_data: `collect_order:${orderTrackNumberForUser}`,
                                         },
                                     ],
+                                    [
+                                        {
+                                            text: "Отредактировать",
+                                            url: `${WEB_CRM_APP}/orderedit/${orderUnique}`
+                                        },
+                                    ]
                                 ],
                             },
                         }
@@ -1135,6 +1147,7 @@ bot.on("callback_query", handleCollectOrder);
 bot.on("callback_query", handleCallbackQuery);
 
 app.post("/update-payment-info", updatePaymentInfo);
+app.use("/order", orderRoutes);
 
 app.listen(7000, () => {
     console.log("Запущен на 7000 порте");
