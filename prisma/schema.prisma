@@ -95,7 +95,7 @@ model Order {
   promocodeId             Int?
   secretDiscountPercent   Int?
   orderBarcodeId          Int?
-  messagesId              String?
+  messagesId              Int?
   Bank                    Bank?         @relation(fields: [bankId], references: [id])
   Messages                Messages?     @relation(fields: [messagesId], references: [id])
   OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
@@ -227,11 +227,11 @@ model OrderBarcode {
 }
 
 model Messages {
-  id                String   @id
   cdek_group_msg_id String
   bot_msg_id        String
   createdAt         DateTime @default(now())
   updateAt          DateTime @default(now())
+  id                Int      @id @default(autoincrement())
   Order             Order[]
 }
 

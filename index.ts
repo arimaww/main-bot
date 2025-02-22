@@ -463,6 +463,22 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                     },
                                     parse_mode: "HTML",
                                 })
+                                .then(async (msg) => {
+                                    const newMessage =
+                                        await prisma.messages.create({
+                                            data: {
+                                                bot_msg_id: String(
+                                                    msg.message_id
+                                                ),
+                                                cdek_group_msg_id: "",
+                                            },
+                                        });
+
+                                    await prisma.order.updateMany({
+                                        where: { orderUniqueNumber: orderId },
+                                        data: { messagesId: newMessage.id },
+                                    });
+                                })
                                 .catch((err) => console.log(err));
                         } else {
                             console.log(
@@ -1063,13 +1079,28 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                     [
                                         {
                                             text: "Отредактировать",
-                                            url: `${WEB_CRM_APP}/orderedit/${orderUnique}`
+                                            url: `${WEB_CRM_APP}/orderedit/${orderUnique}`,
                                         },
-                                    ]
+                                    ],
                                 ],
                             },
                         }
                     )
+                    .then(async (msg) => {
+                        const dbMessageId = await prisma.order
+                            .findFirst({
+                                where: { orderUniqueNumber: orderUnique },
+                            })
+                            .then((msg) => msg?.messagesId);
+                        if (dbMessageId) {
+                            await prisma.messages.update({
+                                where: { id: dbMessageId },
+                                data: {
+                                    cdek_group_msg_id: String(msg.message_id),
+                                },
+                            });
+                        }
+                    })
                     .catch((err) => console.log(err));
             }
         } else if (action === "Удалить") {
