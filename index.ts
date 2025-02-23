@@ -1029,7 +1029,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
                                 : "клиента"
                         }` +
-                            ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}. <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
+                            ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}.\n <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
                                 .map(
                                     (el) =>
                                         `${el.productCount} шт. | ${el.synonym}`
