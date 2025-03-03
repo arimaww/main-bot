@@ -62,9 +62,11 @@ export const getOrderObjRu = async (
     phone: string,
     selectedPvzCode: string,
     deliverySum: number,
-    selectedTariff: number
+    selectedTariff: number,
+    address: string,
+    cityCode: number,
 ): Promise<TDeliveryRequest> => {
-    return {
+    const obj = {
         token: access_token,
         number: uuidCdek,
         type: 1,
@@ -118,8 +120,17 @@ export const getOrderObjRu = async (
         ],
         tariff_code: selectedTariff,
         shipment_point: process.env.SHIPMENT_POINT!,
-        delivery_point: selectedPvzCode,
     };
+
+    if(address) {
+        const courierDelivery:TDeliveryRequest = {...obj, to_location: {code: cityCode, address: address} }
+
+        return courierDelivery
+    }
+    else {
+        const warehouseDelivery:TDeliveryRequest = {...obj, delivery_point: selectedPvzCode}
+        return warehouseDelivery
+    }
 };
 
 export const getOrderObjInternation = async (
@@ -132,21 +143,22 @@ export const getOrderObjInternation = async (
     phone: string,
     selectedPvzCode: string,
     deliverySum: number,
-    selectedTariff: number
+    selectedTariff: number,
+    address: string,
+    cityCode: number
 ): Promise<TDeliveryRequest> => {
-    return {
-        token: access_token,
+    let obj = {token: access_token,
         number: uuidCdek,
         type: 1,
         date_invoice: `${new Date().getFullYear()}-${String(
             new Date().getMonth() + 1
         ).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`,
-        shipper_address: "г. Кизилюрт, площадь Героев 1",
+        shipper_address: "Старый Бавтугай, ул. Интернатская, 2",
         delivery_recipient_cost: {
             value: 0,
         },
         seller: {
-            address: "г. Кизилюрт, площадь Героев 1",
+            address: "Старый Бавтугай, ул. Интернатская, 2",
         },
         shipper_name: "Vorobei Shop",
         packages: [
@@ -190,9 +202,18 @@ export const getOrderObjInternation = async (
             },
         ],
         tariff_code: selectedTariff,
-        shipment_point: process.env.SHIPMENT_POINT!,
-        delivery_point: selectedPvzCode,
-    };
+        shipment_point: process.env.SHIPMENT_POINT!
+    }
+    
+        if(address) {
+            const courierDelivery:TDeliveryRequest = {...obj, to_location: {code: cityCode, address: address} }
+
+            return courierDelivery
+        }
+        else {
+            const warehouseDelivery:TDeliveryRequest = {...obj, delivery_point: selectedPvzCode}
+            return warehouseDelivery
+        }
 };
 
 export const makeTrackNumber = async (

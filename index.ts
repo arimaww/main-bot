@@ -257,11 +257,10 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         bank,
         totalPriceWithDiscount,
         secretDiscountId,
+        address,
+        selectedCityCode
     } = req.body;
 
-    let errorOrderCreating = null;
-
-    const requestSize = req.headers["content-length"];
     try {
         const user = await prisma.user.findFirst({
             where: { telegramId: telegramId.toString() },
@@ -347,6 +346,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             Number(prod.cost) *
                                 Number(prod.productCount) *
                                 (Number(discount?.percent) / 100),
+                        address: address ? address : null
                     },
                 });
             }
@@ -827,6 +827,7 @@ async function getOrderData(orderId: string) {
         fileId: order?.fileId,
         cityName: order?.city,
         secretDiscountPercent: order?.secretDiscountPercent,
+        address: order?.address
     };
 }
 
@@ -859,6 +860,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     .sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
                     .catch((err) => console.log(err));
 
+            const cityCode = await prisma.cdekOffice.findFirst({where: {City: orderData?.cityName!}})
+            .catch(err => console.log(err))
+            .then(pvz => pvz?.cityCode)
+
             const getobj =
                 orderData?.selectedCountry === "RU"
                     ? await getOrderObjRu(
@@ -871,7 +876,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                           orderData?.phone!,
                           orderData?.selectedPvzCode!,
                           orderData.deliveryCost!,
-                          orderData?.selectedTariff!
+                          orderData?.selectedTariff!,
+                          orderData?.address!,
+                          cityCode!
+                          
                       )
                     : await getOrderObjInternation(
                           authData?.access_token,
@@ -883,7 +891,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                           orderData?.phone!,
                           orderData?.selectedPvzCode!,
                           orderData.deliveryCost!,
-                          orderData?.selectedTariff!
+                          orderData?.selectedTariff!,
+                          orderData?.address!,
+                          cityCode!
                       );
 
             const delay = (ms: number) =>

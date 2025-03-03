@@ -88,7 +88,6 @@ model Order {
   selectedCountry         String?
   email                   String?
   orderType               OrderType?
-  messageId               String?
   city                    String?
   totalPriceWithDiscount  Decimal?
   productCostWithDiscount Decimal?
@@ -96,6 +95,8 @@ model Order {
   secretDiscountPercent   Int?
   orderBarcodeId          Int?
   messagesId              Int?
+  messageId               String?
+  address                 String?
   Bank                    Bank?         @relation(fields: [bankId], references: [id])
   Messages                Messages?     @relation(fields: [messagesId], references: [id])
   OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
