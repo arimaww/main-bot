@@ -568,14 +568,14 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                           }` +
                           `${
                               bankData?.paymentType === "BANK"
-                                  ? `Номер карты: ${bankData?.requisite}\n`
-                                  : `Адрес кошелька: ${bankData?.requisite}`
+                                  ? `Номер карты: <code>${bankData?.requisite}</code>\n`
+                                  : `Адрес кошелька: <code>${bankData?.requisite}</code>`
                           }` +
                           `${
                               bankData?.sbpNumber &&
                               bankData?.sbpNumber?.length > 0 &&
                               bankData?.paymentType === "BANK"
-                                  ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
+                                  ? `Перевод по СБП: <code>${bankData?.sbpNumber}</code>\n`
                                   : ""
                           }` +
                           `Получатель: ${bankData?.recipient}\n\n` +
@@ -623,14 +623,14 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                           }` +
                           `${
                               bankData?.paymentType === "BANK"
-                                  ? `Номер карты: ${bankData?.requisite}\n`
-                                  : `Адрес кошелька: ${bankData?.requisite}\n`
+                                  ? `Номер карты: <code>${bankData?.requisite}</code>\n`
+                                  : `Адрес кошелька: <code>${bankData?.requisite}</code>\n`
                           }` +
                           `${
                               bankData?.sbpNumber &&
                               bankData?.sbpNumber?.length > 0 &&
                               bankData?.paymentType === "BANK"
-                                  ? `Перевод по СБП: ${bankData?.sbpNumber}\n`
+                                  ? `Перевод по СБП: <code>${bankData?.sbpNumber}</code>\n`
                                   : ""
                           }` +
                           `Получатель: ${bankData?.recipient}\n\n` +
@@ -932,7 +932,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 .join("\n")}\n\n` +
                             `Отправка посылки осуществляется в течение 4х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
                             `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
-                            `Ссылка на чат наших клиентов:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
+                            `Ссылка на резервную группу:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
                             `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
                         {
                             parse_mode: "HTML",
