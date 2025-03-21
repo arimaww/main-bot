@@ -9,7 +9,6 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
 
     // Парсим данные из callback_data (например, 'collect_order:12345')
     const [action, orderTrackNumber] = data.split(":");
-
     switch (action) {
         case "collect_order":
             // Меняем клавиатуру на новую с подтверждением
@@ -78,7 +77,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
                     .sendMessage(
                         user.telegramId,
                         "Ваш закан успешно собран и в ближайшее время будет передан в доставку!\n" +
-                            `Следующие изменения статуса отслеживайте через сайт <a href="https://www.cdek.ru/ru/tracking/">СДЭК</a> по вашему трек номеру: ${orderTrackNumber}`,
+                            `Следующие изменения статуса отслеживайте через сайт ${order?.orderType === 'CDEK' ? '<a href="https://www.cdek.ru/ru/tracking/">СДЭК</a>' : '<a href="https://www.pochta.ru/tracking">ПОЧТА РОССИИ</a>'}  по вашему трек номеру: ${orderTrackNumber}`,
                         { parse_mode: "HTML", disable_web_page_preview: true }
                     )
                     .catch((err) => console.log(err));

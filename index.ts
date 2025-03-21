@@ -22,6 +22,9 @@ import { handleCollectOrder } from "./callback-handlers/collect-order";
 import { generateBarcode } from "./helpers/generate-barcode";
 import { pollForBarcode } from "./helpers/getting-barcode";
 import { orderRoutes } from "./routes/order-routes";
+import { getTimerIdForOrder, removeTimerIdForOrder, saveTimerIdForOrder } from "./map-func/order-timer";
+import { mailRoutes } from "./routes/mail-routes";
+import { makeMailRuDelivery } from "./helpers/mail-delivery/mail-delivery-ru";
 
 const app = express();
 
@@ -51,23 +54,6 @@ const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 
 setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
 
-const timers = new Map(); // Объект для хранения таймеров по id заказа
-
-// Сохранение timerId для заказа
-function saveTimerIdForOrder(unique: string, timerId: NodeJS.Timeout) {
-    timers.set(unique, timerId);
-}
-
-// Получение timerId для заказа
-function getTimerIdForOrder(unique: string) {
-    return timers.get(unique);
-}
-
-// Удаление таймера после получения скриншота
-function removeTimerIdForOrder(unique: string) {
-    timers.delete(unique);
-    // console.log(`Таймер для заказа ${unique} удален.`);
-}
 
 bot.on("message", async (message: TelegramBot.Message) => {
     if (
@@ -827,10 +813,17 @@ async function getOrderData(orderId: string) {
         fileId: order?.fileId,
         cityName: order?.city,
         secretDiscountPercent: order?.secretDiscountPercent,
-        address: order?.address
+        address: order?.address,
+        country: order?.selectedCountry,
+        region: order?.region,
+        index: order?.index,
+        pvzCode: order?.pvzCode
+
     };
 }
-
+const MAIL_GROUP_ID = process.env.MAIL_GROUP_ID!;
+const MAIL_GROUP_RU_ID = process.env.MAIL_GROUP_RU_ID!;
+const POSTOFFICE_CODE = process.env.POSTOFFICE_CODE as string
 export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
     const chatId = query.message?.chat.id;
     const messageId = query.message?.message_id;
@@ -1113,7 +1106,219 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     })
                     .catch((err) => console.log(err));
             }
-        } else if (action === "Удалить") {
+        } 
+        else if (action === "ПринятьMAILRU") {
+            // Менеджер нажал "ПринятьMAILRU"
+
+
+
+            const orderData = await getOrderData(orderUnique);
+
+            if (orderData?.status === "SUCCESS")
+                return bot.sendMessage(
+                    MANAGER_CHAT_ID,
+                    "Данный заказ уже принят"
+                );
+
+            const delay = (ms: number) =>
+                new Promise((resolve) => setTimeout(resolve, ms));
+
+            if (orderData && orderData.im_number) {
+                await delay(2000);
+
+                const mailDeliveryData = await makeMailRuDelivery({
+                    "address-type-to": "DEFAULT",
+                    "mail-type": "ONLINE_PARCEL",
+                    "mail-category": "ORDINARY",
+                    "mail-direct": 643, // ru code in mail api
+                    "mass": 2000,
+                    "index-to": Number(orderData?.index),
+                    "region-to": String(orderData?.region),
+                    "place-to": String(orderData?.cityName),
+                    "recipient-name": `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}`,
+                    "postoffice-code": POSTOFFICE_CODE,
+                    "tel-address": Number(orderData?.phone),
+                    "order-num": orderData?.im_number
+                });
+
+                await prisma.order.updateMany({
+                    where: { orderUniqueNumber: orderData?.im_number },
+                    data: {
+                        status: "SUCCESS",
+                        orderTrackNumber: mailDeliveryData?.orders[0]?.barcode,
+                    },
+                });
+                // --------------------------------------------------
+                await bot.sendMessage(
+                    orderData.telegramId!,
+                    `Ваш заказ принят!\nВаш трек номер: ${mailDeliveryData?.orders[0]?.barcode}\n` +
+                        `Благодарим за покупку, ${orderData?.surName} ${
+                            orderData?.firstName
+                        } ${
+                            orderData?.middleName ? orderData?.middleName : ""
+                        }!\n\n` +
+                        `Ваш заказ:\n${orderData.products
+                            .map(
+                                (el) => `${el.productCount} шт. | ${el.synonym}`
+                            )
+                            .join("\n")}\n\n` +
+                        `Если в течение 4х рабочих дней статус заказа не поменялся, то сообщите <a href="https://t.me/jojonaut">нам</a> об этом.\n\n` +
+                        `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
+                    {
+                        parse_mode: "HTML",
+                        disable_web_page_preview: true,
+                    }
+                );
+
+                const timestamp = new Date();
+
+                const acceptOrderMessage =
+                    `Заказ ${
+                        orderData?.username
+                            ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
+                            : "клиента"
+                    }` +
+                    ` принят.\n\n` +
+                    `Трек номер: ${mailDeliveryData?.orders[0]?.barcode}` +
+                    `\n\nПеречень заказа:\n` +
+                    `${orderData.products
+                        .map((el) => `${el.productCount} шт. | ${el.synonym}`)
+                        .join("\n")}\n\nПрайс: ${orderData?.totalPrice}\n\n` +
+                    `Данные клиента:\n` +
+                    `${orderData?.surName} ${orderData?.firstName} ${
+                        orderData?.middleName ? orderData?.middleName : ""
+                    }\nГород: ${orderData?.cityName}\n` +
+                    `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
+                    `Время: ${timestamp.getDate()}.${
+                        timestamp.getMonth() + 1 < 10
+                            ? "0" + (timestamp.getMonth() + 1)
+                            : timestamp.getMonth() + 1
+                    }.` +
+                    `${timestamp.getFullYear()}  ${
+                        timestamp.getHours() < 10
+                            ? "0" + timestamp.getHours()
+                            : timestamp.getHours()
+                    }:` +
+                    `${
+                        timestamp.getMinutes() < 10
+                            ? "0" + timestamp.getMinutes()
+                            : timestamp.getMinutes()
+                    }`;
+
+                await bot.editMessageCaption(acceptOrderMessage, {
+                    chat_id: chatId!,
+                    message_id: messageId!,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: "❌ Удалить",
+                                    callback_data: `Удалить_${orderData?.im_number}`,
+                                },
+                            ],
+                        ],
+                    },
+                    parse_mode: "HTML",
+                });
+
+                // Отправка сообщения в ПОЧТА группу
+                await bot.sendMessage(
+                    MAIL_GROUP_ID,
+                    `Заказ ${
+                        orderData?.username
+                            ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
+                            : "клиента"
+                    }` +
+                        ` принят.\n\n` +
+                        `Трек номер: ${mailDeliveryData?.orders[0]?.barcode}` +
+                        `\n\nПеречень заказа:\n${orderData.products
+                            .map(
+                                (el) => `${el.productCount} шт. | ${el.synonym}`
+                            )
+                            .join("\n")}\nК\nПрайс: ${
+                            orderData?.totalPrice
+                        }\nОплачено за доставку: ${
+                            orderData?.deliveryCost
+                        }\n\n` +
+                        `Данные клиента:\n` +
+                        `${orderData?.surName} ${orderData?.firstName} ${
+                            orderData?.middleName ? orderData?.middleName : ""
+                        }` +
+                        `\nСтрана: ${
+                            orderData?.country === "RU"
+                                ? "Россия"
+                                : orderData?.country === "KG"
+                                ? "Кыргызстан"
+                                : orderData?.country === "BY"
+                                ? "Беларусь"
+                                : orderData?.country === "AM"
+                                ? "Армения"
+                                : orderData?.country === "KZ"
+                                ? "Казахстан"
+                                : orderData?.country === "AZ"
+                                ? "Азербайджан"
+                                : orderData?.country === "UZ"
+                                ? "Узбекистан"
+                                : "Неизвестная страна"
+                        }` +
+                        `\nРегион: ${orderData?.region}` +
+                        `\nГород: ${orderData?.cityName}` +
+                        `\nАдрес: ${orderData?.pvzCode}` +
+                        `\nИндекс: ${orderData?.index}` +
+                        `\n\nНомер: ${orderData?.phone?.replace(
+                            /[ ()-]/g,
+                            ""
+                        )}\n\n` +
+                        `Время: ${timestamp.getDate()}.${
+                            timestamp.getMonth() + 1 < 10
+                                ? "0" + (timestamp.getMonth() + 1)
+                                : timestamp.getMonth() + 1
+                        }.` +
+                        `${timestamp.getFullYear()}  ${
+                            timestamp.getHours() < 10
+                                ? "0" + timestamp.getHours()
+                                : timestamp.getHours()
+                        }:` +
+                        `${
+                            timestamp.getMinutes() < 10
+                                ? "0" + timestamp.getMinutes()
+                                : timestamp.getMinutes()
+                        }`,
+                    {
+                        parse_mode: "HTML",
+                        disable_web_page_preview: true,
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    {
+                                        text: "Собрать заказ",
+                                        callback_data: `collect_order:${mailDeliveryData?.orders[0]?.barcode}`,
+                                    },
+                                ],
+                                [
+                                    {
+                                        text: "Отредактировать",
+                                        url: `${WEB_CRM_APP}/orderedit/${mailDeliveryData?.orders[0]?.barcode}`,
+                                    },
+                                ],
+                            ],
+                        },
+                    }
+                );
+
+                // await bot
+                //     .sendPhoto(CRYPTO_CHECKS_GROUP_ID, orderData?.fileId!, {
+                //         caption: `Чек от ${
+                //             orderData?.username
+                //                 ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
+                //                 : "клиента"
+                //         }`,
+                //         parse_mode: "HTML",
+                //     })
+                //     .catch((err) => console.log(err));
+            }
+        }
+        else if (action === "Удалить") {
             // Действие для удаления заказа
 
             const order = await prisma.order.findFirst({
@@ -1189,6 +1394,7 @@ bot.on("callback_query", handleCallbackQuery);
 
 app.post("/update-payment-info", updatePaymentInfo);
 app.use("/order", orderRoutes);
+app.use('/mail-delivery', mailRoutes)
 
 app.listen(7000, () => {
     console.log("Запущен на 7000 порте");

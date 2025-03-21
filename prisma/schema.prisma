@@ -97,6 +97,10 @@ model Order {
   messagesId              Int?
   messageId               String?
   address                 String?
+  country                 String?
+  pvzCode                 String?
+  index                   String?
+  region                  String?
   Bank                    Bank?         @relation(fields: [bankId], references: [id])
   Messages                Messages?     @relation(fields: [messagesId], references: [id])
   OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
