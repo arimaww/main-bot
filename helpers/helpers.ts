@@ -110,7 +110,7 @@ export const getOrderObjRu = async (
             ],
         },
         sender: {
-            name: "Зубаиров Заур Залбегович",
+            name: "Газиев Гаджи Хизриевич",
         },
         services: [
             {
@@ -193,7 +193,7 @@ export const getOrderObjInternation = async (
             ],
         },
         sender: {
-            name: "Зубаиров Заур Залбегович",
+            name: "Газиев Гаджи Хизриевич",
         },
         services: [
             {
