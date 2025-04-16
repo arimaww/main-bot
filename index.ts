@@ -25,6 +25,7 @@ import { orderRoutes } from "./routes/order-routes";
 import { getTimerIdForOrder, removeTimerIdForOrder, saveTimerIdForOrder } from "./map-func/order-timer";
 import { mailRoutes } from "./routes/mail-routes";
 import { makeMailRuDelivery } from "./helpers/mail-delivery/mail-delivery-ru";
+import { mailingRoutes } from "./routes/mailing-routes";
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.use(morgan("dev"));
 app.use(
     cors({
         origin: "*",
-        methods: ["POST"],
+        methods: ["POST", "OPTIONS"],
         allowedHeaders: ["Content-Type"],
     })
 );
@@ -1395,6 +1396,8 @@ bot.on("callback_query", handleCallbackQuery);
 app.post("/update-payment-info", updatePaymentInfo);
 app.use("/order", orderRoutes);
 app.use('/mail-delivery', mailRoutes)
+
+app.use("/mailing", mailingRoutes); // При рассылке через crm
 
 app.listen(7000, () => {
     console.log("Запущен на 7000 порте");
