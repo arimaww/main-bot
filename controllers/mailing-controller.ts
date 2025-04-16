@@ -14,21 +14,19 @@ export const handleUserMailing = async (req: Request, res: Response) => {
 
         const botUsers = await prisma.user.findMany();
         // Массив для сбора ошибок отправки
-        const errors: Array<{ telegramId: number, error: string }> = [];
+        const errors: Array<{ telegramId: number; error: string }> = [];
 
         for (const user of botUsers) {
             try {
-                if(user.telegramId === '845856353') {
-                    await bot.sendMessage(user.telegramId, message, {
-                        parse_mode: "HTML",
-                    });
-                }
+                await bot.sendMessage(user.telegramId, message, {
+                    parse_mode: "HTML",
+                });
             } catch (err) {
                 console.log(`Ошибка для пользователя ${user.telegramId}:`, err);
                 // Собираем ошибку и продолжаем цикл
                 errors.push({
                     telegramId: Number(user.telegramId),
-                    error: "Сообщение не отправлено, проверьте правильность написания тегов"
+                    error: "Сообщение не отправлено, проверьте правильность написания тегов",
                 });
             }
         }
