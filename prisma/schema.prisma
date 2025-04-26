@@ -101,6 +101,8 @@ model Order {
   pvzCode                 String?
   index                   String?
   region                  String?
+  commentByClient         String?
+  commentForCollector     String?
   Bank                    Bank?         @relation(fields: [bankId], references: [id])
   Messages                Messages?     @relation(fields: [messagesId], references: [id])
   OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
