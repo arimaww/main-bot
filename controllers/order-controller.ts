@@ -9,6 +9,7 @@ export const orderEdit = async (req: Request, res: Response) => {
     try {
         const { orderUniqueNumber } = req.body;
 
+
         const orders = await prisma.order.findMany({
             where: { orderUniqueNumber },
             include: { product: true, OrderBarcode: true },
@@ -27,6 +28,7 @@ export const orderEdit = async (req: Request, res: Response) => {
         const timestamp = new Date();
 
         await bot.editMessageText(
+            `${(orders[0].commentForCollector === '' || !!orders[0].commentForCollector) ? `<strong>ВАЖНО: ${orders[0].commentForCollector}</strong>\n\n` : ''}` +
             `Заказ ${
                 user?.userName
                     ? `<a href="${`https://t.me/${user?.userName}`}">клиента</a>`

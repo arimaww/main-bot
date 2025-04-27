@@ -245,7 +245,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         totalPriceWithDiscount,
         secretDiscountId,
         address,
-        selectedCityCode
+        selectedCityCode,
+        commentByUser
     } = req.body;
 
     try {
@@ -300,6 +301,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     where: { productId: prod?.productId },
                 });
 
+                console.log(commentByUser)
+
                 await prisma.order.create({
                     data: {
                         userId: user?.userId!,
@@ -333,7 +336,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                             Number(prod.cost) *
                                 Number(prod.productCount) *
                                 (Number(discount?.percent) / 100),
-                        address: address ? address : null
+                        address: address ? address : null,
+                        commentByClient: commentByUser ? commentByUser : null
                     },
                 });
             }
@@ -818,8 +822,8 @@ async function getOrderData(orderId: string) {
         country: order?.selectedCountry,
         region: order?.region,
         index: order?.index,
-        pvzCode: order?.pvzCode
-
+        pvzCode: order?.pvzCode,
+        commentByUser: order?.commentByClient
     };
 }
 const MAIL_GROUP_ID = process.env.MAIL_GROUP_ID!;
@@ -1054,6 +1058,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                     ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
                                     : ""
                             }` +
+                            `${orderData?.commentByUser ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n` : ''}` +
                             `Время: ${timestamp.getDate()}.${
                                 timestamp.getMonth() + 1 < 10
                                     ? "0" + (timestamp.getMonth() + 1)
