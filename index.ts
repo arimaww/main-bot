@@ -56,7 +56,7 @@ const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
 
 
-bot.on("message", async (message: TelegramBot.Message) => {
+export const sendMessageHandler = async (message: TelegramBot.Message) => {
     if (
         String(message.chat.id) === MANAGER_CHAT_ID &&
         message.text?.startsWith("/sendMessage")
@@ -95,7 +95,9 @@ bot.on("message", async (message: TelegramBot.Message) => {
                     )
             );
     }
-});
+}
+
+bot.on("message", sendMessageHandler);
 
 bot.onText(
     /\/start( (.+))?/,

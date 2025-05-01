@@ -1,7 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import { prisma } from "../prisma/prisma-client";
 import { handleCollectOrder } from "../callback-handlers/collect-order";
-import { handleCallbackQuery } from "..";
+import { handleCallbackQuery, sendMessageHandler } from "..";
 
 export async function cancelWaitPayOrders(
     bot: TelegramBot) {
@@ -40,6 +40,7 @@ export async function cancelWaitPayOrders(
         bot.removeAllListeners();
         bot.on("callback_query", handleCollectOrder);
         bot.on("callback_query", handleCallbackQuery);
+        bot.on("message", sendMessageHandler);
         await prisma.order.deleteMany({
             where: { orderUniqueNumber: order?.orderUniqueNumber },
         });
