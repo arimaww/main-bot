@@ -303,8 +303,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                     where: { productId: prod?.productId },
                 });
 
-                console.log(commentByUser)
-
                 await prisma.order.create({
                     data: {
                         userId: user?.userId!,
@@ -799,6 +797,7 @@ async function getOrderData(orderId: string) {
             }
         });
     }
+    const promocode = order?.promocodeId && await prisma.promocodes.findFirst({where: {promocodeId: order?.promocodeId}})
 
     return {
         telegramId: user?.telegramId,
@@ -825,7 +824,8 @@ async function getOrderData(orderId: string) {
         region: order?.region,
         index: order?.index,
         pvzCode: order?.pvzCode,
-        commentByUser: order?.commentByClient
+        commentByUser: order?.commentByClient,
+        promocode: promocode
     };
 }
 const MAIL_GROUP_ID = process.env.MAIL_GROUP_ID!;
@@ -966,6 +966,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent} ₽. Корзина сгенерирована менеджером.</blockquote>`
                             : ""
                     }` +
+                    `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод:  ${orderData?.promocode.title} на ${orderData?.promocode?.percent} %</blockquote>` : ''}` +
                     `Время: ${timestamp.getDate()}.${
                         timestamp.getMonth() + 1 < 10
                             ? "0" + (timestamp.getMonth() + 1)
@@ -981,7 +982,6 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             ? "0" + timestamp.getMinutes()
                             : timestamp.getMinutes()
                     }`;
-
                 await bot
                     .editMessageCaption(acceptOrderMessage, {
                         message_id: messageId,
@@ -1060,6 +1060,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                     ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
                                     : ""
                             }` +
+                            `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод: <strong>${orderData?.promocode.title}</strong> на <strong>${orderData?.promocode?.percent} %</strong></blockquote>` : ''}` +
                             `${orderData?.commentByUser ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n` : ''}` +
                             `Время: ${timestamp.getDate()}.${
                                 timestamp.getMonth() + 1 < 10
