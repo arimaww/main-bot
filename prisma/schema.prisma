@@ -29,23 +29,24 @@ model User {
 }
 
 model Product {
-  productId       Int              @id @default(autoincrement())
+  productId       Int                     @id @default(autoincrement())
   name            String
   synonym         String?
   description     String
+  longDescription String?
+  is_archived     Boolean                 @default(false)
+  visible_status  PRODUCT_VISIBLE_STATUS? @default(VISIBLE)
+  sostav          String?
   picture         String?
   count           Int
   cost            Decimal
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @default(now()) @updatedAt
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @default(now()) @updatedAt
   primeCost       Decimal?
   categoryId      Int?
-  longDescription String?
-  sostav          String?
-  is_archived     Boolean          @default(false)
   basket          Basket[]
   order           Order[]
-  Category        Category?        @relation(fields: [categoryId], references: [id])
+  Category        Category?               @relation(fields: [categoryId], references: [id])
   ProductDiscount ProductDiscount?
   ProductSet      ProductSet[]
 }
@@ -59,6 +60,7 @@ model Basket {
   updatedAt        DateTime        @default(now()) @updatedAt
   promocodeId      Int?
   secretDiscountId Int?
+  freeDelivery     Boolean         @default(false)
   product          Product         @relation(fields: [productId], references: [productId], onDelete: Cascade)
   Promocodes       Promocodes?     @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
   SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
@@ -88,19 +90,22 @@ model Order {
   selectedCountry         String?
   email                   String?
   orderType               OrderType?
+  messageId               String?
+  country                 String?
+  pvzCode                 String?
+  index                   String?
+  region                  String?
   city                    String?
   totalPriceWithDiscount  Decimal?
   productCostWithDiscount Decimal?
   promocodeId             Int?
   secretDiscountPercent   Int?
+  address                 String?
+  commentForCollector     String?
+  commentByClient         String?
+  freeDelivery            Boolean       @default(false)
   orderBarcodeId          Int?
   messagesId              Int?
-  messageId               String?
-  address                 String?
-  country                 String?
-  pvzCode                 String?
-  index                   String?
-  region                  String?
   Bank                    Bank?         @relation(fields: [bankId], references: [id])
   Messages                Messages?     @relation(fields: [messagesId], references: [id])
   OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
@@ -143,8 +148,8 @@ model Bank {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now())
   sbpNumber   String?
-  comments    String?
   paymentType PAYMENT_TYPE @default(BANK)
+  comments    String?
   Order       Order[]
 }
 
@@ -191,6 +196,7 @@ model GeneratedBaskets {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime
   secretDiscountId Int?            @unique
+  freeDelivery     Boolean         @default(false)
   BasketItems      BasketItems[]
   SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
 }
@@ -232,11 +238,11 @@ model OrderBarcode {
 }
 
 model Messages {
+  id                Int      @id @default(autoincrement())
   cdek_group_msg_id String
   bot_msg_id        String
   createdAt         DateTime @default(now())
   updateAt          DateTime @default(now())
-  id                Int      @id @default(autoincrement())
   Order             Order[]
 }
 
@@ -267,4 +273,10 @@ enum SecretDiscountStatus {
 enum PAYMENT_TYPE {
   BANK
   CRYPTO
+}
+
+enum PRODUCT_VISIBLE_STATUS {
+  VISIBLE
+  HIDDEN
+  HIDDEN_ON_SITE
 }

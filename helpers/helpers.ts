@@ -65,6 +65,7 @@ export const getOrderObjRu = async (
     selectedTariff: number,
     address: string,
     cityCode: number,
+    freeDelivery?: boolean
 ): Promise<TDeliveryRequest> => {
     const obj = {
         token: access_token,
@@ -75,7 +76,7 @@ export const getOrderObjRu = async (
         },
         delivery_recipient_cost_adv: [
             {
-                sum: deliverySum,
+                sum: freeDelivery ? 0 : deliverySum,
                 threshold: 1,
             },
         ],
@@ -88,7 +89,7 @@ export const getOrderObjRu = async (
                     {
                         ware_key: "1",
                         payment: {
-                            value: 0.1,
+                            value: 1,
                         },
                         name: "Пищевые добавки",
                         cost: Number(totalPrice),
@@ -122,14 +123,19 @@ export const getOrderObjRu = async (
         shipment_point: process.env.SHIPMENT_POINT!,
     };
 
-    if(address) {
-        const courierDelivery:TDeliveryRequest = {...obj, to_location: {code: cityCode, address: address} }
+    if (address) {
+        const courierDelivery: TDeliveryRequest = {
+            ...obj,
+            to_location: { code: cityCode, address: address },
+        };
 
-        return courierDelivery
-    }
-    else {
-        const warehouseDelivery:TDeliveryRequest = {...obj, delivery_point: selectedPvzCode}
-        return warehouseDelivery
+        return courierDelivery;
+    } else {
+        const warehouseDelivery: TDeliveryRequest = {
+            ...obj,
+            delivery_point: selectedPvzCode,
+        };
+        return warehouseDelivery;
     }
 };
 
@@ -147,7 +153,8 @@ export const getOrderObjInternation = async (
     address: string,
     cityCode: number
 ): Promise<TDeliveryRequest> => {
-    let obj = {token: access_token,
+    let obj = {
+        token: access_token,
         number: uuidCdek,
         type: 1,
         date_invoice: `${new Date().getFullYear()}-${String(
@@ -170,7 +177,7 @@ export const getOrderObjInternation = async (
                     {
                         ware_key: "1",
                         payment: {
-                            value: 0,
+                            value: 1,
                         },
                         name: "Пищевые добавки",
                         cost: Number(totalPrice),
@@ -202,18 +209,23 @@ export const getOrderObjInternation = async (
             },
         ],
         tariff_code: selectedTariff,
-        shipment_point: process.env.SHIPMENT_POINT!
-    }
-    
-        if(address) {
-            const courierDelivery:TDeliveryRequest = {...obj, to_location: {code: cityCode, address: address} }
+        shipment_point: process.env.SHIPMENT_POINT!,
+    };
 
-            return courierDelivery
-        }
-        else {
-            const warehouseDelivery:TDeliveryRequest = {...obj, delivery_point: selectedPvzCode}
-            return warehouseDelivery
-        }
+    if (address) {
+        const courierDelivery: TDeliveryRequest = {
+            ...obj,
+            to_location: { code: cityCode, address: address },
+        };
+
+        return courierDelivery;
+    } else {
+        const warehouseDelivery: TDeliveryRequest = {
+            ...obj,
+            delivery_point: selectedPvzCode,
+        };
+        return warehouseDelivery;
+    }
 };
 
 export const makeTrackNumber = async (

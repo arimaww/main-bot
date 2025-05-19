@@ -22,7 +22,11 @@ import { handleCollectOrder } from "./callback-handlers/collect-order";
 import { generateBarcode } from "./helpers/generate-barcode";
 import { pollForBarcode } from "./helpers/getting-barcode";
 import { orderRoutes } from "./routes/order-routes";
-import { getTimerIdForOrder, removeTimerIdForOrder, saveTimerIdForOrder } from "./map-func/order-timer";
+import {
+    getTimerIdForOrder,
+    removeTimerIdForOrder,
+    saveTimerIdForOrder,
+} from "./map-func/order-timer";
 import { mailRoutes } from "./routes/mail-routes";
 import { makeMailRuDelivery } from "./helpers/mail-delivery/mail-delivery-ru";
 import { mailingRoutes } from "./routes/mailing-routes";
@@ -54,7 +58,6 @@ app.use((req, res, next) => {
 const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 
 setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
-
 
 export const sendMessageHandler = async (message: TelegramBot.Message) => {
     if (
@@ -95,7 +98,7 @@ export const sendMessageHandler = async (message: TelegramBot.Message) => {
                     )
             );
     }
-}
+};
 
 bot.on("message", sendMessageHandler);
 
@@ -160,6 +163,7 @@ bot.onText(
                                 productId: item.productId,
                                 productCount: item.productCount,
                                 secretDiscountId: secretDiscount?.id,
+                                freeDelivery: basketItems?.freeDelivery,
                             },
                         })
                         .catch((err) => console.log(err));
@@ -248,7 +252,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         secretDiscountId,
         address,
         selectedCityCode,
-        commentByUser
+        commentByUser,
     } = req.body;
 
     try {
@@ -337,7 +341,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                 Number(prod.productCount) *
                                 (Number(discount?.percent) / 100),
                         address: address ? address : null,
-                        commentByClient: commentByUser ? commentByUser : null
+                        commentByClient: commentByUser ? commentByUser : null,
+                        freeDelivery: basket[0]?.freeDelivery,
                     },
                 });
             }
@@ -418,7 +423,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                          ? totalPriceWithDiscount
                                          : totalPrice
                                  }\n` +
-                            `\Доставка: ${deliverySum} ₽` +
+                            `\n ${!!basket[0]?.freeDelivery ? `Доставка: <strong>Бесплатно</strong>` : `Доставка: ${deliverySum} ₽`}` +
                             `${
                                 secretDiscountId
                                     ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
@@ -508,7 +513,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 }
             }
         };
-
         await bot
             .answerWebAppQuery(queryId, {
                 type: "article",
@@ -526,7 +530,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                         `\nФИО ${surName} ${firstName} ${middleName}` +
                         "\nНомер " +
                         phone +
-                        `\n\nДоставка: ${deliverySum} ₽` +
+                        `\n\n${!!basket[0]?.freeDelivery ? "Доставка: Бесплатно" : `Доставка: ${deliverySum} ₽`}` +
                         "\n\nПрайс: " +
                         `${
                             totalPriceWithDiscount &&
@@ -797,7 +801,11 @@ async function getOrderData(orderId: string) {
             }
         });
     }
-    const promocode = order?.promocodeId && await prisma.promocodes.findFirst({where: {promocodeId: order?.promocodeId}})
+    const promocode =
+        order?.promocodeId &&
+        (await prisma.promocodes.findFirst({
+            where: { promocodeId: order?.promocodeId },
+        }));
 
     return {
         telegramId: user?.telegramId,
@@ -825,12 +833,13 @@ async function getOrderData(orderId: string) {
         index: order?.index,
         pvzCode: order?.pvzCode,
         commentByUser: order?.commentByClient,
-        promocode: promocode
+        promocode: promocode,
+        freeDelivery: order?.freeDelivery,
     };
 }
 const MAIL_GROUP_ID = process.env.MAIL_GROUP_ID!;
 const MAIL_GROUP_RU_ID = process.env.MAIL_GROUP_RU_ID!;
-const POSTOFFICE_CODE = process.env.POSTOFFICE_CODE as string
+const POSTOFFICE_CODE = process.env.POSTOFFICE_CODE as string;
 export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
     const chatId = query.message?.chat.id;
     const messageId = query.message?.message_id;
@@ -860,9 +869,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     .sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
                     .catch((err) => console.log(err));
 
-            const cityCode = await prisma.cdekOffice.findFirst({where: {City: orderData?.cityName!}})
-            .catch(err => console.log(err))
-            .then(pvz => pvz?.cityCode)
+            const cityCode = await prisma.cdekOffice
+                .findFirst({ where: { City: orderData?.cityName! } })
+                .catch((err) => console.log(err))
+                .then((pvz) => pvz?.cityCode);
 
             const getobj =
                 orderData?.selectedCountry === "RU"
@@ -878,8 +888,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                           orderData.deliveryCost!,
                           orderData?.selectedTariff!,
                           orderData?.address!,
-                          cityCode!
-                          
+                          cityCode!,
+                          orderData?.freeDelivery
                       )
                     : await getOrderObjInternation(
                           authData?.access_token,
@@ -966,7 +976,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent} ₽. Корзина сгенерирована менеджером.</blockquote>`
                             : ""
                     }` +
-                    `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод:  ${orderData?.promocode.title} на ${orderData?.promocode?.percent} %</blockquote>` : ''}` +
+                    `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод:  ${orderData?.promocode.title} на ${orderData?.promocode?.percent} %</blockquote>` : ""}` +
                     `Время: ${timestamp.getDate()}.${
                         timestamp.getMonth() + 1 < 10
                             ? "0" + (timestamp.getMonth() + 1)
@@ -1060,8 +1070,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                     ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
                                     : ""
                             }` +
-                            `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод: <strong>${orderData?.promocode.title}</strong> на <strong>${orderData?.promocode?.percent} %</strong></blockquote>` : ''}` +
-                            `${orderData?.commentByUser ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n` : ''}` +
+                            `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод: <strong>${orderData?.promocode.title}</strong> на <strong>${orderData?.promocode?.percent} %</strong></blockquote>` : ""}` +
+                            `${orderData?.commentByUser ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n` : ""}` +
                             `Время: ${timestamp.getDate()}.${
                                 timestamp.getMonth() + 1 < 10
                                     ? "0" + (timestamp.getMonth() + 1)
@@ -1115,11 +1125,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     })
                     .catch((err) => console.log(err));
             }
-        } 
-        else if (action === "ПринятьMAILRU") {
+        } else if (action === "ПринятьMAILRU") {
             // Менеджер нажал "ПринятьMAILRU"
-
-
 
             const orderData = await getOrderData(orderUnique);
 
@@ -1140,14 +1147,14 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     "mail-type": "ONLINE_PARCEL",
                     "mail-category": "ORDINARY",
                     "mail-direct": 643, // ru code in mail api
-                    "mass": 2000,
+                    mass: 2000,
                     "index-to": Number(orderData?.index),
                     "region-to": String(orderData?.region),
                     "place-to": String(orderData?.cityName),
                     "recipient-name": `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}`,
                     "postoffice-code": POSTOFFICE_CODE,
                     "tel-address": Number(orderData?.phone),
-                    "order-num": orderData?.im_number
+                    "order-num": orderData?.im_number,
                 });
 
                 await prisma.order.updateMany({
@@ -1257,18 +1264,18 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             orderData?.country === "RU"
                                 ? "Россия"
                                 : orderData?.country === "KG"
-                                ? "Кыргызстан"
-                                : orderData?.country === "BY"
-                                ? "Беларусь"
-                                : orderData?.country === "AM"
-                                ? "Армения"
-                                : orderData?.country === "KZ"
-                                ? "Казахстан"
-                                : orderData?.country === "AZ"
-                                ? "Азербайджан"
-                                : orderData?.country === "UZ"
-                                ? "Узбекистан"
-                                : "Неизвестная страна"
+                                  ? "Кыргызстан"
+                                  : orderData?.country === "BY"
+                                    ? "Беларусь"
+                                    : orderData?.country === "AM"
+                                      ? "Армения"
+                                      : orderData?.country === "KZ"
+                                        ? "Казахстан"
+                                        : orderData?.country === "AZ"
+                                          ? "Азербайджан"
+                                          : orderData?.country === "UZ"
+                                            ? "Узбекистан"
+                                            : "Неизвестная страна"
                         }` +
                         `\nРегион: ${orderData?.region}` +
                         `\nГород: ${orderData?.cityName}` +
@@ -1326,8 +1333,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 //     })
                 //     .catch((err) => console.log(err));
             }
-        }
-        else if (action === "Удалить") {
+        } else if (action === "Удалить") {
             // Действие для удаления заказа
 
             const order = await prisma.order.findFirst({
@@ -1403,7 +1409,7 @@ bot.on("callback_query", handleCallbackQuery);
 
 app.post("/update-payment-info", updatePaymentInfo);
 app.use("/order", orderRoutes);
-app.use('/mail-delivery', mailRoutes)
+app.use("/mail-delivery", mailRoutes);
 
 app.use("/mailing", mailingRoutes); // При рассылке через crm
 
