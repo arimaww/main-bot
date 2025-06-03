@@ -7,6 +7,7 @@ import morgan from "morgan";
 import {
     getOrderObjInternation,
     getOrderObjRu,
+    getOrderObjRuWithPrepayment,
     getOrderTrackNumber,
     getToken,
     makeTrackNumber,
@@ -513,6 +514,12 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 }
             }
         };
+
+        const cdekOffice = await prisma.cdekOffice
+            .findFirst({ where: { City: selectedCityName } })
+            .catch((err) => console.log(err));
+
+        if (!cdekOffice) return;
         await bot
             .answerWebAppQuery(queryId, {
                 type: "article",
@@ -608,8 +615,12 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                       user?.telegramId!,
                       `К оплате: ${
                           totalPriceWithDiscount && totalPriceWithDiscount !== 0
-                              ? totalPriceWithDiscount
-                              : totalPrice
+                              ? cdekOffice.allowed_cod
+                                  ? totalPriceWithDiscount
+                                  : totalPriceWithDiscount + Number(deliverySum)
+                              : cdekOffice.allowed_cod
+                                ? totalPrice
+                                : totalPrice + Number(deliverySum)
                       } ₽\n\n` +
                           `${
                               bankData?.paymentType === "BANK"
@@ -862,6 +873,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
             // выполнение заказа и получение трек номера
 
+            if (!chatId) return console.log("chatId не найден");
+
             const orderData = await getOrderData(orderUnique);
 
             if (orderData?.status === "SUCCESS")
@@ -869,28 +882,46 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     .sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
                     .catch((err) => console.log(err));
 
-            const cityCode = await prisma.cdekOffice
+            const cdekOffice = await prisma.cdekOffice
                 .findFirst({ where: { City: orderData?.cityName! } })
-                .catch((err) => console.log(err))
-                .then((pvz) => pvz?.cityCode);
+                .catch((err) => console.log(err));
+
+            if (!cdekOffice?.cityCode)
+                return await bot.sendMessage(chatId, `City code не найден`);
 
             const getobj =
                 orderData?.selectedCountry === "RU"
-                    ? await getOrderObjRu(
-                          authData?.access_token,
-                          orderUnique,
-                          orderData?.totalPrice,
-                          orderData?.surName!,
-                          orderData?.firstName!,
-                          orderData?.middleName!,
-                          orderData?.phone!,
-                          orderData?.selectedPvzCode!,
-                          orderData.deliveryCost!,
-                          orderData?.selectedTariff!,
-                          orderData?.address!,
-                          cityCode!,
-                          orderData?.freeDelivery
-                      )
+                    ? cdekOffice.allowed_cod
+                        ? await getOrderObjRu(
+                              authData?.access_token,
+                              orderUnique,
+                              orderData?.totalPrice,
+                              orderData?.surName!,
+                              orderData?.firstName!,
+                              orderData?.middleName!,
+                              orderData?.phone!,
+                              orderData?.selectedPvzCode!,
+                              orderData.deliveryCost!,
+                              orderData?.selectedTariff!,
+                              orderData?.address!,
+                              cdekOffice?.cityCode!,
+                              orderData?.freeDelivery
+                          )
+                        : await getOrderObjRuWithPrepayment(
+                              authData?.access_token,
+                              orderUnique,
+                              orderData?.totalPrice,
+                              orderData?.surName!,
+                              orderData?.firstName!,
+                              orderData?.middleName!,
+                              orderData?.phone!,
+                              orderData?.selectedPvzCode!,
+                              orderData.deliveryCost!,
+                              orderData?.selectedTariff!,
+                              orderData?.address!,
+                              cdekOffice?.cityCode!,
+                              orderData?.freeDelivery
+                          )
                     : await getOrderObjInternation(
                           authData?.access_token,
                           orderUnique,
@@ -903,7 +934,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                           orderData.deliveryCost!,
                           orderData?.selectedTariff!,
                           orderData?.address!,
-                          cityCode!
+                          cdekOffice?.cityCode
                       );
 
             const delay = (ms: number) =>
@@ -921,7 +952,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 const orderTrackNumberForUser = orderCdekData.cdek_number;
 
-                if (!orderTrackNumberForUser && chatId)
+                if (!orderTrackNumberForUser)
                     return await bot.sendMessage(
                         chatId,
                         `Заказ с номером: ${orderCdekData.uuid} не удалось зарегистрировать.`
