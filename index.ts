@@ -921,6 +921,12 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
                 const orderTrackNumberForUser = orderCdekData.cdek_number;
 
+                if (!orderTrackNumberForUser && chatId)
+                    return await bot.sendMessage(
+                        chatId,
+                        `Заказ с номером: ${orderCdekData.uuid} не удалось зарегистрировать.`
+                    );
+
                 await prisma.order.updateMany({
                     where: { orderUniqueNumber: orderData?.im_number },
                     data: {
@@ -1061,10 +1067,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             }\n\n` +
                             `Данные клиента:\n` +
                             `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
-                            `Номер: ${orderData?.phone?.replace(
-                                /[ ()-]/g,
-                                ""
-                            )}\n\n` +
+                            `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
                             `${
                                 orderData?.secretDiscountPercent
                                     ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
@@ -1170,9 +1173,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `Ваш заказ принят!\nВаш трек номер: ${mailDeliveryData?.orders[0]?.barcode}\n` +
                         `Благодарим за покупку, ${orderData?.surName} ${
                             orderData?.firstName
-                        } ${
-                            orderData?.middleName ? orderData?.middleName : ""
-                        }!\n\n` +
+                        } ${orderData?.middleName ? orderData?.middleName : ""}!\n\n` +
                         `Ваш заказ:\n${orderData.products
                             .map(
                                 (el) => `${el.productCount} шт. | ${el.synonym}`
@@ -1253,9 +1254,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             )
                             .join("\n")}\nК\nПрайс: ${
                             orderData?.totalPrice
-                        }\nОплачено за доставку: ${
-                            orderData?.deliveryCost
-                        }\n\n` +
+                        }\nОплачено за доставку: ${orderData?.deliveryCost}\n\n` +
                         `Данные клиента:\n` +
                         `${orderData?.surName} ${orderData?.firstName} ${
                             orderData?.middleName ? orderData?.middleName : ""
@@ -1281,10 +1280,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                         `\nГород: ${orderData?.cityName}` +
                         `\nАдрес: ${orderData?.pvzCode}` +
                         `\nИндекс: ${orderData?.index}` +
-                        `\n\nНомер: ${orderData?.phone?.replace(
-                            /[ ()-]/g,
-                            ""
-                        )}\n\n` +
+                        `\n\nНомер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
                         `Время: ${timestamp.getDate()}.${
                             timestamp.getMonth() + 1 < 10
                                 ? "0" + (timestamp.getMonth() + 1)
