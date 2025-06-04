@@ -348,7 +348,13 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 });
             }
         }
+        const cdekOffice = await prisma.cdekOffice
+            .findFirst({
+                where: { City: selectedCityName, code: selectedPvzCode },
+            })
+            .catch((err) => console.log(err));
 
+        if (!cdekOffice) return;
         const handleScreenshotMessage = async (msg: TelegramBot.Message) => {
             if (msg.chat.id === telegramId) {
                 if (msg.photo) {
@@ -419,12 +425,18 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                  \nНомер: ${phone.replace(
                                      /[ ()-]/g,
                                      ""
+                                     //  TODO: Указать с доставкой ли оплата или без неё
                                  )}\nПрайс: ${
                                      totalPriceWithDiscount
-                                         ? totalPriceWithDiscount
-                                         : totalPrice
-                                 }\n` +
-                            `\n ${!!basket[0]?.freeDelivery ? `Доставка: <strong>Бесплатно</strong>` : `Доставка: ${deliverySum} ₽`}` +
+                                         ? cdekOffice.allowed_cod
+                                             ? totalPriceWithDiscount
+                                             : totalPriceWithDiscount +
+                                               Number(deliverySum)
+                                         : cdekOffice.allowed_cod
+                                           ? totalPrice
+                                           : totalPrice + Number(deliverySum)
+                                 } ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}\n` +
+                            `\n ${!!basket[0]?.freeDelivery ? `Доставка: <strong>Бесплатно</strong>` : cdekOffice.allowed_cod ? `Доставка: ${deliverySum} ₽` : ""}` +
                             `${
                                 secretDiscountId
                                     ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
@@ -515,11 +527,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             }
         };
 
-        const cdekOffice = await prisma.cdekOffice
-            .findFirst({ where: { City: selectedCityName } })
-            .catch((err) => console.log(err));
-
-        if (!cdekOffice) return;
         await bot
             .answerWebAppQuery(queryId, {
                 type: "article",
@@ -581,7 +588,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                   : ""
                           }` +
                           `Получатель: ${bankData?.recipient}\n\n` +
-                          `<blockquote>${bankData?.comments}</blockquote>` +
+                          `${
+                              bankData?.comments
+                                  ? `<blockquote>${bankData?.comments}</blockquote>`
+                                  : ""
+                          }` +
                           `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
                           `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
                           `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
@@ -640,7 +651,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                   : ""
                           }` +
                           `Получатель: ${bankData?.recipient}\n\n` +
-                          `<blockquote>${bankData?.comments}</blockquote>` +
+                          `${
+                              bankData?.comments
+                                  ? `<blockquote>${bankData?.comments}</blockquote>`
+                                  : ""
+                          }` +
                           `1) Отправьте боту <b>СКРИНШОТ</b> (не файл!) чека об оплате для завершения заказа.\n` +
                           `2) Если чек принят, бот вам ответит, что скриншот принят\n\n` +
                           `<b>⛔️ РЕКВИЗИТЫ АКТУАЛЬНЫ ТОЛЬКО В БЛИЖАЙШИЕ 90 МИНУТ‼️</b>\n\n` +
