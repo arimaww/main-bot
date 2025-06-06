@@ -685,7 +685,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                           })
                           .catch((err) => console.log(err));
                   });
-
+        console.log(cdekOffice);
         const timerId = setTimeout(async () => {
             // Проверяем, поступил ли чек об оплате
             const order = await checkOrderStatus(orderId);
@@ -897,13 +897,22 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     .sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
                     .catch((err) => console.log(err));
 
+            if (!orderData?.selectedPvzCode)
+                return await bot.sendMessage(
+                    chatId,
+                    "selectedPvzCode не найден"
+                );
             const cdekOffice = await prisma.cdekOffice
-                .findFirst({ where: { City: orderData?.cityName! } })
+                .findFirst({
+                    where: {
+                        City: orderData?.cityName!,
+                        code: orderData?.selectedPvzCode,
+                    },
+                })
                 .catch((err) => console.log(err));
 
             if (!cdekOffice?.cityCode)
                 return await bot.sendMessage(chatId, `City code не найден`);
-
             const getobj =
                 orderData?.selectedCountry === "RU"
                     ? cdekOffice.allowed_cod
