@@ -33,7 +33,7 @@ export const gettingBarcode = async (
 
 export const pollForBarcode = async (barcode_uuid: string, token: string): Promise<string> => {
     const maxRetries = 10;
-    const delay = 1000;
+    const delay = 1;
 
     for (let i = 0; i < maxRetries; i++) {
         try {

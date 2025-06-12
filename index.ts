@@ -1094,6 +1094,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     authData?.access_token
                 ).then((barcode) => barcode.entity.uuid);
 
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
                 const barcode_url = await pollForBarcode(
                     barcode_uuid,
                     authData?.access_token!

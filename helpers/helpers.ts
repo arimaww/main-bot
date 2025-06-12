@@ -4,29 +4,8 @@ import {
     TCdekUser,
     TDeliveryRequest,
     TDeliveryResponse,
-    TRecordOrderInfo,
 } from "../types/types";
 import axios from "axios";
-
-export const recordOrderInfo = async (body: TRecordOrderInfo) => {
-    try {
-        const options = {
-            url: `${process.env.SERVER_API_URL}/orders/recordInfo`,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-            body: JSON.stringify(body),
-        };
-
-        request(options, (error, response, body) => {
-            if (error) return console.log(error);
-        });
-    } catch (err) {
-        console.log(err);
-    }
-};
 
 export const getOrderTrackNumber = async (
     uuid: string,
