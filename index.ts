@@ -417,26 +417,27 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                                 ? "Узбекистан"
                                                 : "Неизвестная страна"
                             }
-                                 ${
-                                     selectedCountry !== "RU"
-                                         ? `\nГород: ${selectedCityName}\n<b>УЧТИТЕ, ЧТО КЛИЕНТ ТАКЖЕ ДОЛЖЕН ОПЛАТИТЬ ДОСТАВКУ</b>`
-                                         : `\nГород: ${selectedCityName}\n`
-                                 }
                                  \nНомер: ${phone.replace(
                                      /[ ()-]/g,
                                      ""
                                      //  TODO: Указать с доставкой ли оплата или без неё
-                                 )}\nПрайс: ${
-                                     totalPriceWithDiscount
+                                 )}\nПрайс: ${selectedCountry === 'RU' ? `${totalPriceWithDiscount
                                          ? cdekOffice.allowed_cod
                                              ? totalPriceWithDiscount
                                              : totalPriceWithDiscount +
                                                Number(deliverySum)
                                          : cdekOffice.allowed_cod
                                            ? totalPrice
-                                           : totalPrice + Number(deliverySum)
-                                 } ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}\n` +
-                            `\n ${!!basket[0]?.freeDelivery ? `Доставка: <strong>Бесплатно</strong>` : cdekOffice.allowed_cod ? `Доставка: ${deliverySum} ₽` : ""}` +
+                                           : totalPrice + Number(deliverySum)} ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}` : `${totalPriceWithDiscount
+                                         ? cdekOffice.allowed_cod
+                                             ? totalPriceWithDiscount
+                                             : totalPriceWithDiscount +
+                                               Number(deliverySum)
+                                         : cdekOffice.allowed_cod
+                                           ? totalPrice
+                                           : totalPrice + Number(deliverySum)} <strong>должен оплатить с учетом доставки</strong>`}
+` 
+                                 +  `\n ${!!basket[0]?.freeDelivery ? `Доставка: <strong>Бесплатно</strong>` : cdekOffice.allowed_cod ? `Доставка: ${deliverySum} ₽` : ""}` +
                             `${
                                 secretDiscountId
                                     ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
@@ -1024,12 +1025,23 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n` +
                     `${orderData.products
                         .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                        .join("\n")}\n\nПрайс: ${
-                        orderData?.totalPriceWithDiscount
-                            ? orderData?.totalPriceWithDiscount
-                            : orderData?.totalPrice
-                    }\n\n` +
-                    `Данные клиента:\n` +
+                        .join("\n")}\n\n`+ 
+                        `Прайс: ${orderData?.selectedCountry === 'RU' ? `${orderData?.totalPriceWithDiscount
+                                         ? cdekOffice.allowed_cod
+                                             ? orderData?.totalPriceWithDiscount
+                                             : Number(orderData?.totalPriceWithDiscount) +
+                                               Number(orderData?.deliveryCost)
+                                         : cdekOffice.allowed_cod
+                                           ? orderData?.totalPrice
+                                           : Number(orderData?.totalPrice) + Number(orderData?.deliveryCost)} ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}` : `${orderData?.totalPriceWithDiscount
+                                         ? cdekOffice.allowed_cod
+                                             ? orderData?.totalPriceWithDiscount
+                                             : Number(orderData?.totalPriceWithDiscount) +
+                                               Number(orderData?.deliveryCost)
+                                         : cdekOffice.allowed_cod
+                                           ? orderData?.totalPrice
+                                           : Number(orderData?.totalPrice) + Number(orderData?.deliveryCost)} <strong>должен оплатить с учетом доставки</strong>`}` +
+                    `\nДоставка: ${orderData?.deliveryCost}\n\nДанные клиента:\n` +
                     `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
                     `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
                     `${
