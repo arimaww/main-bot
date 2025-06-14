@@ -350,7 +350,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         }
         const cdekOffice = await prisma.cdekOffice
             .findFirst({
-                where: { City: selectedCityName, code: selectedPvzCode },
+                where: { code: selectedPvzCode },
             })
             .catch((err) => console.log(err));
 
@@ -686,7 +686,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                           })
                           .catch((err) => console.log(err));
                   });
-        console.log(cdekOffice);
         const timerId = setTimeout(async () => {
             // Проверяем, поступил ли чек об оплате
             const order = await checkOrderStatus(orderId);
@@ -994,7 +993,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 await bot
                     .sendMessage(
                         orderData.telegramId!,
-                        `Ваш заказ принят!\nВот трек-номер: ${orderTrackNumberForUser}\n\n` +
+                        `Ваш заказ принят!\nВот трек-номер: ${orderTrackNumberForUser}\n(если нет трек-номера, то обратитесь к <a href="https://t.me/ManageR_triple_h">менеджеру</a>)\n` +
                             `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!\n\n` +
                             `Ваш заказ:\n${orderData.products
                                 .map(
@@ -1005,6 +1004,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                             `Отправка посылки осуществляется в течение 4х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
                             `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
                             `Ссылка на резервную группу:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
+                            `Канал 1:\nhttps://t.me/+6MR4nDee-YA5ZWUy\nКанал 2:\nhttps://t.me/+aeKR9GmiV2cxOTFi\nКанал 3:\nСсылка на резервную группу:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
                             `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
                         {
                             parse_mode: "HTML",
@@ -1239,7 +1239,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 // --------------------------------------------------
                 await bot.sendMessage(
                     orderData.telegramId!,
-                    `Ваш заказ принят!\nВаш трек номер: ${mailDeliveryData?.orders[0]?.barcode}\n` +
+                    `Ваш заказ принят!\nВаш трек номер: ${mailDeliveryData?.orders[0]?.barcode}\n(если вместо трек номера написано undefined, обратитесь к <a href="https://t.me/ManageR_triple_h">менеджеру</a>)\n\n` +
                         `Благодарим за покупку, ${orderData?.surName} ${
                             orderData?.firstName
                         } ${orderData?.middleName ? orderData?.middleName : ""}!\n\n` +
@@ -1248,7 +1248,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 (el) => `${el.productCount} шт. | ${el.synonym}`
                             )
                             .join("\n")}\n\n` +
-                        `Если в течение 4х рабочих дней статус заказа не поменялся, то сообщите <a href="https://t.me/jojonaut">нам</a> об этом.\n\n` +
+                        `Если в течение 4х рабочих дней статус заказа не поменялся, то сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
                         `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
                     {
                         parse_mode: "HTML",
