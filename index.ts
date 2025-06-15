@@ -386,6 +386,38 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                   where: { promocodeId: promocodeId },
                               })
                             : undefined;
+
+                        const isRussia = selectedCountry === "RU";
+                        const hasDiscount = !!totalPriceWithDiscount;
+                        const deliveryCost = Number(deliverySum);
+
+                        const basePrice = hasDiscount
+                            ? totalPriceWithDiscount
+                            : totalPrice;
+                        const fullPrice = basePrice + deliveryCost;
+
+                        // Определяем финальную сумму
+                        const priceToPay =
+                            // Если доставка не в РФ или нет наложенного платежа — платит сразу с доставкой
+                            !isRussia || !cdekOffice.allowed_cod
+                                ? fullPrice
+                                : basePrice;
+
+                        // Определяем пояснение
+                        const paymentNote =
+                            !isRussia || !cdekOffice.allowed_cod
+                                ? "<strong>должен оплатить вместе с доставкой</strong>"
+                                : "<strong>должен оплатить без учета доставки</strong>";
+
+                        // Определяем текст по доставке
+                        const deliveryNote = basket[0]?.freeDelivery
+                            ? "Доставка: <strong>Бесплатно</strong>"
+                            : cdekOffice.allowed_cod && isRussia
+                              ? `Доставка: ${deliveryCost} ₽`
+                              : "";
+
+                        const result = `Прайс: ${priceToPay} ₽ ${paymentNote}\n ${deliveryNote}`;
+
                         const messageToManager =
                             `${
                                 msg.chat.username
@@ -421,23 +453,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                                      /[ ()-]/g,
                                      ""
                                      //  TODO: Указать с доставкой ли оплата или без неё
-                                 )}\nПрайс: ${selectedCountry === 'RU' ? `${totalPriceWithDiscount
-                                         ? cdekOffice.allowed_cod
-                                             ? totalPriceWithDiscount
-                                             : totalPriceWithDiscount +
-                                               Number(deliverySum)
-                                         : cdekOffice.allowed_cod
-                                           ? totalPrice
-                                           : totalPrice + Number(deliverySum)} ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}` : `${totalPriceWithDiscount
-                                         ? cdekOffice.allowed_cod
-                                             ? totalPriceWithDiscount
-                                             : totalPriceWithDiscount +
-                                               Number(deliverySum)
-                                         : cdekOffice.allowed_cod
-                                           ? totalPrice
-                                           : totalPrice + Number(deliverySum)} <strong>должен оплатить с учетом доставки</strong>`}
-` 
-                                 +  `\n ${!!basket[0]?.freeDelivery ? `Доставка: <strong>Бесплатно</strong>` : cdekOffice.allowed_cod ? `Доставка: ${deliverySum} ₽` : ""}` +
+                                 )}\n` +
+                            `${result}` +
                             `${
                                 secretDiscountId
                                     ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
@@ -570,7 +587,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                               ? totalPriceWithDiscount + Number(deliverySum)
                               : totalPrice + Number(deliverySum)
                       } ₽\n` +
-                          `\n\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
+                          `\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
                           `${
                               bankData?.paymentType === "BANK"
                                   ? `Банк: ${bankData?.bankName}\n`
@@ -1025,22 +1042,34 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                     `\nТрек-номер: ${orderTrackNumberForUser} \n\nПеречень заказа:\n` +
                     `${orderData.products
                         .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-                        .join("\n")}\n\n`+ 
-                        `Прайс: ${orderData?.selectedCountry === 'RU' ? `${orderData?.totalPriceWithDiscount
-                                         ? cdekOffice.allowed_cod
-                                             ? orderData?.totalPriceWithDiscount
-                                             : Number(orderData?.totalPriceWithDiscount) +
-                                               Number(orderData?.deliveryCost)
-                                         : cdekOffice.allowed_cod
-                                           ? orderData?.totalPrice
-                                           : Number(orderData?.totalPrice) + Number(orderData?.deliveryCost)} ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}` : `${orderData?.totalPriceWithDiscount
-                                         ? cdekOffice.allowed_cod
-                                             ? orderData?.totalPriceWithDiscount
-                                             : Number(orderData?.totalPriceWithDiscount) +
-                                               Number(orderData?.deliveryCost)
-                                         : cdekOffice.allowed_cod
-                                           ? orderData?.totalPrice
-                                           : Number(orderData?.totalPrice) + Number(orderData?.deliveryCost)} <strong>должен оплатить с учетом доставки</strong>`}` +
+                        .join("\n")}\n\n` +
+                    `Прайс: ${
+                        orderData?.selectedCountry === "RU"
+                            ? `${
+                                  orderData?.totalPriceWithDiscount
+                                      ? cdekOffice.allowed_cod
+                                          ? orderData?.totalPriceWithDiscount
+                                          : Number(
+                                                orderData?.totalPriceWithDiscount
+                                            ) + Number(orderData?.deliveryCost)
+                                      : cdekOffice.allowed_cod
+                                        ? orderData?.totalPrice
+                                        : Number(orderData?.totalPrice) +
+                                          Number(orderData?.deliveryCost)
+                              } ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}`
+                            : `${
+                                  orderData?.totalPriceWithDiscount
+                                      ? cdekOffice.allowed_cod
+                                          ? orderData?.totalPriceWithDiscount
+                                          : Number(
+                                                orderData?.totalPriceWithDiscount
+                                            ) + Number(orderData?.deliveryCost)
+                                      : cdekOffice.allowed_cod
+                                        ? orderData?.totalPrice
+                                        : Number(orderData?.totalPrice) +
+                                          Number(orderData?.deliveryCost)
+                              } <strong>должен оплатить с учетом доставки</strong>`
+                    }` +
                     `\nДоставка: ${orderData?.deliveryCost}\n\nДанные клиента:\n` +
                     `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
                     `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
