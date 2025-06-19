@@ -1020,9 +1020,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                                 .join("\n")}\n\n` +
                             `Отправка посылки осуществляется в течение 4х дней после оплаты (кроме праздничных дней и воскресения).\n\n` +
                             `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
-                            `Ссылка на резервную группу:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
                             `Канал 1:\nhttps://t.me/+6MR4nDee-YA5ZWUy\nКанал 2:\nhttps://t.me/+aeKR9GmiV2cxOTFi\nКанал 3:\nСсылка на резервную группу:\nhttps://t.me/+FiEPDjQgSdswYTAy\n\n` +
-                            `Претензии по состоянию товара и соответствию заказа рассматриваются только при наличии видео фиксации вскрытия упаковки!`,
+                            `ПРЕТЕНЗИИ по состоянию товара и соответствию заказа рассматриваются ТОЛЬКО ПРИ НАЛИЧИИ ВИДЕО фиксации вскрытия упаковки!`,
                         {
                             parse_mode: "HTML",
                             disable_web_page_preview: true,
