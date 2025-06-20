@@ -979,7 +979,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         await bot
           .sendMessage(
             orderData.telegramId!,
-            `Ваш заказ оформлен!\nВот трек-номер: ${orderTrackNumberForUser}\n(если нет трек-номера, то обратитесь к <a href="https://t.me/ManageR_triple_h">консультанту</a>)\n` +
+            `Ваш заказ оформлен!\nВот трек-номер: ${orderTrackNumberForUser}\n(если нет трек-номера, то обратитесь к <a href="https://t.me/ManageR_triple_h">консультанту</a>)\n\n` +
               `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!\n\n` +
               `Ваш заказ:\n${orderData.products
                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
