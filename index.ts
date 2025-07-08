@@ -260,13 +260,13 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     });
 
     if (isUserDidOrder) {
-      bot.sendMessage(
+      await bot.sendMessage(
         telegramId,
-        "У вас есть неоплаченный заказ\n\nНапишите /start"
+        "Ваш неоплаченный заказ был удалён. Продолжаем оформление нового:"
       );
-      return res
-        .status(400)
-        .json({ message: "Ожидание оплаты предыдущего заказа" });
+      await prisma.order.deleteMany({
+        where: { status: "WAITPAY", userId: user?.userId },
+      });
     }
 
     if (!basket || !queryId || !totalPrice) {
