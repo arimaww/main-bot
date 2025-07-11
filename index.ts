@@ -258,16 +258,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     const isUserDidOrder = await prisma.order.findFirst({
       where: { status: "WAITPAY", userId: user?.userId },
     });
-
-    if (isUserDidOrder) {
-      await bot.sendMessage(
-        telegramId,
-        "Ваш неоплаченный заказ был удалён. Продолжаем оформление нового:"
-      );
-      await prisma.order.deleteMany({
-        where: { status: "WAITPAY", userId: user?.userId },
-      });
-    }
+    console.log("check", isUserDidOrder);
 
     if (!basket || !queryId || !totalPrice) {
       await bot
@@ -362,7 +353,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             where: { orderUniqueNumber: orderId },
           });
 
-          if (isOrderAlreadyUpdated[0].fileId) return;
+          if (isOrderAlreadyUpdated[0]?.fileId) return;
 
           await prisma.order.updateMany({
             where: {
