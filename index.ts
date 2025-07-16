@@ -17,7 +17,7 @@ import cors from "cors";
 import { botOnStart } from "./helpers/bot-on-start";
 import { ordersKeyboardEvent } from "./events/orders-keyboard-event";
 import { updatePaymentInfo } from "./controllers/payment-controller";
-import { MANAGER_CHAT_ID, WEB_APP } from "./config/config";
+import { MANAGER_CHAT_ID, token, WEB_APP } from "./config/config";
 import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
 import { generateBarcode } from "./helpers/generate-barcode";
@@ -31,6 +31,7 @@ import {
 import { mailRoutes } from "./routes/mail-routes";
 import { makeMailRuDelivery } from "./helpers/mail-delivery/mail-delivery-ru";
 import { mailingRoutes } from "./routes/mailing-routes";
+import { CdekOffice } from "@prisma/client";
 
 const app = express();
 
@@ -44,17 +45,7 @@ app.use(
     allowedHeaders: ["Content-Type"],
   })
 );
-
-app.use((req, res, next) => {
-  if (req.body && req.body.length) {
-    console.log(
-      `Размер тела запроса: ${Buffer.byteLength(JSON.stringify(req.body))} байт`
-    );
-  } else {
-    console.log("Тело запроса пустое");
-  }
-  next();
-});
+app.use(express.json());
 
 const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 
@@ -545,15 +536,45 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
       where: { bankName: bank },
     });
 
+    // При доставке заграницу
+    let paymentInfoInter = "";
+
+    if (totalPriceWithDiscount && totalPriceWithDiscount !== 0) {
+      paymentInfoInter = `${totalPriceWithDiscount + Number(deliverySum)}`;
+    } else {
+      paymentInfoInter = `${totalPrice + Number(deliverySum)}`;
+    }
+
+    // При доставке в РФ
+    let paymentInfoRu = "";
+
+    if (
+      totalPriceWithDiscount &&
+      totalPriceWithDiscount !== 0 &&
+      totalPriceWithDiscount !== totalPrice
+    ) {
+      if (address) {
+        paymentInfoRu = `${totalPriceWithDiscount + Number(deliverySum)}`;
+      } else if (cdekOffice.allowed_cod) {
+        paymentInfoRu = `${totalPriceWithDiscount}`;
+      } else {
+        paymentInfoRu = `${totalPriceWithDiscount + Number(deliverySum)}`;
+      }
+    } else {
+      if (address) {
+        paymentInfoRu = `${totalPrice + Number(deliverySum)}`;
+      } else if (cdekOffice.allowed_cod) {
+        paymentInfoRu = `${totalPrice}`;
+      } else {
+        paymentInfoRu = `${totalPrice + Number(deliverySum)}`;
+      }
+    }
+
     selectedCountry !== "RU"
       ? await bot
           .sendMessage(
             telegramId,
-            `К оплате: ${
-              totalPriceWithDiscount && totalPriceWithDiscount !== 0
-                ? totalPriceWithDiscount + Number(deliverySum)
-                : totalPrice + Number(deliverySum)
-            } ₽\n` +
+            `К оплате: ${paymentInfoInter} ₽\n` +
               `\nЕсли вы не с РФ, то просто переведите рубли на вашу валюту по актуальному курсу\n\n` +
               `${
                 bankData?.paymentType === "BANK"
@@ -609,15 +630,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
       : await bot
           .sendMessage(
             user?.telegramId!,
-            `К оплате: ${
-              totalPriceWithDiscount && totalPriceWithDiscount !== 0
-                ? cdekOffice.allowed_cod
-                  ? totalPriceWithDiscount
-                  : totalPriceWithDiscount + Number(deliverySum)
-                : cdekOffice.allowed_cod
-                  ? totalPrice
-                  : totalPrice + Number(deliverySum)
-            } ₽\n\n` +
+            `К оплате: ${paymentInfoRu} ₽\n\n` +
               `${
                 bankData?.paymentType === "BANK"
                   ? `Банк: ${bankData?.bankName}\n`
@@ -858,15 +871,11 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
   try {
     if (action === "Принять") {
-      // Менеджер нажал "Принять"
-
       const authData = await getToken({
         grant_type: "client_credentials",
         client_id: process.env.CLIENT_ID!,
         client_secret: process.env.CLIENT_SECRET!,
       });
-
-      // выполнение заказа и получение трек номера
 
       if (!chatId) return console.log("chatId не найден");
 
@@ -877,71 +886,99 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           .sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
           .catch((err) => console.log(err));
 
-      if (!orderData?.selectedPvzCode)
+      if (!orderData?.selectedPvzCode && !orderData?.address) {
         return await bot.sendMessage(chatId, "selectedPvzCode не найден");
-      const cdekOffice = await prisma.cdekOffice
-        .findFirst({
-          where: {
-            City: orderData?.cityName!,
-            code: orderData?.selectedPvzCode,
-          },
-        })
-        .catch((err) => console.log(err));
+      }
 
-      if (!cdekOffice?.cityCode)
-        return await bot.sendMessage(chatId, `City code не найден`);
-      const getobj =
-        orderData?.selectedCountry === "RU"
-          ? cdekOffice.allowed_cod
-            ? await getOrderObjRu(
-                authData?.access_token,
-                orderUnique,
-                orderData?.totalPrice,
-                orderData?.surName!,
-                orderData?.firstName!,
-                orderData?.middleName!,
-                orderData?.phone!,
-                orderData?.selectedPvzCode!,
-                orderData.deliveryCost!,
-                orderData?.selectedTariff!,
-                orderData?.address!,
-                cdekOffice?.cityCode!,
-                orderData?.freeDelivery
-              )
-            : await getOrderObjRuWithPrepayment(
-                authData?.access_token,
-                orderUnique,
-                orderData?.totalPrice,
-                orderData?.surName!,
-                orderData?.firstName!,
-                orderData?.middleName!,
-                orderData?.phone!,
-                orderData?.selectedPvzCode!,
-                orderData.deliveryCost!,
-                orderData?.selectedTariff!,
-                orderData?.address!,
-                cdekOffice?.cityCode!,
-                orderData?.freeDelivery
-              )
-          : await getOrderObjInternation(
-              authData?.access_token,
-              orderUnique,
-              orderData?.totalPrice,
-              orderData?.surName!,
-              orderData?.firstName!,
-              orderData?.middleName!,
-              orderData?.phone!,
-              orderData?.selectedPvzCode!,
-              orderData.deliveryCost!,
-              orderData?.selectedTariff!,
-              orderData?.address!,
-              cdekOffice?.cityCode
-            );
+      let cdekOffice: CdekOffice | null = null;
 
+      const cityRecordPromise = prisma.cdekOffice.findFirst({
+        where: { City: orderData.cityName! },
+      });
+
+      const cityRecord = await cityRecordPromise.catch((err) => {
+        console.error("Ошибка при cityCode:", err);
+        return null;
+      });
+      const cityCode = cityRecord?.cityCode;
+
+      if (!orderData.address) {
+        cdekOffice = await prisma.cdekOffice
+          .findFirst({
+            where: {
+              City: orderData.cityName!,
+              code: orderData.selectedPvzCode as string,
+            },
+          })
+          .catch((err) => {
+            console.error("Ошибка при поиске cdekOffice:", err);
+            return null;
+          });
+
+        if (!cdekOffice) {
+          return await bot.sendMessage(chatId, "cdekOffice не найден");
+        }
+      }
+
+      const isRussian = orderData?.selectedCountry === "RU";
+      const allowedCod = isRussian ? Boolean(cdekOffice?.allowed_cod) : false;
+
+      let getOrderObject;
+
+      if (isRussian) {
+        if (allowedCod) {
+          getOrderObject = await getOrderObjRu(
+            authData?.access_token!,
+            orderUnique,
+            orderData.totalPrice!,
+            orderData.surName!,
+            orderData.firstName!,
+            orderData.middleName!,
+            orderData.phone!,
+            orderData.selectedPvzCode!,
+            orderData.deliveryCost!,
+            orderData.selectedTariff!,
+            orderData.address!,
+            cityCode!,
+            orderData.freeDelivery
+          );
+        } else {
+          getOrderObject = await getOrderObjRuWithPrepayment(
+            authData?.access_token!,
+            orderUnique,
+            orderData.totalPrice!,
+            orderData.surName!,
+            orderData.firstName!,
+            orderData.middleName!,
+            orderData.phone!,
+            orderData.selectedPvzCode!,
+            orderData.deliveryCost!,
+            orderData.selectedTariff!,
+            orderData.address!,
+            cityCode!,
+            orderData.freeDelivery
+          );
+        }
+      } else {
+        getOrderObject = await getOrderObjInternation(
+          authData?.access_token!,
+          orderUnique,
+          orderData.totalPrice!,
+          orderData.surName!,
+          orderData.firstName!,
+          orderData.middleName!,
+          orderData.phone!,
+          orderData.selectedPvzCode!,
+          orderData.deliveryCost!,
+          orderData.selectedTariff!,
+          orderData.address!,
+          cityCode!
+        );
+      }
       const delay = (ms: number) =>
         new Promise((resolve) => setTimeout(resolve, ms));
 
-      await makeTrackNumber(getobj);
+      await makeTrackNumber(getOrderObject);
 
       if (orderData && orderData.im_number) {
         await delay(2000);
@@ -988,6 +1025,48 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
         const timestamp = new Date();
 
+        const isRu = orderData?.selectedCountry === "RU";
+        const isCourier = Boolean(orderData?.address);
+        const hasDiscount = Boolean(orderData?.totalPriceWithDiscount);
+        const allowedCOD = cdekOffice?.allowed_cod;
+
+        let priceToPay: number;
+        let paymentNote: string;
+
+        if (isCourier) {
+          // Курьер — учитываем доставку в платеже
+          priceToPay = hasDiscount
+            ? Number(orderData!.totalPriceWithDiscount) +
+              Number(orderData!.deliveryCost)
+            : Number(orderData!.totalPrice) + Number(orderData!.deliveryCost);
+          paymentNote = "<strong>должен оплатить с учетом доставки</strong>";
+        } else if (isRu) {
+          // Самовывоз в РФ — учитываем allowed_cod
+          if (allowedCOD) {
+            priceToPay = hasDiscount
+              ? Number(orderData!.totalPriceWithDiscount)
+              : Number(orderData!.totalPrice);
+            paymentNote = "<strong>должен оплатить без учета доставки</strong>";
+          } else {
+            priceToPay = hasDiscount
+              ? Number(orderData!.totalPriceWithDiscount) +
+                Number(orderData!.deliveryCost)
+              : Number(orderData!.totalPrice) + Number(orderData!.deliveryCost);
+            paymentNote = "<strong>должен оплатить вместе с доставкой</strong>";
+          }
+        } else {
+          // Международная доставка — всегда учитываем доставку
+          priceToPay = hasDiscount
+            ? Number(orderData!.totalPriceWithDiscount) +
+              Number(orderData!.deliveryCost)
+            : Number(orderData!.totalPrice) + Number(orderData!.deliveryCost);
+          paymentNote = "<strong>должен оплатить с учетом доставки</strong>";
+        }
+
+        const productsList = orderData?.products
+          .map((el) => `${el.productCount} шт. | ${el.synonym}`)
+          .join("\n");
+
         const acceptOrderMessage =
           `Заказ ${
             orderData?.username
@@ -999,31 +1078,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           `${orderData.products
             .map((el) => `${el.productCount} шт. | ${el.synonym}`)
             .join("\n")}\n\n` +
-          `Прайс: ${
-            orderData?.selectedCountry === "RU"
-              ? `${
-                  orderData?.totalPriceWithDiscount
-                    ? cdekOffice.allowed_cod
-                      ? orderData?.totalPriceWithDiscount
-                      : Number(orderData?.totalPriceWithDiscount) +
-                        Number(orderData?.deliveryCost)
-                    : cdekOffice.allowed_cod
-                      ? orderData?.totalPrice
-                      : Number(orderData?.totalPrice) +
-                        Number(orderData?.deliveryCost)
-                } ${cdekOffice.allowed_cod ? "<strong>должен оплатить без учета доставки</strong>" : "<strong>должен оплатить вместе с доставкой</strong>"}`
-              : `${
-                  orderData?.totalPriceWithDiscount
-                    ? cdekOffice.allowed_cod
-                      ? orderData?.totalPriceWithDiscount
-                      : Number(orderData?.totalPriceWithDiscount) +
-                        Number(orderData?.deliveryCost)
-                    : cdekOffice.allowed_cod
-                      ? orderData?.totalPrice
-                      : Number(orderData?.totalPrice) +
-                        Number(orderData?.deliveryCost)
-                } <strong>должен оплатить с учетом доставки</strong>`
-          }` +
+          `Прайс: ${priceToPay} ${paymentNote}` +
           `\nДоставка: ${orderData?.deliveryCost}\n\nДанные клиента:\n` +
           `${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}\nГород: ${orderData?.cityName}\n` +
           `Номер: ${orderData?.phone?.replace(/[ ()-]/g, "")}\n\n` +
