@@ -49,7 +49,7 @@ app.use(express.json());
 
 const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 
-setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 5000); // Функция, которая запускается при включении бота или перезагрузки
+setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 3000); // Функция, которая запускается при включении бота или перезагрузки
 
 export const sendMessageHandler = async (message: TelegramBot.Message) => {
   if (
@@ -780,8 +780,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
   }
 });
 
-// app.post('/', async (req, res) => console.log('запрос принимается'))
-
 async function getOrderData(orderId: string) {
   // Предполагаем, что данные заказов хранятся в базе данных
   const order = await prisma.order.findFirst({
@@ -1486,6 +1484,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
 // Обработчик callback_query при order collect
 bot.on("callback_query", handleCollectOrder);
+
+process.on('unhandledRejection', (reason, p) => {
+  console.warn('Unhandled Rejection at:', p, 'reason:', reason);
+});
 
 bot.on("callback_query", handleCallbackQuery);
 
