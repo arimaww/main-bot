@@ -246,10 +246,20 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
       where: { telegramId: telegramId.toString() },
     });
 
-    const isUserDidOrder = await prisma.order.findFirst({
-      where: { status: "WAITPAY", userId: user?.userId },
+    if (!user) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+
+    const pending = await prisma.order.findFirst({
+      where: { status: "WAITPAY", userId: user.userId },
     });
-    console.log("check", isUserDidOrder);
+
+    if (pending) {
+      await prisma.order.deleteMany({
+        where: { status: "WAITPAY", userId: user.userId },
+      });
+      console.log('Старый заказ удалён')
+    }
 
     if (!basket || !queryId || !totalPrice) {
       await bot
@@ -1485,8 +1495,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 // Обработчик callback_query при order collect
 bot.on("callback_query", handleCollectOrder);
 
-process.on('unhandledRejection', (reason, p) => {
-  console.warn('Unhandled Rejection at:', p, 'reason:', reason);
+process.on("unhandledRejection", (reason, p) => {
+  console.warn("Unhandled Rejection at:", p, "reason:", reason);
 });
 
 bot.on("callback_query", handleCallbackQuery);
