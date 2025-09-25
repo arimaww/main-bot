@@ -70,7 +70,7 @@ export const getOrderObjRu = async (
                         payment: {
                             value: 1,
                         },
-                        name: "Пищевые добавки",
+                        name: "БАДы",
                         cost: Number(totalPrice),
                         amount: 1,
                         weight: 1200,
@@ -151,7 +151,7 @@ export const getOrderObjRuWithPrepayment = async (
                         payment: {
                             value: 0,
                         },
-                        name: "Пищевые добавки",
+                        name: "БАДы",
                         cost: Number(totalPrice),
                         amount: 1,
                         weight: 1200,
@@ -239,7 +239,7 @@ export const getOrderObjInternation = async (
                         payment: {
                             value: 0,
                         },
-                        name: "Пищевые добавки",
+                        name: "БАДы",
                         cost: Number(totalPrice),
                         amount: 1,
                         weight: 1200,
