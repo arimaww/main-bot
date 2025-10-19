@@ -20,6 +20,7 @@ export const handleUserMailing = async (req: Request, res: Response) => {
             try {
                 await bot.sendMessage(user.telegramId, message, {
                     parse_mode: "HTML",
+                    disable_web_page_preview: true
                 });
             } catch (err) {
                 console.log(`Ошибка для пользователя ${user.telegramId}:`, err);
