@@ -12,7 +12,7 @@ import {
   getToken,
   makeTrackNumber,
 } from "./helpers/helpers";
-import { TProduct, TWeb } from "./types/types";
+import { TWeb } from "./types/types";
 import cors from "cors";
 import { botOnStart } from "./helpers/bot-on-start";
 import { ordersKeyboardEvent } from "./events/orders-keyboard-event";
@@ -33,6 +33,9 @@ import { makeMailRuDelivery } from "./helpers/mail-delivery/mail-delivery-ru";
 import { mailingRoutes } from "./routes/mailing-routes";
 import { CdekOffice } from "@prisma/client";
 import compression from "compression";
+import { paymentRoutes } from "./routes/payment-routes";
+import { handleCheckPayment } from "./callback-handlers/check-payment";
+import { getOrderData } from "./helpers/get-order-data";
 
 const app = express();
 
@@ -788,80 +791,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
   }
 });
 
-async function getOrderData(orderId: string) {
-  // Предполагаем, что данные заказов хранятся в базе данных
-  const order = await prisma.order.findFirst({
-    where: { orderUniqueNumber: orderId },
-  });
-
-  const entireOrders = await prisma.order.findMany({
-    where: { orderUniqueNumber: orderId },
-  });
-
-  if (!order) {
-    throw new Error("Заказ не найден");
-  }
-
-  const user = await prisma.user.findFirst({
-    where: { userId: order?.userId! },
-  });
-
-  const products = await prisma.product.findMany();
-
-  const orderProds: TProduct[] = [];
-
-  for (const order of entireOrders) {
-    products.map((prod) => {
-      if (prod.productId === order.productId && order.productCount > 0) {
-        orderProds.push({
-          cost: Number(prod.cost),
-          count: prod.count,
-          productId: 0,
-          name: prod.name,
-          synonym: prod.synonym || "",
-          description: prod.description,
-          picture: prod.picture || "",
-          productCount: order.productCount,
-        });
-      }
-    });
-  }
-  const promocode =
-    order?.promocodeId &&
-    (await prisma.promocodes.findFirst({
-      where: { promocodeId: order?.promocodeId },
-    }));
-
-  return {
-    telegramId: user?.telegramId,
-    trackNumber: order?.orderTrackNumber,
-    im_number: order?.orderUniqueNumber,
-    products: orderProds,
-    surName: order?.surName,
-    firstName: order?.firstName,
-    middleName: order?.middleName,
-    phone: order?.phone,
-    selectedPvzCode: order?.selectedPvzCode,
-    selectedTariff: order?.selectedTariff,
-    totalPrice: order?.totalPrice,
-    totalPriceWithDiscount: order?.totalPriceWithDiscount,
-    deliveryCost: order?.deliveryCost,
-    username: user?.userName,
-    selectedCountry: order?.selectedCountry,
-    status: order?.status,
-    fileId: order?.fileId,
-    cityName: order?.city,
-    secretDiscountPercent: order?.secretDiscountPercent,
-    address: order?.address,
-    country: order?.selectedCountry,
-    region: order?.region,
-    index: order?.index,
-    pvzCode: order?.pvzCode,
-    commentByUser: order?.commentByClient,
-    promocode: promocode,
-    freeDelivery: order?.freeDelivery,
-  };
-}
 const MAIL_GROUP_ID = process.env.MAIL_GROUP_ID!;
 const MAIL_GROUP_RU_ID = process.env.MAIL_GROUP_RU_ID!;
 const POSTOFFICE_CODE = process.env.POSTOFFICE_CODE as string;
@@ -1021,10 +950,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
               `🕰️ Отправка посылки в течении 3х дней после оплаты (Не считая воскресенье и праздничные дни. Отправок в эти дни нет, но магазин работает без выходных).\n\n` +
               `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
               `📦 Если заканчивается срок хранения посылки на пункте выдачи - напишите нам для продления. Иначе за возврат удерживается сумма (за доставку к вам и обратно).` +
-              
               `\n\n🔗 Основной канал:\nhttps://t.me/+6MR4nDee-YA5ZWUy` +
               `\n\n🔗 Резервные каналы (на случай потери доступа к основному):\nhttps://t.me/+aeKR9GmiV2cxOTFi\nhttps://t.me/+FiEPDjQgSdswYTAy` +
-              
               `\n\n❗️ПРЕТЕНЗИИ ПО СОСТОЯНИЮ ТОВАРА И СООТВЕТСТВИЮ ЗАКАЗА РАССМАТРИВАЮТСЯ ТОЛЬКО ПРИ НАЛИЧИИ ВИДЕОФИКСАЦИИ ВСКРЫТИЯ УПАКОВКИ❗️`,
             {
               parse_mode: "HTML",
@@ -1290,13 +1217,11 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
               .map((el) => `${el.productCount} шт. | ${el.synonym}`)
               .join("\n")}\n\n` +
             `🕰️ Отправка посылки в течении 3х дней после оплаты (Не считая воскресенье и праздничные дни. Отправок в эти дни нет, но магазин работает без выходных).\n\n` +
-              `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
-              `📦 Если заканчивается срок хранения посылки на пункте выдачи - напишите нам для продления. Иначе за возврат удерживается сумма (за доставку к вам и обратно).` +
-              
-              `\n\n🔗 Основной канал:\nhttps://t.me/+6MR4nDee-YA5ZWUy` +
-              `\n\n🔗 Резервные каналы (на случай потери доступа к основному):\nhttps://t.me/+aeKR9GmiV2cxOTFi\nhttps://t.me/+FiEPDjQgSdswYTAy` +
-              
-              `\n\n❗️ПРЕТЕНЗИИ ПО СОСТОЯНИЮ ТОВАРА И СООТВЕТСТВИЮ ЗАКАЗА РАССМАТРИВАЮТСЯ ТОЛЬКО ПРИ НАЛИЧИИ ВИДЕОФИКСАЦИИ ВСКРЫТИЯ УПАКОВКИ❗️`,
+            `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
+            `📦 Если заканчивается срок хранения посылки на пункте выдачи - напишите нам для продления. Иначе за возврат удерживается сумма (за доставку к вам и обратно).` +
+            `\n\n🔗 Основной канал:\nhttps://t.me/+6MR4nDee-YA5ZWUy` +
+            `\n\n🔗 Резервные каналы (на случай потери доступа к основному):\nhttps://t.me/+aeKR9GmiV2cxOTFi\nhttps://t.me/+FiEPDjQgSdswYTAy` +
+            `\n\n❗️ПРЕТЕНЗИИ ПО СОСТОЯНИЮ ТОВАРА И СООТВЕТСТВИЮ ЗАКАЗА РАССМАТРИВАЮТСЯ ТОЛЬКО ПРИ НАЛИЧИИ ВИДЕОФИКСАЦИИ ВСКРЫТИЯ УПАКОВКИ❗️`,
           {
             parse_mode: "HTML",
             disable_web_page_preview: true,
@@ -1501,12 +1426,16 @@ process.on("unhandledRejection", (reason, p) => {
 });
 
 bot.on("callback_query", handleCallbackQuery);
+bot.on("callback_query", handleCheckPayment);
 
 app.post("/update-payment-info", updatePaymentInfo);
 app.use("/order", orderRoutes);
 app.use("/mail-delivery", mailRoutes);
 
 app.use("/mailing", mailingRoutes); // При рассылке через crm
+
+// Оплата по T-Pay
+app.use("/payment", paymentRoutes);
 
 app.listen(7000, () => {
   console.log("Запущен на 7000 порте");
