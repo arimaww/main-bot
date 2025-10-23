@@ -8,11 +8,11 @@ datasource db {
 }
 
 model User {
-  userId          Int        @id @default(autoincrement())
+  userId          Int           @id @default(autoincrement())
   telegramId      String
   userName        String
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @default(now()) @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now()) @updatedAt
   email           String?
   firstName       String?
   middleName      String?
@@ -26,6 +26,7 @@ model User {
   basket          Basket[]
   Keyboard        Keyboard[]
   order           Order[]
+  PaymentInfo     PaymentInfo[]
 }
 
 model Product {
@@ -106,9 +107,11 @@ model Order {
   freeDelivery            Boolean       @default(false)
   orderBarcodeId          Int?
   messagesId              Int?
+  paymentInfoId           Int?
   Bank                    Bank?         @relation(fields: [bankId], references: [id])
   Messages                Messages?     @relation(fields: [messagesId], references: [id])
   OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
+  PaymentInfo             PaymentInfo?  @relation(fields: [paymentInfoId], references: [id])
   product                 Product?      @relation(fields: [productId], references: [productId])
   Promocodes              Promocodes?   @relation(fields: [promocodeId], references: [promocodeId])
   user                    User?         @relation(fields: [userId], references: [userId])
@@ -151,6 +154,7 @@ model Bank {
   sbpNumber   String?
   paymentType PAYMENT_TYPE @default(BANK)
   comments    String?
+  isSwitchOn  Boolean?     @default(true)
   Order       Order[]
 }
 
@@ -247,6 +251,19 @@ model Messages {
   Order             Order[]
 }
 
+model PaymentInfo {
+  id                Int            @unique @default(autoincrement())
+  paymentId         String
+  orderUniqueNumber String
+  userId            Int
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @default(now())
+  amount            Decimal
+  status            PAYMENT_STATUS @default(NEW)
+  Order             Order[]
+  User              User           @relation(fields: [userId], references: [userId])
+}
+
 enum Role {
   ADMIN
   MODERATOR
@@ -280,4 +297,9 @@ enum PRODUCT_VISIBLE_STATUS {
   VISIBLE
   HIDDEN
   HIDDEN_ON_SITE
+}
+
+enum PAYMENT_STATUS {
+  NEW
+  CONFIRMED
 }
