@@ -18,7 +18,9 @@ export async function cancelWaitPayOrders(bot: TelegramBot) {
     return !duplicate;
   });
   const banks = await prisma.bank.findMany();
-  const tPayBank = banks?.find((bank) => bank.bankName === "T-Pay");
+  const tPayBank = banks?.find(
+    (bank) => bank.bankName === process.env.PAYMENT_METHOD_NAME
+  );
   const isTPayBank = uniqueOrders?.some(
     (order) => order.bankId === tPayBank?.id
   );
