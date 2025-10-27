@@ -26,12 +26,6 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
   const [action, paymentId] = data.split("_");
 
   if (action === "checkpayment") {
-    // TODO: Сделать запрос проверки статуса платежа +
-    // TODO: Если платёж NEW, то сообщить пользователю, что оплата ещё не прошла +
-    // TODO: Если платёж успешен, то сгенерировать пользователю трек-номер и выдать сообщение +
-    // TODO: Поменять статус платежа в бд +
-    // TODO: Отправить заказ в группу СДЭК, а также менеджеру в боте +
-
     const data = {
       TerminalKey: process.env.TERMINAL_KEY as string,
       PaymentId: paymentId,
@@ -55,6 +49,10 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
         user.telegramId,
         "Платёж еще не обработан, попробуйте позже."
       );
+    const orderData = await getOrderData(paymentInfo.orderUniqueNumber);
+
+    if (orderData.status === "SUCCESS")
+      return await bot.sendMessage(user.telegramId, "Заказ уже принят.");
 
     if (request.Status === "CONFIRMED") {
       await prisma.paymentInfo.update({
@@ -70,13 +68,6 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
       });
 
       if (!user.telegramId) return console.log("user chat id не найден");
-
-      const orderData = await getOrderData(paymentInfo.orderUniqueNumber);
-
-      if (orderData?.status === "SUCCESS")
-        return bot
-          .sendMessage(MANAGER_CHAT_ID, "Данный заказ уже принят")
-          .catch((err) => console.log(err));
 
       if (!orderData?.selectedPvzCode && !orderData?.address) {
         return await bot.sendMessage(
@@ -176,7 +167,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
       await makeTrackNumber(getOrderObject);
 
       if (orderData && orderData.im_number) {
-        await delay(2000);
+        await delay(3000);
 
         const orderCdekData = await getOrderTrackNumber(
           orderData?.im_number,
@@ -327,7 +318,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
           authData?.access_token
         ).then((barcode) => barcode.entity.uuid);
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const barcode_url = await pollForBarcode(
           barcode_uuid,
