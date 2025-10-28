@@ -33,28 +33,65 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
 
     const token = makeToken(data, process.env.TERMINAL_PASS as string);
 
-    const request = await getPaymentStatus({ ...data, Token: token });
-
     const paymentInfo = await prisma.paymentInfo.findFirst({
       where: { paymentId },
     });
     if (!paymentInfo) return;
+
+    // ✅ Проверяем, не обработан ли платёж уже
+    if (paymentInfo.status === "PROCESSING") {
+      const user = await prisma.user.findFirst({
+        where: { userId: paymentInfo.userId },
+      });
+      if (user) {
+        await bot.sendMessage(
+          user.telegramId,
+          "Платёж уже обрабатывается или подтверждён. Пожалуйста, подождите."
+        );
+      }
+      return;
+    }
+
+    if (paymentInfo.status === "CONFIRMED") {
+      const user = await prisma.user.findFirst({
+        where: { userId: paymentInfo.userId },
+      });
+      if (user) {
+        await bot.sendMessage(user.telegramId, "Заказ уже принят.");
+      }
+      return;
+    }
+
+    // ✅ Безопасно обновляем статус на PROCESSING
+    await prisma.paymentInfo.update({
+      where: { id: paymentInfo.id },
+      data: { status: "PROCESSING" },
+    });
+
     const user = await prisma.user.findFirst({
       where: { userId: paymentInfo.userId },
     });
     if (!user) return;
 
-    if (request.Status === "NEW")
-      return await bot.sendMessage(
-        user.telegramId,
-        "Платёж еще не обработан, попробуйте позже."
-      );
-    const orderData = await getOrderData(paymentInfo.orderUniqueNumber);
+    // Проверяем оплату
+    const request = await getPaymentStatus({ ...data, Token: token });
 
-    if (orderData.status === "SUCCESS")
+    if (request.Status !== "CONFIRMED") {
+      // Возвращаем статус в NEW, чтобы можно было проверить позже
+      await prisma.paymentInfo.update({
+        where: { id: paymentInfo.id },
+        data: { status: "NEW" },
+      });
+      return await bot.sendMessage(user.telegramId, "Платёж ещё не обработан.");
+    }
+
+    const orderData = await getOrderData(paymentInfo.orderUniqueNumber);
+    if (orderData.status === "SUCCESS") {
       return await bot.sendMessage(user.telegramId, "Заказ уже принят.");
+    }
 
     if (request.Status === "CONFIRMED") {
+      // После всей логики заказа
       await prisma.paymentInfo.update({
         where: { id: paymentInfo.id },
         data: { status: "CONFIRMED" },
