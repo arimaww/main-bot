@@ -76,21 +76,21 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
     // Проверяем оплату
     const request = await getPaymentStatus({ ...data, Token: token });
 
-    if (request.Status !== "CONFIRMED") {
-      // Возвращаем статус в NEW, чтобы можно было проверить позже
-      await prisma.paymentInfo.update({
-        where: { id: paymentInfo.id },
-        data: { status: "NEW" },
-      });
-      return await bot.sendMessage(user.telegramId, "Платёж ещё не обработан.");
-    }
+    // if (request.Status !== "CONFIRMED") {
+    //   // Возвращаем статус в NEW, чтобы можно было проверить позже
+    //   await prisma.paymentInfo.update({
+    //     where: { id: paymentInfo.id },
+    //     data: { status: "NEW" },
+    //   });
+    //   return await bot.sendMessage(user.telegramId, "Платёж ещё не обработан.");
+    // }
 
     const orderData = await getOrderData(paymentInfo.orderUniqueNumber);
     if (orderData.status === "SUCCESS") {
       return await bot.sendMessage(user.telegramId, "Заказ уже принят.");
     }
 
-    if (request.Status === "CONFIRMED") {
+    if (request.Status === "NEW") {
       // После всей логики заказа
       await prisma.paymentInfo.update({
         where: { id: paymentInfo.id },
@@ -439,19 +439,21 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
             }
           )
           .then(async (msg) => {
-            const dbMessageId = await prisma.order
-              .findFirst({
-                where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
-              })
-              .then((msg) => msg?.messagesId);
-            if (dbMessageId) {
-              await prisma.messages.update({
-                where: { id: dbMessageId },
-                data: {
-                  cdek_group_msg_id: String(msg.message_id),
-                },
-              });
-            }
+            const order = await prisma.order.findFirst({
+              where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
+            });
+
+            const msgs = await prisma.messages.create({
+              data: {
+                bot_msg_id: "",
+                Order: { connect: { orderId: order?.orderId } },
+                cdek_group_msg_id: String(msg.message_id),
+              },
+            });
+            await prisma.order.updateMany({
+              where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
+              data: { messagesId: msgs.id },
+            });
           })
           .catch((err) => console.log(err));
         // --------------------------------------------
