@@ -76,21 +76,21 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
     // Проверяем оплату
     const request = await getPaymentStatus({ ...data, Token: token });
 
-    // if (request.Status !== "CONFIRMED") {
-    //   // Возвращаем статус в NEW, чтобы можно было проверить позже
-    //   await prisma.paymentInfo.update({
-    //     where: { id: paymentInfo.id },
-    //     data: { status: "NEW" },
-    //   });
-    //   return await bot.sendMessage(user.telegramId, "Платёж ещё не обработан.");
-    // }
+    if (request.Status !== "CONFIRMED") {
+      // Возвращаем статус в NEW, чтобы можно было проверить позже
+      await prisma.paymentInfo.update({
+        where: { id: paymentInfo.id },
+        data: { status: "NEW" },
+      });
+      return await bot.sendMessage(user.telegramId, "Платёж ещё не обработан.");
+    }
 
     const orderData = await getOrderData(paymentInfo.orderUniqueNumber);
     if (orderData.status === "SUCCESS") {
       return await bot.sendMessage(user.telegramId, "Заказ уже принят.");
     }
 
-    if (request.Status === "NEW") {
+    if (request.Status === "CONFIRMED") {
       // После всей логики заказа
       await prisma.paymentInfo.update({
         where: { id: paymentInfo.id },
