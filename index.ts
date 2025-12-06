@@ -1066,17 +1066,18 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           authData?.access_token
         ).then((barcode) => barcode.entity.uuid);
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 3500));
 
-        const barcode_url = await pollForBarcode(
+        let barcode_url: string | null = await pollForBarcode(
           barcode_uuid,
           authData?.access_token!
         );
+        barcode_url = null;
 
         // Записываем barcode в бд
 
         const barcodeId = await prisma.orderBarcode
-          .create({ data: { url: barcode_url } })
+          .create({ data: { url: barcode_url ?? "" } })
           .then((el) => el.id);
 
         // записываем barcodeId в Order
@@ -1096,7 +1097,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
                 : "клиента"
             }` +
-              ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}.\n <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
+              ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}. ` +
+              `\n ${barcode_url ? `<a href="${barcode_url}">Ссылка</a>` : ""}\n\nПеречень заказа:\n${orderData.products
                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                 .join("\n")}\n\nПрайс: ${
                 orderData?.totalPriceWithDiscount
