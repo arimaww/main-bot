@@ -33,7 +33,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
           {
             chat_id: callbackQuery.message?.chat.id,
             message_id: callbackQuery.message?.message_id,
-          },
+          }
         )
         .catch((err) => console.log(err));
       break;
@@ -48,7 +48,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
           {
             chat_id: callbackQuery.message?.chat.id,
             message_id: callbackQuery.message?.message_id,
-          },
+          }
         )
         .catch((err) => console.log(err));
       const order = await prisma.order.findFirst({
@@ -69,7 +69,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
             {
               chat_id: callbackQuery.message?.chat.id || 0,
               message_id: callbackQuery.message?.message_id || 0,
-            },
+            }
           )
           .catch((err) => console.log(err));
 
@@ -78,7 +78,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
             user.telegramId,
             "Ваш закан успешно собран и в ближайшее время будет передан в доставку!\n" +
               `Следующие изменения статуса отслеживайте через сайт ${order?.orderType === "CDEK" ? '<a href="https://www.cdek.ru/ru/tracking/">СДЭК</a>' : '<a href="https://www.pochta.ru/tracking">ПОЧТА РОССИИ</a>'}  по вашему трек номеру: ${orderTrackNumber}`,
-            { parse_mode: "HTML", disable_web_page_preview: true },
+            { parse_mode: "HTML", disable_web_page_preview: true }
           )
           .catch((err) => console.log(err));
       }
@@ -151,7 +151,7 @@ export const handleCollectOrder = async (callbackQuery: CallbackQuery) => {
           {
             chat_id: callbackQuery.message?.chat.id,
             message_id: callbackQuery.message?.message_id,
-          },
+          }
         )
         .catch((err) => console.log(err));
       break;
