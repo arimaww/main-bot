@@ -1,8 +1,12 @@
 import { Router } from "express";
-import { tPaymentHandler } from "../controllers/payment-controller";
+import {
+  tPaymentHandler,
+  tPaymentWebhookHandler,
+} from "../controllers/payment-controller";
 
-const router = Router()
+const router = Router();
 
-router.post('/tpay', tPaymentHandler)
+router.post("/tpay", tPaymentHandler);
+router.post("/webhook", tPaymentWebhookHandler);
 
-export { router as paymentRoutes }
+export { router as paymentRoutes };
