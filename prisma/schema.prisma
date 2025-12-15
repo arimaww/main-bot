@@ -1,10 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model User {
@@ -24,9 +25,15 @@ model User {
   surName         String?
   discountId      Int?
   basket          Basket[]
-  Keyboard        Keyboard[]
+  keyboard        Keyboard[]
   order           Order[]
   PaymentInfo     PaymentInfo[]
+}
+
+enum PRODUCT_VISIBLE_STATUS {
+  VISIBLE
+  HIDDEN
+  HIDDEN_ON_SITE
 }
 
 model Product {
@@ -35,8 +42,8 @@ model Product {
   synonym         String?
   description     String
   longDescription String?
-  is_archived     Boolean                 @default(false)
-  visible_status  PRODUCT_VISIBLE_STATUS? @default(VISIBLE)
+  isArchived      Boolean                 @default(false) @map("is_archived")
+  visibleStatus   PRODUCT_VISIBLE_STATUS? @default(VISIBLE) @map("visible_status")
   sostav          String?
   picture         String?
   count           Int
@@ -44,12 +51,13 @@ model Product {
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @default(now()) @updatedAt
   primeCost       Decimal?
+
   categoryId      Int?
   basket          Basket[]
   order           Order[]
-  Category        Category?               @relation(fields: [categoryId], references: [id])
-  ProductDiscount ProductDiscount?
-  ProductSet      ProductSet[]
+  productDiscount ProductDiscount?
+  productSet      ProductSet[]
+  Category        Category?        @relation(fields: [categoryId], references: [id])
 }
 
 model Basket {
@@ -63,7 +71,7 @@ model Basket {
   secretDiscountId Int?
   freeDelivery     Boolean         @default(false)
   product          Product         @relation(fields: [productId], references: [productId], onDelete: Cascade)
-  Promocodes       Promocodes?     @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
+  promocode        Promocodes?     @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
   SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
   user             User            @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
@@ -105,16 +113,35 @@ model Order {
   commentForCollector     String?
   commentByClient         String?
   freeDelivery            Boolean       @default(false)
+  bank                    Bank?         @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  product                 Product?      @relation(fields: [productId], references: [productId], onDelete: SetNull)
+  promocode               Promocodes?   @relation(fields: [promocodeId], references: [promocodeId], onDelete: SetNull)
+  user                    User?         @relation(fields: [userId], references: [userId], onDelete: SetNull)
   orderBarcodeId          Int?
+  orderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id], onDelete: SetNull)
+  messages                Messages?     @relation(fields: [messagesId], references: [id])
   messagesId              Int?
-  paymentInfoId           Int?
-  Bank                    Bank?         @relation(fields: [bankId], references: [id])
-  Messages                Messages?     @relation(fields: [messagesId], references: [id])
-  OrderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id])
-  PaymentInfo             PaymentInfo?  @relation(fields: [paymentInfoId], references: [id])
-  product                 Product?      @relation(fields: [productId], references: [productId])
-  Promocodes              Promocodes?   @relation(fields: [promocodeId], references: [promocodeId])
-  user                    User?         @relation(fields: [userId], references: [userId])
+
+  paymentInfo   PaymentInfo? @relation(fields: [paymentInfoId], references: [id])
+  paymentInfoId Int?
+}
+
+model Messages {
+  id                Int      @id @default(autoincrement())
+  cdek_group_msg_id String
+  bot_msg_id        String
+  createdAt         DateTime @default(now())
+  updateAt          DateTime @default(now())
+  Order             Order[]
+}
+
+model OrderBarcode {
+  id     Int     @id @default(autoincrement())
+  url    String
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @default(now()) @updatedAt
 }
 
 model CdekOffice {
@@ -128,9 +155,11 @@ model CdekOffice {
   City         String
   address      String
   address_full String
+  allowed_cod  Boolean?
+  weight_min   Decimal? @db.Decimal(10, 1)
+  weight_max   Decimal? @db.Decimal(10, 1)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now()) @updatedAt
-  allowed_cod  Boolean?
 }
 
 model UserCrm {
@@ -148,13 +177,13 @@ model Bank {
   id          Int          @id @unique @default(autoincrement())
   bankName    String
   requisite   String
+  isSwitchOn  Boolean?     @default(true)
   recipient   String
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
   sbpNumber   String?
   paymentType PAYMENT_TYPE @default(BANK)
   comments    String?
-  isSwitchOn  Boolean?     @default(true)
   Order       Order[]
 }
 
@@ -164,7 +193,7 @@ model Keyboard {
   title      String
   messageId  BigInt
   userId     Int
-  User       User   @relation(fields: [userId], references: [userId])
+  user       User   @relation(fields: [userId], references: [userId])
 }
 
 model ProductDiscount {
@@ -173,9 +202,9 @@ model ProductDiscount {
   amount     Int?
   validDate  DateTime?
   productId  Int       @unique
-  updatedAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
   createdAt  DateTime  @default(now())
-  Product    Product   @relation(fields: [productId], references: [productId])
+  product    Product   @relation(fields: [productId], references: [productId])
 }
 
 model ProductSet {
@@ -183,104 +212,77 @@ model ProductSet {
   setName   String
   productId Int
   discount  Int
-  Product   Product @relation(fields: [productId], references: [productId])
+  product   Product @relation(fields: [productId], references: [productId])
 }
 
-model BasketItems {
-  id               Int              @unique @default(autoincrement())
-  productId        Int
-  productCount     Int
-  gbasketId        Int
-  createdAt        DateTime         @default(now())
-  GeneratedBaskets GeneratedBaskets @relation(fields: [gbasketId], references: [gbasketId])
+model Promocodes {
+  promocodeId     Int      @unique @default(autoincrement())
+  title           String
+  uses            Int
+  percent         Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  fromWhatAmount  Int
+  basketWithPromo Basket[]
+  ordersWithPromo Order[]
 }
 
 model GeneratedBaskets {
   gbasketId        Int             @unique @default(autoincrement())
   cartKey          String
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime        @updatedAt
   secretDiscountId Int?            @unique
   freeDelivery     Boolean         @default(false)
-  BasketItems      BasketItems[]
+  items            BasketItems[]
   SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
 }
 
-model Promocodes {
-  promocodeId    Int      @unique @default(autoincrement())
-  title          String
-  uses           Int
-  percent        Int
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime
-  fromWhatAmount Int
-  Basket         Basket[]
-  Order          Order[]
+model BasketItems {
+  id           Int              @unique @default(autoincrement())
+  productId    Int
+  productCount Int
+  gbasketId    Int
+  createdAt    DateTime         @default(now())
+  basket       GeneratedBaskets @relation(fields: [gbasketId], references: [gbasketId])
 }
 
 model SecretDiscount {
   id               Int                  @unique @default(autoincrement())
   percent          Int
-  type             SecretDiscountStatus @default(PENDING)
   Basket           Basket[]
+  type             SecretDiscountStatus @default(PENDING)
   GeneratedBaskets GeneratedBaskets?
 }
 
 model Category {
   id        Int       @unique @default(autoincrement())
   name      String
+  products  Product[]
   createdAt DateTime  @default(now())
-  updatedAt DateTime
-  Product   Product[]
-}
-
-model OrderBarcode {
-  id        Int      @id @default(autoincrement())
-  url       String
-  createdAt DateTime @default(now())
-  updateAt  DateTime @default(now())
-  Order     Order[]
-}
-
-model Messages {
-  id                Int      @id @default(autoincrement())
-  cdek_group_msg_id String
-  bot_msg_id        String
-  createdAt         DateTime @default(now())
-  updateAt          DateTime @default(now())
-  Order             Order[]
+  updatedAt DateTime  @updatedAt
 }
 
 model PaymentInfo {
-  id                Int            @unique @default(autoincrement())
+  id                Int     @unique @default(autoincrement())
   paymentId         String
   orderUniqueNumber String
-  userId            Int
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @default(now())
-  amount            Decimal
-  status            PAYMENT_STATUS @default(NEW)
   Order             Order[]
-  User              User           @relation(fields: [userId], references: [userId])
+
+  amount Decimal // Копейки
+  status PAYMENT_STATUS @default(NEW)
+
+  user   User @relation(fields: [userId], references: [userId])
+  userId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
-enum Role {
-  ADMIN
-  MODERATOR
-  OWNER
-}
-
-enum OrderStatus {
-  PENDING
-  SUCCESS
-  WAITPAY
-}
-
-enum OrderType {
-  CDEK
-  MAIL
-  MINIBUS
-  PICKUP
+enum PAYMENT_STATUS {
+  NEW
+  PROCESSING
+  CONFIRMED
 }
 
 enum SecretDiscountStatus {
@@ -293,14 +295,21 @@ enum PAYMENT_TYPE {
   CRYPTO
 }
 
-enum PRODUCT_VISIBLE_STATUS {
-  VISIBLE
-  HIDDEN
-  HIDDEN_ON_SITE
+enum OrderType {
+  CDEK
+  MAIL
+  MINIBUS
+  PICKUP
 }
 
-enum PAYMENT_STATUS {
-  NEW
-  CONFIRMED
-  PROCESSING
+enum OrderStatus {
+  PENDING
+  SUCCESS
+  WAITPAY
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+  OWNER
 }
