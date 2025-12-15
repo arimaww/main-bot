@@ -11,7 +11,7 @@ export const orderEdit = async (req: Request, res: Response) => {
 
     const orders = await prisma.order.findMany({
       where: { orderUniqueNumber },
-      include: { product: true, OrderBarcode: true },
+      include: { product: true, orderBarcode: true },
     });
 
     if (!orders[0].userId) return;
@@ -27,13 +27,21 @@ export const orderEdit = async (req: Request, res: Response) => {
     const timestamp = new Date();
 
     await bot.editMessageText(
-      `${orders[0].commentForCollector === "" || !!orders[0].commentForCollector ? `<strong>ВАЖНО: ${orders[0].commentForCollector}</strong>\n\n` : ""}` +
+      `${
+        orders[0].commentForCollector === "" || !!orders[0].commentForCollector
+          ? `<strong>ВАЖНО: ${orders[0].commentForCollector}</strong>\n\n`
+          : ""
+      }` +
         `Заказ ${
           user?.userName
             ? `<a href="${`https://t.me/${user?.userName}`}">клиента</a>`
             : "клиента"
         }` +
-        ` принят.\nTelegram ID: ${user?.telegramId}\n\nТрек-номер: ${orders[0].orderTrackNumber}.\n<a href="${orders[0].OrderBarcode?.url}">Ссылка</a>\n\nПеречень заказа:\n${orders
+        ` принят.\nTelegram ID: ${user?.telegramId}\n\nТрек-номер: ${
+          orders[0].orderTrackNumber
+        }.\n<a href="${
+          orders[0].orderBarcode?.url
+        }">Ссылка</a>\n\nПеречень заказа:\n${orders
           .map((el) => `${el.productCount} шт. | ${el.product?.synonym}`)
           .join("\n")}\n\nПрайс: ${
           orders[0]?.totalPriceWithDiscount
