@@ -4,11 +4,6 @@ import { ordersKeyboardEvent } from "../events/orders-keyboard-event";
 import { MANAGER_CHAT_ID, token } from "../config/config";
 import { bot } from "../bot/bot";
 import { prisma } from "../prisma/prisma-client";
-import {
-  getTimerIdForOrder,
-  removeTimerIdForOrder,
-  saveTimerIdForOrder,
-} from "../map-func/order-timer";
 import { makeToken, TPayGenerate } from "../helpers/payment/t-pay";
 
 export const updatePaymentInfo = async (req: Request, res: Response) => {
