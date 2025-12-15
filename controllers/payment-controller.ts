@@ -23,6 +23,11 @@ export const updatePaymentInfo = async (req: Request, res: Response) => {
   }
 };
 
+export const tPaymentWebhookHandler = async (req: Request, res: Response) => {
+  console.log("success t-pay webhook");
+  return res.status(200).json({ message: "Success" });
+};
+
 export const tPaymentHandler = async (req: Request, res: Response) => {
   try {
     const {
