@@ -175,11 +175,9 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
             orderData.middleName!,
             orderData.phone!,
             orderData.selectedPvzCode!,
-            orderData.deliveryCost!,
             orderData.selectedTariff!,
             orderData.address!,
-            cityCode!,
-            orderData.freeDelivery
+            cityCode!
           );
         }
       } else {
