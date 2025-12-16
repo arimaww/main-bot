@@ -17,7 +17,7 @@ import cors from "cors";
 import { botOnStart } from "./helpers/bot-on-start";
 import { ordersKeyboardEvent } from "./events/orders-keyboard-event";
 import { updatePaymentInfo } from "./controllers/payment-controller";
-import { MANAGER_CHAT_ID, token, WEB_APP } from "./config/config";
+import { MANAGER_CHAT_ID, WEB_APP } from "./config/config";
 import { bot } from "./bot/bot";
 import { handleCollectOrder } from "./callback-handlers/collect-order";
 import { generateBarcode } from "./helpers/generate-barcode";
@@ -31,11 +31,11 @@ import {
 import { mailRoutes } from "./routes/mail-routes";
 import { makeMailRuDelivery } from "./helpers/mail-delivery/mail-delivery-ru";
 import { mailingRoutes } from "./routes/mailing-routes";
-import { CdekOffice } from "@prisma/client";
 import compression from "compression";
 import { paymentRoutes } from "./routes/payment-routes";
 import { handleCheckPayment } from "./callback-handlers/check-payment";
 import { getOrderData } from "./helpers/get-order-data";
+import { CdekOffice } from "./generated/client";
 
 const app = express();
 
@@ -114,7 +114,7 @@ bot.onText(
 
       const basketItems = await prisma.generatedBaskets.findFirst({
         where: { cartKey: generatedBasketKey },
-        include: { BasketItems: true, SecretDiscount: true }, // Подгружаем связанные элементы
+        include: { items: true, SecretDiscount: true }, // Подгружаем связанные элементы
       });
 
       await prisma.basket.deleteMany({ where: { userId: user?.userId } });
@@ -127,7 +127,7 @@ bot.onText(
           },
         });
       }
-      const itemsArray = basketItems?.BasketItems || [];
+      const itemsArray = basketItems?.items || [];
 
       const secretDiscount = basketItems?.SecretDiscount;
 
@@ -398,8 +398,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             const deliveryNote = basket[0]?.freeDelivery
               ? "Доставка: <strong>Бесплатно</strong>"
               : cdekOffice.allowed_cod && isRussia
-                ? `Доставка: ${deliveryCost} ₽`
-                : "";
+              ? `Доставка: ${deliveryCost} ₽`
+              : "";
 
             const result = `Прайс: ${priceToPay} ₽ ${paymentNote}\n ${deliveryNote}`;
 
@@ -418,18 +418,18 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 selectedCountry === "RU"
                   ? "Россия"
                   : selectedCountry === "KG"
-                    ? "Кыргызстан"
-                    : selectedCountry === "BY"
-                      ? "Беларусь"
-                      : selectedCountry === "AM"
-                        ? "Армения"
-                        : selectedCountry === "KZ"
-                          ? "Казахстан"
-                          : selectedCountry === "AZ"
-                            ? "Азербайджан"
-                            : selectedCountry === "UZ"
-                              ? "Узбекистан"
-                              : "Неизвестная страна"
+                  ? "Кыргызстан"
+                  : selectedCountry === "BY"
+                  ? "Беларусь"
+                  : selectedCountry === "AM"
+                  ? "Армения"
+                  : selectedCountry === "KZ"
+                  ? "Казахстан"
+                  : selectedCountry === "AZ"
+                  ? "Азербайджан"
+                  : selectedCountry === "UZ"
+                  ? "Узбекистан"
+                  : "Неизвестная страна"
               }
                                  \nНомер: ${phone.replace(
                                    /[ ()-]/g,
@@ -536,7 +536,11 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             `\nФИО ${surName} ${firstName} ${middleName}` +
             "\nНомер " +
             phone +
-            `\n\n${!!basket[0]?.freeDelivery ? "Доставка: Бесплатно" : `Доставка: ${deliverySum} ₽`}` +
+            `\n\n${
+              !!basket[0]?.freeDelivery
+                ? "Доставка: Бесплатно"
+                : `Доставка: ${deliverySum} ₽`
+            }` +
             "\n\nПрайс: " +
             `${
               totalPriceWithDiscount && totalPriceWithDiscount !== 0
@@ -849,7 +853,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             console.error("Ошибка при поиске cdekOffice:", err);
             return null;
           });
-
+        console.log(orderData.selectedPvzCode);
         if (!cdekOffice) {
           return await bot.sendMessage(chatId, "cdekOffice не найден");
         }
@@ -875,7 +879,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             orderData.selectedTariff!,
             orderData.address!,
             cityCode!,
-            orderData.freeDelivery
+            orderData.freeDelivery,
+            orderData?.products
           );
         } else {
           getOrderObject = await getOrderObjRuWithPrepayment(
@@ -887,11 +892,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             orderData.middleName!,
             orderData.phone!,
             orderData.selectedPvzCode!,
-            orderData.deliveryCost!,
             orderData.selectedTariff!,
             orderData.address!,
             cityCode!,
-            orderData.freeDelivery
+            orderData?.products
           );
         }
       } else {
@@ -907,7 +911,9 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           orderData.deliveryCost!,
           orderData.selectedTariff!,
           orderData.address!,
-          cityCode!
+          cityCode!,
+          orderData.freeDelivery,
+          orderData?.products
         );
       }
       const delay = (ms: number) =>
@@ -916,7 +922,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
       await makeTrackNumber(getOrderObject);
 
       if (orderData && orderData.im_number) {
-        await delay(2000);
+        await delay(3000);
 
         const orderCdekData = await getOrderTrackNumber(
           orderData?.im_number,
@@ -1024,7 +1030,11 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
               ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent} ₽. Корзина сгенерирована менеджером.</blockquote>`
               : ""
           }` +
-          `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод:  ${orderData?.promocode.title} на ${orderData?.promocode?.percent} %</blockquote>` : ""}` +
+          `${
+            orderData?.promocode
+              ? `<blockquote>Данный пользователь использовал промокод:  ${orderData?.promocode.title} на ${orderData?.promocode?.percent} %</blockquote>`
+              : ""
+          }` +
           `Время: ${timestamp.getDate()}.${
             timestamp.getMonth() + 1 < 10
               ? "0" + (timestamp.getMonth() + 1)
@@ -1066,17 +1076,18 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           authData?.access_token
         ).then((barcode) => barcode.entity.uuid);
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 3500));
 
-        const barcode_url = await pollForBarcode(
+        let barcode_url: string | null = await pollForBarcode(
           barcode_uuid,
           authData?.access_token!
         );
+        barcode_url = null;
 
         // Записываем barcode в бд
 
         const barcodeId = await prisma.orderBarcode
-          .create({ data: { url: barcode_url } })
+          .create({ data: { url: barcode_url ?? "" } })
           .then((el) => el.id);
 
         // записываем barcodeId в Order
@@ -1096,7 +1107,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
                 : "клиента"
             }` +
-              ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}.\n <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
+              ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}. ` +
+              `\n ${
+                barcode_url ? `<a href="${barcode_url}">Ссылка</a>` : ""
+              }\n\nПеречень заказа:\n${orderData.products
                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                 .join("\n")}\n\nПрайс: ${
                 orderData?.totalPriceWithDiscount
@@ -1111,8 +1125,16 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                   ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
                   : ""
               }` +
-              `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод: <strong>${orderData?.promocode.title}</strong> на <strong>${orderData?.promocode?.percent} %</strong></blockquote>` : ""}` +
-              `${orderData?.commentByUser ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n` : ""}` +
+              `${
+                orderData?.promocode
+                  ? `<blockquote>Данный пользователь использовал промокод: <strong>${orderData?.promocode.title}</strong> на <strong>${orderData?.promocode?.percent} %</strong></blockquote>`
+                  : ""
+              }` +
+              `${
+                orderData?.commentByUser
+                  ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n`
+                  : ""
+              }` +
               `Время: ${timestamp.getDate()}.${
                 timestamp.getMonth() + 1 < 10
                   ? "0" + (timestamp.getMonth() + 1)
@@ -1302,18 +1324,18 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
               orderData?.country === "RU"
                 ? "Россия"
                 : orderData?.country === "KG"
-                  ? "Кыргызстан"
-                  : orderData?.country === "BY"
-                    ? "Беларусь"
-                    : orderData?.country === "AM"
-                      ? "Армения"
-                      : orderData?.country === "KZ"
-                        ? "Казахстан"
-                        : orderData?.country === "AZ"
-                          ? "Азербайджан"
-                          : orderData?.country === "UZ"
-                            ? "Узбекистан"
-                            : "Неизвестная страна"
+                ? "Кыргызстан"
+                : orderData?.country === "BY"
+                ? "Беларусь"
+                : orderData?.country === "AM"
+                ? "Армения"
+                : orderData?.country === "KZ"
+                ? "Казахстан"
+                : orderData?.country === "AZ"
+                ? "Азербайджан"
+                : orderData?.country === "UZ"
+                ? "Узбекистан"
+                : "Неизвестная страна"
             }` +
             `\nРегион: ${orderData?.region}` +
             `\nГород: ${orderData?.cityName}` +

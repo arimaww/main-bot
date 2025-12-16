@@ -12,9 +12,9 @@ import {
 } from "../helpers/helpers";
 import { getOrderData } from "../helpers/get-order-data";
 import { MANAGER_CHAT_ID } from "../config/config";
-import { CdekOffice } from "@prisma/client";
 import { pollForBarcode } from "../helpers/getting-barcode";
 import { generateBarcode } from "../helpers/generate-barcode";
+import { CdekOffice } from "../generated/client";
 
 const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 
@@ -175,11 +175,9 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
             orderData.middleName!,
             orderData.phone!,
             orderData.selectedPvzCode!,
-            orderData.deliveryCost!,
             orderData.selectedTariff!,
             orderData.address!,
-            cityCode!,
-            orderData.freeDelivery
+            cityCode!
           );
         }
       } else {
@@ -313,7 +311,11 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
               ? `<blockquote>У данного клиента скидка на ${orderData?.secretDiscountPercent} ₽. Корзина сгенерирована менеджером.</blockquote>`
               : ""
           }` +
-          `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод:  ${orderData?.promocode.title} на ${orderData?.promocode?.percent} %</blockquote>` : ""}` +
+          `${
+            orderData?.promocode
+              ? `<blockquote>Данный пользователь использовал промокод:  ${orderData?.promocode.title} на ${orderData?.promocode?.percent} %</blockquote>`
+              : ""
+          }` +
           `Время: ${timestamp.getDate()}.${
             timestamp.getMonth() + 1 < 10
               ? "0" + (timestamp.getMonth() + 1)
@@ -385,7 +387,9 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
                 ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
                 : "клиента"
             }` +
-              ` принят.\nTelegram ID: ${orderData?.telegramId}\n\nТрек-номер: ${orderTrackNumberForUser}.\n <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
+              ` принят.\nTelegram ID: ${
+                orderData?.telegramId
+              }\n\nТрек-номер: ${orderTrackNumberForUser}.\n <a href="${barcode_url}">Ссылка</a>\n\nПеречень заказа:\n${orderData.products
                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                 .join("\n")}\n\nПрайс: ${
                 orderData?.totalPriceWithDiscount
@@ -400,8 +404,16 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
                   ? `<blockquote>Скидка ${orderData?.secretDiscountPercent} ₽ на корзину.</blockquote>`
                   : ""
               }` +
-              `${orderData?.promocode ? `<blockquote>Данный пользователь использовал промокод: <strong>${orderData?.promocode.title}</strong> на <strong>${orderData?.promocode?.percent} %</strong></blockquote>` : ""}` +
-              `${orderData?.commentByUser ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n` : ""}` +
+              `${
+                orderData?.promocode
+                  ? `<blockquote>Данный пользователь использовал промокод: <strong>${orderData?.promocode.title}</strong> на <strong>${orderData?.promocode?.percent} %</strong></blockquote>`
+                  : ""
+              }` +
+              `${
+                orderData?.commentByUser
+                  ? `\nКомм. клиента: ${orderData?.commentByUser}\n\n`
+                  : ""
+              }` +
               `Время: ${timestamp.getDate()}.${
                 timestamp.getMonth() + 1 < 10
                   ? "0" + (timestamp.getMonth() + 1)
