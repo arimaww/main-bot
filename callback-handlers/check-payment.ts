@@ -163,7 +163,8 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
             orderData.selectedTariff!,
             orderData.address!,
             cityCode!,
-            orderData.freeDelivery
+            orderData?.freeDelivery,
+            orderData?.products
           );
         } else {
           getOrderObject = await getOrderObjRuWithPrepayment(
@@ -177,7 +178,8 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
             orderData.selectedPvzCode!,
             orderData.selectedTariff!,
             orderData.address!,
-            cityCode!
+            cityCode!,
+            orderData?.products
           );
         }
       } else {
@@ -193,7 +195,8 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
           orderData.deliveryCost!,
           orderData.selectedTariff!,
           orderData.address!,
-          cityCode!
+          cityCode!,
+          orderData?.products
         );
       }
       const delay = (ms: number) =>

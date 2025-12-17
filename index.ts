@@ -912,7 +912,6 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           orderData.selectedTariff!,
           orderData.address!,
           cityCode!,
-          orderData.freeDelivery,
           orderData?.products
         );
       }

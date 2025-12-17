@@ -408,7 +408,6 @@ export const getOrderObjInternation = async (
   selectedTariff: number,
   address: string,
   cityCode: number,
-  freeDelivery?: boolean,
   products?: TProduct[]
 ): Promise<TDeliveryRequest> => {
   // Считаем количество bigProds и обычных товаров
