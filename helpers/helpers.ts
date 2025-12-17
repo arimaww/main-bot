@@ -209,7 +209,6 @@ export const getOrderObjRu = async (
     totalCount > 0
       ? createPackages(bigProdsCount, regularCount, totalCount, totalPrice)
       : [];
-
   const obj = {
     token: access_token,
     number: uuidCdek,
@@ -219,8 +218,8 @@ export const getOrderObjRu = async (
     },
     delivery_recipient_cost_adv: [
       {
-        sum: 1,
-        threshold: 1,
+        sum: deliverySum,
+        threshold: deliverySum,
       },
     ],
     packages:
