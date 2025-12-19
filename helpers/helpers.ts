@@ -42,18 +42,20 @@ export const getOrderTrackNumber = async (
 const bigProds = ["протеин", "гейнер"];
 
 const SIZE_CONFIG = {
-  S_SIZE: { length: 23, width: 19, height: 10, weight: 2000, maxItems: 4 },
-  M_SIZE: { length: 33, width: 25, height: 15, weight: 5000, maxItems: 20 },
-  L_SIZE: { length: 31, width: 25, height: 38, weight: 12000, maxItems: 50 },
-  XL_SIZE: { length: 60, width: 35, height: 30, weight: 25000, maxItems: 90 },
+  S_SIZE: { length: 23, width: 19, height: 10, maxItems: 4 },
+  M_SIZE: { length: 33, width: 25, height: 15, maxItems: 20 },
+  L_SIZE: { length: 31, width: 25, height: 38, maxItems: 50 },
+  XL_SIZE: { length: 60, width: 35, height: 30, maxItems: 90 },
 } as const;
 
-const AVERAGE_ITEM_WEIGHT = 250;
-const BIG_PROD_WEIGHT = 2000;
+const AVERAGE_ITEM_WEIGHT = 200; // грамм
+const PROTEIN_WEIGHT = 1100; // грамм
+const GAINER_WEIGHT = 3100; // грамм
 const WEIGHT_GROSS_MARGIN = 100;
 
 const createPackages = (
-  bigProdsCount: number,
+  proteinCount: number,
+  gainerCount: number,
   regularCount: number,
   totalCount: number,
   totalPrice: number,
@@ -75,20 +77,29 @@ const createPackages = (
       weight: number;
     }>;
   }> = [];
-  let remainingBigProds = bigProdsCount;
+  let remainingProtein = proteinCount;
+  let remainingGainer = gainerCount;
   let remainingRegular = regularCount;
+  let remainingBigProds = proteinCount + gainerCount;
   let packageNumber = 1;
 
   while (remainingBigProds > 0 || remainingRegular > 0) {
-    let currentBigProds = 0;
+    let currentProtein = 0;
+    let currentGainer = 0;
     let currentRegular = 0;
     let sizeKey: keyof typeof SIZE_CONFIG = "S_SIZE";
 
     // Определяем что положить в текущий package
     if (remainingBigProds >= 2 && remainingRegular === 0) {
       // L размер: 2 bigProds и ничего больше
-      currentBigProds = 2;
-      currentRegular = 0;
+      if (remainingProtein >= 2) {
+        currentProtein = 2;
+      } else if (remainingGainer >= 2) {
+        currentGainer = 2;
+      } else {
+        currentProtein = Math.min(remainingProtein, 1);
+        currentGainer = Math.min(remainingGainer, 1);
+      }
       sizeKey = "L_SIZE";
     } else if (
       remainingBigProds === 1 &&
@@ -96,12 +107,20 @@ const createPackages = (
       remainingRegular > 0
     ) {
       // M размер: 1 bigProd + до 8 обычных
-      currentBigProds = 1;
+      if (remainingProtein > 0) {
+        currentProtein = 1;
+      } else {
+        currentGainer = 1;
+      }
       currentRegular = Math.min(remainingRegular, 8);
       sizeKey = "M_SIZE";
     } else if (remainingBigProds >= 1) {
       // Если есть bigProds, но условия выше не подошли - берем по 1
-      currentBigProds = 1;
+      if (remainingProtein > 0) {
+        currentProtein = 1;
+      } else {
+        currentGainer = 1;
+      }
       currentRegular = Math.min(remainingRegular, 6);
       sizeKey = "M_SIZE";
     } else {
@@ -121,12 +140,14 @@ const createPackages = (
       }
     }
 
-    const currentTotal = currentBigProds + currentRegular;
+    const currentTotal = currentProtein + currentGainer + currentRegular;
     const selectedSize = SIZE_CONFIG[sizeKey];
 
-    // Рассчитываем вес для текущего package
+    // Рассчитываем вес для текущего package только по товарам
     const packageWeight =
-      currentBigProds * BIG_PROD_WEIGHT + currentRegular * AVERAGE_ITEM_WEIGHT;
+      currentProtein * PROTEIN_WEIGHT +
+      currentGainer * GAINER_WEIGHT +
+      currentRegular * AVERAGE_ITEM_WEIGHT;
 
     // Рассчитываем пропорциональную стоимость
     const packageCost =
@@ -140,7 +161,7 @@ const createPackages = (
       height: selectedSize.height,
       length: selectedSize.length,
       width: selectedSize.width,
-      weight: Math.max(packageWeight, selectedSize.weight),
+      weight: packageWeight,
       items: [
         {
           ware_key: packageNumber.toString(),
@@ -150,14 +171,16 @@ const createPackages = (
           name: "Биологически активные добавики Triple H",
           cost: packageCost / currentTotal,
           amount: currentTotal,
-          weight: Math.max(packageWeight, selectedSize.weight),
+          weight: packageWeight,
         },
       ],
     });
 
     // Уменьшаем оставшиеся товары
-    remainingBigProds -= currentBigProds;
+    remainingProtein -= currentProtein;
+    remainingGainer -= currentGainer;
     remainingRegular -= currentRegular;
+    remainingBigProds = remainingProtein + remainingGainer;
     packageNumber++;
 
     // Защита от бесконечного цикла
@@ -186,35 +209,44 @@ export const getOrderObjRu = async (
   freeDelivery?: boolean,
   products?: TProduct[]
 ): Promise<TDeliveryRequest> => {
-  // Считаем количество bigProds и обычных товаров
-  const { bigProdsCount, regularCount, totalCount } = products?.reduce(
-    (acc, product) => {
-      const count = product.productCount;
-      const isBigProd = bigProds.some((bp) =>
-        product.name?.toLowerCase().includes(bp.toLowerCase())
-      );
+  // Считаем количество протеинов, гейнеров и обычных товаров
+  const { proteinCount, gainerCount, regularCount, totalCount } =
+    products?.reduce(
+      (acc, product) => {
+        const count = product.productCount;
+        const nameLower = product.name?.toLowerCase() || "";
+        const isProtein = nameLower.includes("протеин");
+        const isGainer = nameLower.includes("гейнер");
 
-      return {
-        bigProdsCount: acc.bigProdsCount + (isBigProd ? count : 0),
-        regularCount: acc.regularCount + (isBigProd ? 0 : count),
-        totalCount: acc.totalCount + count,
-      };
-    },
-    { bigProdsCount: 0, regularCount: 0, totalCount: 0 }
-  ) ?? { bigProdsCount: 0, regularCount: 0, totalCount: 0 };
+        return {
+          proteinCount: acc.proteinCount + (isProtein ? count : 0),
+          gainerCount: acc.gainerCount + (isGainer ? count : 0),
+          regularCount:
+            acc.regularCount + (!isProtein && !isGainer ? count : 0),
+          totalCount: acc.totalCount + count,
+        };
+      },
+      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 }
+    ) ?? { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 };
 
   // Создаём packages
-
   const packages =
     totalCount > 0
-      ? createPackages(bigProdsCount, regularCount, totalCount, totalPrice)
+      ? createPackages(
+          proteinCount,
+          gainerCount,
+          regularCount,
+          totalCount,
+          totalPrice
+        )
       : [];
+
   const obj = {
     token: access_token,
     number: uuidCdek,
     type: 1,
     delivery_recipient_cost: {
-      value: freeDelivery ? 0 : deliverySum, // Оплата доставки при получении (наложенный платёж)
+      value: freeDelivery ? 0 : deliverySum,
     },
     delivery_recipient_cost_adv: [
       {
@@ -232,7 +264,7 @@ export const getOrderObjRu = async (
               height: SIZE_CONFIG.S_SIZE.height,
               length: SIZE_CONFIG.S_SIZE.length,
               width: SIZE_CONFIG.S_SIZE.width,
-              weight: SIZE_CONFIG.S_SIZE.weight,
+              weight: 0,
               items: [
                 {
                   ware_key: "1",
@@ -242,7 +274,7 @@ export const getOrderObjRu = async (
                   name: "Биологически активные добавики Triple H",
                   cost: Number(totalPrice) / Number(totalCount),
                   amount: 1,
-                  weight: SIZE_CONFIG.S_SIZE.weight,
+                  weight: 0,
                 },
               ],
             },
@@ -298,26 +330,30 @@ export const getOrderObjRuWithPrepayment = async (
   cityCode: number,
   products?: TProduct[]
 ): Promise<TDeliveryRequest> => {
-  const { bigProdsCount, regularCount, totalCount } = products?.reduce(
-    (acc, product) => {
-      const count = product.productCount;
-      const isBigProd = bigProds.some((bp) =>
-        product.name?.toLowerCase().includes(bp.toLowerCase())
-      );
+  const { proteinCount, gainerCount, regularCount, totalCount } =
+    products?.reduce(
+      (acc, product) => {
+        const count = product.productCount;
+        const nameLower = product.name?.toLowerCase() || "";
+        const isProtein = nameLower.includes("протеин");
+        const isGainer = nameLower.includes("гейнер");
 
-      return {
-        bigProdsCount: acc.bigProdsCount + (isBigProd ? count : 0),
-        regularCount: acc.regularCount + (isBigProd ? 0 : count),
-        totalCount: acc.totalCount + count,
-      };
-    },
-    { bigProdsCount: 0, regularCount: 0, totalCount: 0 }
-  ) ?? { bigProdsCount: 0, regularCount: 0, totalCount: 0 };
+        return {
+          proteinCount: acc.proteinCount + (isProtein ? count : 0),
+          gainerCount: acc.gainerCount + (isGainer ? count : 0),
+          regularCount:
+            acc.regularCount + (!isProtein && !isGainer ? count : 0),
+          totalCount: acc.totalCount + count,
+        };
+      },
+      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 }
+    ) ?? { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 };
 
   const packages =
     totalCount > 0
       ? createPackages(
-          bigProdsCount,
+          proteinCount,
+          gainerCount,
           regularCount,
           totalCount,
           totalPrice,
@@ -342,17 +378,17 @@ export const getOrderObjRuWithPrepayment = async (
               height: SIZE_CONFIG.S_SIZE.height,
               length: SIZE_CONFIG.S_SIZE.length,
               width: SIZE_CONFIG.S_SIZE.width,
-              weight: SIZE_CONFIG.S_SIZE.weight,
+              weight: 0,
               items: [
                 {
                   ware_key: "1",
                   payment: {
-                    value: 0, // Отличие от первой функции - предоплата
+                    value: 0,
                   },
                   name: "Биологически активные добавики Triple H",
                   cost: Number(totalPrice) / Number(totalCount),
                   amount: 1,
-                  weight: SIZE_CONFIG.S_SIZE.weight,
+                  weight: 0,
                 },
               ],
             },
@@ -409,27 +445,28 @@ export const getOrderObjInternation = async (
   cityCode: number,
   products?: TProduct[]
 ): Promise<TDeliveryRequest> => {
-  // Считаем количество bigProds и обычных товаров
-  const { bigProdsCount, regularCount, totalCount } = products?.reduce(
-    (acc, product) => {
-      const count = product.productCount;
-      const isBigProd = bigProds.some((bp) =>
-        product.name?.toLowerCase().includes(bp.toLowerCase())
-      );
+  // Считаем количество протеинов, гейнеров и обычных товаров
+  const { proteinCount, gainerCount, regularCount, totalCount } =
+    products?.reduce(
+      (acc, product) => {
+        const count = product.productCount;
+        const nameLower = product.name?.toLowerCase() || "";
+        const isProtein = nameLower.includes("протеин");
+        const isGainer = nameLower.includes("гейнер");
 
-      return {
-        bigProdsCount: acc.bigProdsCount + (isBigProd ? count : 0),
-        regularCount: acc.regularCount + (isBigProd ? 0 : count),
-        totalCount: acc.totalCount + count,
-      };
-    },
-    { bigProdsCount: 0, regularCount: 0, totalCount: 0 }
-  ) ?? { bigProdsCount: 0, regularCount: 0, totalCount: 0 };
+        return {
+          proteinCount: acc.proteinCount + (isProtein ? count : 0),
+          gainerCount: acc.gainerCount + (isGainer ? count : 0),
+          regularCount:
+            acc.regularCount + (!isProtein && !isGainer ? count : 0),
+          totalCount: acc.totalCount + count,
+        };
+      },
+      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 }
+    ) ?? { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 };
 
-  // Дополнительный вес упаковки для weight_gross
-
-  // Создаём packages
-  const createPackages = () => {
+  // Создаём packages для международной доставки
+  const createPackagesInternational = () => {
     const packages: Array<{
       number: string;
       comment: string;
@@ -447,20 +484,29 @@ export const getOrderObjInternation = async (
         weight_gross: number;
       }>;
     }> = [];
-    let remainingBigProds = bigProdsCount;
+    let remainingProtein = proteinCount;
+    let remainingGainer = gainerCount;
     let remainingRegular = regularCount;
+    let remainingBigProds = proteinCount + gainerCount;
     let packageNumber = 1;
 
     while (remainingBigProds > 0 || remainingRegular > 0) {
-      let currentBigProds = 0;
+      let currentProtein = 0;
+      let currentGainer = 0;
       let currentRegular = 0;
       let sizeKey: keyof typeof SIZE_CONFIG = "S_SIZE";
 
       // Определяем что положить в текущий package
       if (remainingBigProds >= 2 && remainingRegular === 0) {
         // L размер: 2 bigProds и ничего больше
-        currentBigProds = 2;
-        currentRegular = 0;
+        if (remainingProtein >= 2) {
+          currentProtein = 2;
+        } else if (remainingGainer >= 2) {
+          currentGainer = 2;
+        } else {
+          currentProtein = Math.min(remainingProtein, 1);
+          currentGainer = Math.min(remainingGainer, 1);
+        }
         sizeKey = "L_SIZE";
       } else if (
         remainingBigProds === 1 &&
@@ -468,12 +514,20 @@ export const getOrderObjInternation = async (
         remainingRegular > 0
       ) {
         // M размер: 1 bigProd + до 8 обычных
-        currentBigProds = 1;
+        if (remainingProtein > 0) {
+          currentProtein = 1;
+        } else {
+          currentGainer = 1;
+        }
         currentRegular = Math.min(remainingRegular, 8);
         sizeKey = "M_SIZE";
       } else if (remainingBigProds >= 1) {
         // Если есть bigProds, но условия выше не подошли - берем по 1
-        currentBigProds = 1;
+        if (remainingProtein > 0) {
+          currentProtein = 1;
+        } else {
+          currentGainer = 1;
+        }
         currentRegular = Math.min(remainingRegular, 6);
         sizeKey = "M_SIZE";
       } else {
@@ -493,12 +547,13 @@ export const getOrderObjInternation = async (
         }
       }
 
-      const currentTotal = currentBigProds + currentRegular;
+      const currentTotal = currentProtein + currentGainer + currentRegular;
       const selectedSize = SIZE_CONFIG[sizeKey];
 
-      // Рассчитываем вес для текущего package
+      // Рассчитываем вес для текущего package только по товарам
       const packageWeight =
-        currentBigProds * BIG_PROD_WEIGHT +
+        currentProtein * PROTEIN_WEIGHT +
+        currentGainer * GAINER_WEIGHT +
         currentRegular * AVERAGE_ITEM_WEIGHT;
 
       // Рассчитываем пропорциональную стоимость
@@ -507,33 +562,33 @@ export const getOrderObjInternation = async (
           ? Math.round((Number(totalPrice) * currentTotal) / totalCount)
           : 0;
 
-      const finalWeight = Math.max(packageWeight, selectedSize.weight);
-
       packages.push({
         number: packageNumber.toString(),
         comment: `Упаковка ${packageNumber} (${sizeKey}, ${currentTotal} шт)`,
         height: selectedSize.height,
         length: selectedSize.length,
         width: selectedSize.width,
-        weight: finalWeight,
+        weight: packageWeight,
         items: [
           {
             ware_key: packageNumber.toString(),
             payment: {
-              value: 0, // Для международной доставки
+              value: 0,
             },
             name: "Биологически активные добавики Triple H",
             cost: packageCost,
             amount: currentTotal,
-            weight: finalWeight,
-            weight_gross: finalWeight + WEIGHT_GROSS_MARGIN, // Вес с упаковкой
+            weight: packageWeight,
+            weight_gross: packageWeight + WEIGHT_GROSS_MARGIN,
           },
         ],
       });
 
       // Уменьшаем оставшиеся товары
-      remainingBigProds -= currentBigProds;
+      remainingProtein -= currentProtein;
+      remainingGainer -= currentGainer;
       remainingRegular -= currentRegular;
+      remainingBigProds = remainingProtein + remainingGainer;
       packageNumber++;
 
       // Защита от бесконечного цикла
@@ -546,7 +601,7 @@ export const getOrderObjInternation = async (
     return packages;
   };
 
-  const packages = totalCount > 0 ? createPackages() : [];
+  const packages = totalCount > 0 ? createPackagesInternational() : [];
 
   let obj = {
     token: access_token,
@@ -573,7 +628,7 @@ export const getOrderObjInternation = async (
               height: SIZE_CONFIG.S_SIZE.height,
               length: SIZE_CONFIG.S_SIZE.length,
               width: SIZE_CONFIG.S_SIZE.width,
-              weight: SIZE_CONFIG.S_SIZE.weight,
+              weight: 0,
               items: [
                 {
                   ware_key: "1",
@@ -583,8 +638,8 @@ export const getOrderObjInternation = async (
                   name: "Биологически активные добавики Triple H",
                   cost: Number(totalPrice),
                   amount: 1,
-                  weight: SIZE_CONFIG.S_SIZE.weight,
-                  weight_gross: SIZE_CONFIG.S_SIZE.weight + WEIGHT_GROSS_MARGIN,
+                  weight: 0,
+                  weight_gross: WEIGHT_GROSS_MARGIN,
                 },
               ],
             },
