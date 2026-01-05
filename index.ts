@@ -36,6 +36,7 @@ import { paymentRoutes } from "./routes/payment-routes";
 import { handleCheckPayment } from "./callback-handlers/check-payment";
 import { getOrderData } from "./helpers/get-order-data";
 import { CdekOffice } from "./generated/client";
+import { abovetwentyController } from "./controllers/abovetwenty-controller";
 
 const app = express();
 
@@ -96,6 +97,19 @@ export const sendMessageHandler = async (message: TelegramBot.Message) => {
 };
 
 bot.on("message", sendMessageHandler);
+
+// Обновляем username пользователя
+bot.on("message", async (ctx) => {
+  const user = await prisma.user.findFirst({
+    where: { telegramId: String(ctx.chat.id) },
+  });
+  if (user) {
+    await prisma.user.update({
+      where: { userId: user.userId },
+      data: { userName: user.userName },
+    });
+  }
+});
 
 bot.onText(
   /\/start( (.+))?/,
@@ -796,7 +810,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 });
 
 const MAIL_GROUP_ID = process.env.MAIL_GROUP_ID!;
-const MAIL_GROUP_RU_ID = process.env.MAIL_GROUP_RU_ID!;
 const POSTOFFICE_CODE = process.env.POSTOFFICE_CODE as string;
 export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
   const chatId = query.message?.chat.id;
@@ -809,7 +822,10 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
   const [action, orderUnique] = query.data.split("_");
 
   try {
-    if (action === "Принять") {
+    if (action === "Принять" || action === "Прин20k") {
+      await bot.answerCallbackQuery(query.id, {
+        text: "⏳ Заказ обрабатывается",
+      });
       const authData = await getToken({
         grant_type: "client_credentials",
         client_id: process.env.CLIENT_ID!,
@@ -853,7 +869,6 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             console.error("Ошибка при поиске cdekOffice:", err);
             return null;
           });
-        console.log(orderData.selectedPvzCode);
         if (!cdekOffice) {
           return await bot.sendMessage(chatId, "cdekOffice не найден");
         }
@@ -1005,11 +1020,13 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           paymentNote = "<strong>должен оплатить с учетом доставки</strong>";
         }
 
-        const productsList = orderData?.products
-          .map((el) => `${el.productCount} шт. | ${el.synonym}`)
-          .join("\n");
-
         const acceptOrderMessage =
+          `${
+            action === "Прин20k"
+              ? `<strong>[ЗАКАЗ ОПЛАЧЕН]</strong>\n` +
+                `ID заказа: ${orderData?.im_number}\n\n`
+              : ""
+          }` +
           `Заказ ${
             orderData?.username
               ? `<a href="${`https://t.me/${orderData?.username}`}">клиента</a>`
@@ -1049,26 +1066,54 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
               ? "0" + timestamp.getMinutes()
               : timestamp.getMinutes()
           }`;
-        await bot
-          .editMessageCaption(acceptOrderMessage, {
-            message_id: messageId,
-            chat_id: chatId,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "❌ Удалить",
-                    callback_data: `Удалить_${orderData?.im_number}`,
-                  },
-                ],
-              ],
-            },
-            parse_mode: "HTML",
-          })
-          .catch(
-            async (err) =>
-              await bot.sendMessage(MANAGER_CHAT_ID, "[ЛОГИ]: Ошибка: " + err)
-          );
+
+        action === "Принять"
+          ? await bot
+              .editMessageCaption(acceptOrderMessage, {
+                message_id: messageId,
+                chat_id: chatId,
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "❌ Удалить",
+                        callback_data: `Удалить_${orderData?.im_number}`,
+                      },
+                    ],
+                  ],
+                },
+                parse_mode: "HTML",
+              })
+              .catch(
+                async (err) =>
+                  await bot.sendMessage(
+                    MANAGER_CHAT_ID,
+                    "[ЛОГИ]: Ошибка: " + err
+                  )
+              )
+          : await bot
+              .editMessageText(acceptOrderMessage, {
+                message_id: messageId,
+                chat_id: chatId,
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "❌ Удалить",
+                        callback_data: `Удалить_${orderData?.im_number}`,
+                      },
+                    ],
+                  ],
+                },
+                parse_mode: "HTML",
+              })
+              .catch(
+                async (err) =>
+                  await bot.sendMessage(
+                    MANAGER_CHAT_ID,
+                    "[ЛОГИ]: Ошибка: " + err
+                  )
+              );
 
         const barcode_uuid = await generateBarcode(
           orderCdekData.uuid,
@@ -1457,6 +1502,9 @@ app.use("/mailing", mailingRoutes); // При рассылке через crm
 
 // Оплата по T-Pay
 app.use("/payment", paymentRoutes);
+
+// Выше 20.000 р
+app.post("/abovetwenty", abovetwentyController);
 
 app.listen(7000, () => {
   console.log("Запущен на 7000 порте");
