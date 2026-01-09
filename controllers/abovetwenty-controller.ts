@@ -30,6 +30,7 @@ export const abovetwentyController = async (
     secretDiscountId,
     address,
     commentByUser,
+    gbasketId,
   } = req.body;
 
   try {
@@ -148,6 +149,7 @@ export const abovetwentyController = async (
             commentByClient: commentByUser ? commentByUser : null,
             freeDelivery: basket[0]?.freeDelivery,
             status: "PENDING",
+            gbasketId,
           },
         });
       }

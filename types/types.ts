@@ -33,6 +33,7 @@ export type TWeb = {
   secretDiscountId: number | undefined;
   selectedCityCode: number | undefined;
   commentByUser: string | null;
+  gbasketId: number | undefined;
 };
 
 export type TRecordOrderInfo = {
@@ -123,7 +124,7 @@ export type TDeliveryResponse = {
       date_time: Date;
       errors: [];
       warnings: [];
-    },
+    }
   ];
 };
 
