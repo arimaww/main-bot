@@ -173,6 +173,7 @@ bot.onText(
                 productCount: item.productCount,
                 secretDiscountId: secretDiscount?.id,
                 freeDelivery: basketItems?.freeDelivery,
+                gbasketId: basketItems?.gbasketId,
               },
             })
             .catch((err) => console.log(err));
@@ -248,7 +249,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     products,
     uuid,
     selectedCountry,
-    selectedCity,
+    gbasketId,
     promocodeId,
     selectedCityName,
     deliverySum,
@@ -256,7 +257,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
     totalPriceWithDiscount,
     secretDiscountId,
     address,
-    selectedCityCode,
     commentByUser,
   } = req.body;
 
@@ -347,6 +347,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             address: address ? address : null,
             commentByClient: commentByUser ? commentByUser : null,
             freeDelivery: basket[0]?.freeDelivery,
+            gbasketId,
           },
         });
       }

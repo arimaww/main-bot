@@ -53,6 +53,7 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
       address,
       commentByUser,
       email,
+      gbasketId,
     } = req.body;
 
     try {
@@ -142,6 +143,7 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
               address: address ? address : null,
               commentByClient: commentByUser ? commentByUser : null,
               freeDelivery: basket[0]?.freeDelivery,
+              gbasketId,
             },
           });
         }
@@ -168,7 +170,11 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
               `\nФИО ${surName} ${firstName} ${middleName}` +
               "\nНомер " +
               phone +
-              `\n\n${!!basket[0]?.freeDelivery ? "Доставка: Бесплатно" : `Доставка: ${deliverySum} ₽`}` +
+              `\n\n${
+                !!basket[0]?.freeDelivery
+                  ? "Доставка: Бесплатно"
+                  : `Доставка: ${deliverySum} ₽`
+              }` +
               "\n\nПрайс: " +
               `${
                 totalPriceWithDiscount && totalPriceWithDiscount !== 0

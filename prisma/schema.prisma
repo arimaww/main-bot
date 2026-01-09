@@ -62,19 +62,21 @@ model Product {
 }
 
 model Basket {
-  basketId         Int             @id @default(autoincrement())
+  basketId         Int               @id @default(autoincrement())
   userId           Int
   productId        Int
   productCount     Int
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @default(now()) @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now()) @updatedAt
   promocodeId      Int?
   secretDiscountId Int?
-  freeDelivery     Boolean         @default(false)
-  product          Product         @relation(fields: [productId], references: [productId], onDelete: Cascade)
-  promocode        Promocodes?     @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
-  SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
-  user             User            @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  freeDelivery     Boolean           @default(false)
+  product          Product           @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  promocode        Promocodes?       @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
+  SecretDiscount   SecretDiscount?   @relation(fields: [secretDiscountId], references: [id])
+  user             User              @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  generatedBasket  GeneratedBaskets? @relation(fields: [gbasketId], references: [gbasketId], onDelete: Cascade)
+  gbasketId        Int?
 }
 
 model Order {
@@ -122,6 +124,9 @@ model Order {
   orderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id], onDelete: SetNull)
   messages                Messages?     @relation(fields: [messagesId], references: [id])
   messagesId              Int?
+
+  generatedBasket GeneratedBaskets? @relation(fields: [gbasketId], references: [gbasketId], onDelete: Cascade)
+  gbasketId       Int?
 
   paymentInfo   PaymentInfo? @relation(fields: [paymentInfoId], references: [id])
   paymentInfoId Int?
@@ -221,6 +226,7 @@ model Promocodes {
   title           String
   uses            Int
   percent         Int
+  oneTime         Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   fromWhatAmount  Int
@@ -237,6 +243,8 @@ model GeneratedBaskets {
   freeDelivery     Boolean         @default(false)
   items            BasketItems[]
   SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
+  baskets          Basket[]
+  orders           Order[]
 }
 
 model BasketItems {

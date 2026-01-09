@@ -45,6 +45,7 @@ export type PromocodesMinAggregateOutputType = {
   title: string | null
   uses: number | null
   percent: number | null
+  oneTime: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   fromWhatAmount: number | null
@@ -55,6 +56,7 @@ export type PromocodesMaxAggregateOutputType = {
   title: string | null
   uses: number | null
   percent: number | null
+  oneTime: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   fromWhatAmount: number | null
@@ -65,6 +67,7 @@ export type PromocodesCountAggregateOutputType = {
   title: number
   uses: number
   percent: number
+  oneTime: number
   createdAt: number
   updatedAt: number
   fromWhatAmount: number
@@ -91,6 +94,7 @@ export type PromocodesMinAggregateInputType = {
   title?: true
   uses?: true
   percent?: true
+  oneTime?: true
   createdAt?: true
   updatedAt?: true
   fromWhatAmount?: true
@@ -101,6 +105,7 @@ export type PromocodesMaxAggregateInputType = {
   title?: true
   uses?: true
   percent?: true
+  oneTime?: true
   createdAt?: true
   updatedAt?: true
   fromWhatAmount?: true
@@ -111,6 +116,7 @@ export type PromocodesCountAggregateInputType = {
   title?: true
   uses?: true
   percent?: true
+  oneTime?: true
   createdAt?: true
   updatedAt?: true
   fromWhatAmount?: true
@@ -208,6 +214,7 @@ export type PromocodesGroupByOutputType = {
   title: string
   uses: number
   percent: number
+  oneTime: boolean
   createdAt: Date
   updatedAt: Date
   fromWhatAmount: number
@@ -241,6 +248,7 @@ export type PromocodesWhereInput = {
   title?: Prisma.StringFilter<"Promocodes"> | string
   uses?: Prisma.IntFilter<"Promocodes"> | number
   percent?: Prisma.IntFilter<"Promocodes"> | number
+  oneTime?: Prisma.BoolFilter<"Promocodes"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Promocodes"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Promocodes"> | Date | string
   fromWhatAmount?: Prisma.IntFilter<"Promocodes"> | number
@@ -253,6 +261,7 @@ export type PromocodesOrderByWithRelationInput = {
   title?: Prisma.SortOrder
   uses?: Prisma.SortOrder
   percent?: Prisma.SortOrder
+  oneTime?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   fromWhatAmount?: Prisma.SortOrder
@@ -268,6 +277,7 @@ export type PromocodesWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"Promocodes"> | string
   uses?: Prisma.IntFilter<"Promocodes"> | number
   percent?: Prisma.IntFilter<"Promocodes"> | number
+  oneTime?: Prisma.BoolFilter<"Promocodes"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Promocodes"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Promocodes"> | Date | string
   fromWhatAmount?: Prisma.IntFilter<"Promocodes"> | number
@@ -280,6 +290,7 @@ export type PromocodesOrderByWithAggregationInput = {
   title?: Prisma.SortOrder
   uses?: Prisma.SortOrder
   percent?: Prisma.SortOrder
+  oneTime?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   fromWhatAmount?: Prisma.SortOrder
@@ -298,6 +309,7 @@ export type PromocodesScalarWhereWithAggregatesInput = {
   title?: Prisma.StringWithAggregatesFilter<"Promocodes"> | string
   uses?: Prisma.IntWithAggregatesFilter<"Promocodes"> | number
   percent?: Prisma.IntWithAggregatesFilter<"Promocodes"> | number
+  oneTime?: Prisma.BoolWithAggregatesFilter<"Promocodes"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Promocodes"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Promocodes"> | Date | string
   fromWhatAmount?: Prisma.IntWithAggregatesFilter<"Promocodes"> | number
@@ -308,6 +320,7 @@ export type PromocodesCreateInput = {
   title: string
   uses: number
   percent: number
+  oneTime?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   fromWhatAmount: number
@@ -320,6 +333,7 @@ export type PromocodesUncheckedCreateInput = {
   title: string
   uses: number
   percent: number
+  oneTime?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   fromWhatAmount: number
@@ -331,6 +345,7 @@ export type PromocodesUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -343,6 +358,7 @@ export type PromocodesUncheckedUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -355,6 +371,7 @@ export type PromocodesCreateManyInput = {
   title: string
   uses: number
   percent: number
+  oneTime?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   fromWhatAmount: number
@@ -364,6 +381,7 @@ export type PromocodesUpdateManyMutationInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -374,6 +392,7 @@ export type PromocodesUncheckedUpdateManyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -389,6 +408,7 @@ export type PromocodesCountOrderByAggregateInput = {
   title?: Prisma.SortOrder
   uses?: Prisma.SortOrder
   percent?: Prisma.SortOrder
+  oneTime?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   fromWhatAmount?: Prisma.SortOrder
@@ -406,6 +426,7 @@ export type PromocodesMaxOrderByAggregateInput = {
   title?: Prisma.SortOrder
   uses?: Prisma.SortOrder
   percent?: Prisma.SortOrder
+  oneTime?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   fromWhatAmount?: Prisma.SortOrder
@@ -416,6 +437,7 @@ export type PromocodesMinOrderByAggregateInput = {
   title?: Prisma.SortOrder
   uses?: Prisma.SortOrder
   percent?: Prisma.SortOrder
+  oneTime?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   fromWhatAmount?: Prisma.SortOrder
@@ -465,6 +487,7 @@ export type PromocodesCreateWithoutBasketWithPromoInput = {
   title: string
   uses: number
   percent: number
+  oneTime?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   fromWhatAmount: number
@@ -476,6 +499,7 @@ export type PromocodesUncheckedCreateWithoutBasketWithPromoInput = {
   title: string
   uses: number
   percent: number
+  oneTime?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   fromWhatAmount: number
@@ -502,6 +526,7 @@ export type PromocodesUpdateWithoutBasketWithPromoInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -513,6 +538,7 @@ export type PromocodesUncheckedUpdateWithoutBasketWithPromoInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -524,6 +550,7 @@ export type PromocodesCreateWithoutOrdersWithPromoInput = {
   title: string
   uses: number
   percent: number
+  oneTime?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   fromWhatAmount: number
@@ -535,6 +562,7 @@ export type PromocodesUncheckedCreateWithoutOrdersWithPromoInput = {
   title: string
   uses: number
   percent: number
+  oneTime?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   fromWhatAmount: number
@@ -561,6 +589,7 @@ export type PromocodesUpdateWithoutOrdersWithPromoInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -572,6 +601,7 @@ export type PromocodesUncheckedUpdateWithoutOrdersWithPromoInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   uses?: Prisma.IntFieldUpdateOperationsInput | number
   percent?: Prisma.IntFieldUpdateOperationsInput | number
+  oneTime?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fromWhatAmount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -623,6 +653,7 @@ export type PromocodesSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   title?: boolean
   uses?: boolean
   percent?: boolean
+  oneTime?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   fromWhatAmount?: boolean
@@ -636,6 +667,7 @@ export type PromocodesSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   title?: boolean
   uses?: boolean
   percent?: boolean
+  oneTime?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   fromWhatAmount?: boolean
@@ -646,6 +678,7 @@ export type PromocodesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   title?: boolean
   uses?: boolean
   percent?: boolean
+  oneTime?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   fromWhatAmount?: boolean
@@ -656,12 +689,13 @@ export type PromocodesSelectScalar = {
   title?: boolean
   uses?: boolean
   percent?: boolean
+  oneTime?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   fromWhatAmount?: boolean
 }
 
-export type PromocodesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"promocodeId" | "title" | "uses" | "percent" | "createdAt" | "updatedAt" | "fromWhatAmount", ExtArgs["result"]["promocodes"]>
+export type PromocodesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"promocodeId" | "title" | "uses" | "percent" | "oneTime" | "createdAt" | "updatedAt" | "fromWhatAmount", ExtArgs["result"]["promocodes"]>
 export type PromocodesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   basketWithPromo?: boolean | Prisma.Promocodes$basketWithPromoArgs<ExtArgs>
   ordersWithPromo?: boolean | Prisma.Promocodes$ordersWithPromoArgs<ExtArgs>
@@ -681,6 +715,7 @@ export type $PromocodesPayload<ExtArgs extends runtime.Types.Extensions.Internal
     title: string
     uses: number
     percent: number
+    oneTime: boolean
     createdAt: Date
     updatedAt: Date
     fromWhatAmount: number
@@ -1113,6 +1148,7 @@ export interface PromocodesFieldRefs {
   readonly title: Prisma.FieldRef<"Promocodes", 'String'>
   readonly uses: Prisma.FieldRef<"Promocodes", 'Int'>
   readonly percent: Prisma.FieldRef<"Promocodes", 'Int'>
+  readonly oneTime: Prisma.FieldRef<"Promocodes", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Promocodes", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Promocodes", 'DateTime'>
   readonly fromWhatAmount: Prisma.FieldRef<"Promocodes", 'Int'>

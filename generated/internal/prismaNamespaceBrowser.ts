@@ -136,7 +136,8 @@ export const BasketScalarFieldEnum = {
   updatedAt: 'updatedAt',
   promocodeId: 'promocodeId',
   secretDiscountId: 'secretDiscountId',
-  freeDelivery: 'freeDelivery'
+  freeDelivery: 'freeDelivery',
+  gbasketId: 'gbasketId'
 } as const
 
 export type BasketScalarFieldEnum = (typeof BasketScalarFieldEnum)[keyof typeof BasketScalarFieldEnum]
@@ -181,6 +182,7 @@ export const OrderScalarFieldEnum = {
   freeDelivery: 'freeDelivery',
   orderBarcodeId: 'orderBarcodeId',
   messagesId: 'messagesId',
+  gbasketId: 'gbasketId',
   paymentInfoId: 'paymentInfoId'
 } as const
 
@@ -298,6 +300,7 @@ export const PromocodesScalarFieldEnum = {
   title: 'title',
   uses: 'uses',
   percent: 'percent',
+  oneTime: 'oneTime',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   fromWhatAmount: 'fromWhatAmount'
