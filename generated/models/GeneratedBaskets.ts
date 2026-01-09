@@ -230,6 +230,8 @@ export type GeneratedBasketsWhereInput = {
   freeDelivery?: Prisma.BoolFilter<"GeneratedBaskets"> | boolean
   items?: Prisma.BasketItemsListRelationFilter
   SecretDiscount?: Prisma.XOR<Prisma.SecretDiscountNullableScalarRelationFilter, Prisma.SecretDiscountWhereInput> | null
+  baskets?: Prisma.BasketListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }
 
 export type GeneratedBasketsOrderByWithRelationInput = {
@@ -241,6 +243,8 @@ export type GeneratedBasketsOrderByWithRelationInput = {
   freeDelivery?: Prisma.SortOrder
   items?: Prisma.BasketItemsOrderByRelationAggregateInput
   SecretDiscount?: Prisma.SecretDiscountOrderByWithRelationInput
+  baskets?: Prisma.BasketOrderByRelationAggregateInput
+  orders?: Prisma.OrderOrderByRelationAggregateInput
 }
 
 export type GeneratedBasketsWhereUniqueInput = Prisma.AtLeast<{
@@ -255,6 +259,8 @@ export type GeneratedBasketsWhereUniqueInput = Prisma.AtLeast<{
   freeDelivery?: Prisma.BoolFilter<"GeneratedBaskets"> | boolean
   items?: Prisma.BasketItemsListRelationFilter
   SecretDiscount?: Prisma.XOR<Prisma.SecretDiscountNullableScalarRelationFilter, Prisma.SecretDiscountWhereInput> | null
+  baskets?: Prisma.BasketListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
 }, "gbasketId" | "secretDiscountId">
 
 export type GeneratedBasketsOrderByWithAggregationInput = {
@@ -291,6 +297,8 @@ export type GeneratedBasketsCreateInput = {
   freeDelivery?: boolean
   items?: Prisma.BasketItemsCreateNestedManyWithoutBasketInput
   SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutGeneratedBasketsInput
+  baskets?: Prisma.BasketCreateNestedManyWithoutGeneratedBasketInput
+  orders?: Prisma.OrderCreateNestedManyWithoutGeneratedBasketInput
 }
 
 export type GeneratedBasketsUncheckedCreateInput = {
@@ -301,6 +309,8 @@ export type GeneratedBasketsUncheckedCreateInput = {
   secretDiscountId?: number | null
   freeDelivery?: boolean
   items?: Prisma.BasketItemsUncheckedCreateNestedManyWithoutBasketInput
+  baskets?: Prisma.BasketUncheckedCreateNestedManyWithoutGeneratedBasketInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutGeneratedBasketInput
 }
 
 export type GeneratedBasketsUpdateInput = {
@@ -310,6 +320,8 @@ export type GeneratedBasketsUpdateInput = {
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   items?: Prisma.BasketItemsUpdateManyWithoutBasketNestedInput
   SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutGeneratedBasketsNestedInput
+  baskets?: Prisma.BasketUpdateManyWithoutGeneratedBasketNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutGeneratedBasketNestedInput
 }
 
 export type GeneratedBasketsUncheckedUpdateInput = {
@@ -320,6 +332,8 @@ export type GeneratedBasketsUncheckedUpdateInput = {
   secretDiscountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   items?: Prisma.BasketItemsUncheckedUpdateManyWithoutBasketNestedInput
+  baskets?: Prisma.BasketUncheckedUpdateManyWithoutGeneratedBasketNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutGeneratedBasketNestedInput
 }
 
 export type GeneratedBasketsCreateManyInput = {
@@ -345,6 +359,11 @@ export type GeneratedBasketsUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   secretDiscountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+}
+
+export type GeneratedBasketsNullableScalarRelationFilter = {
+  is?: Prisma.GeneratedBasketsWhereInput | null
+  isNot?: Prisma.GeneratedBasketsWhereInput | null
 }
 
 export type GeneratedBasketsCountOrderByAggregateInput = {
@@ -389,9 +408,36 @@ export type GeneratedBasketsScalarRelationFilter = {
   isNot?: Prisma.GeneratedBasketsWhereInput
 }
 
-export type GeneratedBasketsNullableScalarRelationFilter = {
-  is?: Prisma.GeneratedBasketsWhereInput | null
-  isNot?: Prisma.GeneratedBasketsWhereInput | null
+export type GeneratedBasketsCreateNestedOneWithoutBasketsInput = {
+  create?: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutBasketsInput, Prisma.GeneratedBasketsUncheckedCreateWithoutBasketsInput>
+  connectOrCreate?: Prisma.GeneratedBasketsCreateOrConnectWithoutBasketsInput
+  connect?: Prisma.GeneratedBasketsWhereUniqueInput
+}
+
+export type GeneratedBasketsUpdateOneWithoutBasketsNestedInput = {
+  create?: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutBasketsInput, Prisma.GeneratedBasketsUncheckedCreateWithoutBasketsInput>
+  connectOrCreate?: Prisma.GeneratedBasketsCreateOrConnectWithoutBasketsInput
+  upsert?: Prisma.GeneratedBasketsUpsertWithoutBasketsInput
+  disconnect?: Prisma.GeneratedBasketsWhereInput | boolean
+  delete?: Prisma.GeneratedBasketsWhereInput | boolean
+  connect?: Prisma.GeneratedBasketsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GeneratedBasketsUpdateToOneWithWhereWithoutBasketsInput, Prisma.GeneratedBasketsUpdateWithoutBasketsInput>, Prisma.GeneratedBasketsUncheckedUpdateWithoutBasketsInput>
+}
+
+export type GeneratedBasketsCreateNestedOneWithoutOrdersInput = {
+  create?: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutOrdersInput, Prisma.GeneratedBasketsUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.GeneratedBasketsCreateOrConnectWithoutOrdersInput
+  connect?: Prisma.GeneratedBasketsWhereUniqueInput
+}
+
+export type GeneratedBasketsUpdateOneWithoutOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutOrdersInput, Prisma.GeneratedBasketsUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.GeneratedBasketsCreateOrConnectWithoutOrdersInput
+  upsert?: Prisma.GeneratedBasketsUpsertWithoutOrdersInput
+  disconnect?: Prisma.GeneratedBasketsWhereInput | boolean
+  delete?: Prisma.GeneratedBasketsWhereInput | boolean
+  connect?: Prisma.GeneratedBasketsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GeneratedBasketsUpdateToOneWithWhereWithoutOrdersInput, Prisma.GeneratedBasketsUpdateWithoutOrdersInput>, Prisma.GeneratedBasketsUncheckedUpdateWithoutOrdersInput>
 }
 
 export type GeneratedBasketsCreateNestedOneWithoutItemsInput = {
@@ -440,6 +486,124 @@ export type GeneratedBasketsUncheckedUpdateOneWithoutSecretDiscountNestedInput =
   update?: Prisma.XOR<Prisma.XOR<Prisma.GeneratedBasketsUpdateToOneWithWhereWithoutSecretDiscountInput, Prisma.GeneratedBasketsUpdateWithoutSecretDiscountInput>, Prisma.GeneratedBasketsUncheckedUpdateWithoutSecretDiscountInput>
 }
 
+export type GeneratedBasketsCreateWithoutBasketsInput = {
+  gbasketId?: number
+  cartKey: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  freeDelivery?: boolean
+  items?: Prisma.BasketItemsCreateNestedManyWithoutBasketInput
+  SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutGeneratedBasketsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutGeneratedBasketInput
+}
+
+export type GeneratedBasketsUncheckedCreateWithoutBasketsInput = {
+  gbasketId?: number
+  cartKey: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  secretDiscountId?: number | null
+  freeDelivery?: boolean
+  items?: Prisma.BasketItemsUncheckedCreateNestedManyWithoutBasketInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutGeneratedBasketInput
+}
+
+export type GeneratedBasketsCreateOrConnectWithoutBasketsInput = {
+  where: Prisma.GeneratedBasketsWhereUniqueInput
+  create: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutBasketsInput, Prisma.GeneratedBasketsUncheckedCreateWithoutBasketsInput>
+}
+
+export type GeneratedBasketsUpsertWithoutBasketsInput = {
+  update: Prisma.XOR<Prisma.GeneratedBasketsUpdateWithoutBasketsInput, Prisma.GeneratedBasketsUncheckedUpdateWithoutBasketsInput>
+  create: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutBasketsInput, Prisma.GeneratedBasketsUncheckedCreateWithoutBasketsInput>
+  where?: Prisma.GeneratedBasketsWhereInput
+}
+
+export type GeneratedBasketsUpdateToOneWithWhereWithoutBasketsInput = {
+  where?: Prisma.GeneratedBasketsWhereInput
+  data: Prisma.XOR<Prisma.GeneratedBasketsUpdateWithoutBasketsInput, Prisma.GeneratedBasketsUncheckedUpdateWithoutBasketsInput>
+}
+
+export type GeneratedBasketsUpdateWithoutBasketsInput = {
+  cartKey?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  items?: Prisma.BasketItemsUpdateManyWithoutBasketNestedInput
+  SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutGeneratedBasketsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutGeneratedBasketNestedInput
+}
+
+export type GeneratedBasketsUncheckedUpdateWithoutBasketsInput = {
+  gbasketId?: Prisma.IntFieldUpdateOperationsInput | number
+  cartKey?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  secretDiscountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  items?: Prisma.BasketItemsUncheckedUpdateManyWithoutBasketNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutGeneratedBasketNestedInput
+}
+
+export type GeneratedBasketsCreateWithoutOrdersInput = {
+  gbasketId?: number
+  cartKey: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  freeDelivery?: boolean
+  items?: Prisma.BasketItemsCreateNestedManyWithoutBasketInput
+  SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutGeneratedBasketsInput
+  baskets?: Prisma.BasketCreateNestedManyWithoutGeneratedBasketInput
+}
+
+export type GeneratedBasketsUncheckedCreateWithoutOrdersInput = {
+  gbasketId?: number
+  cartKey: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  secretDiscountId?: number | null
+  freeDelivery?: boolean
+  items?: Prisma.BasketItemsUncheckedCreateNestedManyWithoutBasketInput
+  baskets?: Prisma.BasketUncheckedCreateNestedManyWithoutGeneratedBasketInput
+}
+
+export type GeneratedBasketsCreateOrConnectWithoutOrdersInput = {
+  where: Prisma.GeneratedBasketsWhereUniqueInput
+  create: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutOrdersInput, Prisma.GeneratedBasketsUncheckedCreateWithoutOrdersInput>
+}
+
+export type GeneratedBasketsUpsertWithoutOrdersInput = {
+  update: Prisma.XOR<Prisma.GeneratedBasketsUpdateWithoutOrdersInput, Prisma.GeneratedBasketsUncheckedUpdateWithoutOrdersInput>
+  create: Prisma.XOR<Prisma.GeneratedBasketsCreateWithoutOrdersInput, Prisma.GeneratedBasketsUncheckedCreateWithoutOrdersInput>
+  where?: Prisma.GeneratedBasketsWhereInput
+}
+
+export type GeneratedBasketsUpdateToOneWithWhereWithoutOrdersInput = {
+  where?: Prisma.GeneratedBasketsWhereInput
+  data: Prisma.XOR<Prisma.GeneratedBasketsUpdateWithoutOrdersInput, Prisma.GeneratedBasketsUncheckedUpdateWithoutOrdersInput>
+}
+
+export type GeneratedBasketsUpdateWithoutOrdersInput = {
+  cartKey?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  items?: Prisma.BasketItemsUpdateManyWithoutBasketNestedInput
+  SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutGeneratedBasketsNestedInput
+  baskets?: Prisma.BasketUpdateManyWithoutGeneratedBasketNestedInput
+}
+
+export type GeneratedBasketsUncheckedUpdateWithoutOrdersInput = {
+  gbasketId?: Prisma.IntFieldUpdateOperationsInput | number
+  cartKey?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  secretDiscountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  items?: Prisma.BasketItemsUncheckedUpdateManyWithoutBasketNestedInput
+  baskets?: Prisma.BasketUncheckedUpdateManyWithoutGeneratedBasketNestedInput
+}
+
 export type GeneratedBasketsCreateWithoutItemsInput = {
   gbasketId?: number
   cartKey: string
@@ -447,6 +611,8 @@ export type GeneratedBasketsCreateWithoutItemsInput = {
   updatedAt?: Date | string
   freeDelivery?: boolean
   SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutGeneratedBasketsInput
+  baskets?: Prisma.BasketCreateNestedManyWithoutGeneratedBasketInput
+  orders?: Prisma.OrderCreateNestedManyWithoutGeneratedBasketInput
 }
 
 export type GeneratedBasketsUncheckedCreateWithoutItemsInput = {
@@ -456,6 +622,8 @@ export type GeneratedBasketsUncheckedCreateWithoutItemsInput = {
   updatedAt?: Date | string
   secretDiscountId?: number | null
   freeDelivery?: boolean
+  baskets?: Prisma.BasketUncheckedCreateNestedManyWithoutGeneratedBasketInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutGeneratedBasketInput
 }
 
 export type GeneratedBasketsCreateOrConnectWithoutItemsInput = {
@@ -480,6 +648,8 @@ export type GeneratedBasketsUpdateWithoutItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutGeneratedBasketsNestedInput
+  baskets?: Prisma.BasketUpdateManyWithoutGeneratedBasketNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutGeneratedBasketNestedInput
 }
 
 export type GeneratedBasketsUncheckedUpdateWithoutItemsInput = {
@@ -489,6 +659,8 @@ export type GeneratedBasketsUncheckedUpdateWithoutItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   secretDiscountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  baskets?: Prisma.BasketUncheckedUpdateManyWithoutGeneratedBasketNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutGeneratedBasketNestedInput
 }
 
 export type GeneratedBasketsCreateWithoutSecretDiscountInput = {
@@ -498,6 +670,8 @@ export type GeneratedBasketsCreateWithoutSecretDiscountInput = {
   updatedAt?: Date | string
   freeDelivery?: boolean
   items?: Prisma.BasketItemsCreateNestedManyWithoutBasketInput
+  baskets?: Prisma.BasketCreateNestedManyWithoutGeneratedBasketInput
+  orders?: Prisma.OrderCreateNestedManyWithoutGeneratedBasketInput
 }
 
 export type GeneratedBasketsUncheckedCreateWithoutSecretDiscountInput = {
@@ -507,6 +681,8 @@ export type GeneratedBasketsUncheckedCreateWithoutSecretDiscountInput = {
   updatedAt?: Date | string
   freeDelivery?: boolean
   items?: Prisma.BasketItemsUncheckedCreateNestedManyWithoutBasketInput
+  baskets?: Prisma.BasketUncheckedCreateNestedManyWithoutGeneratedBasketInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutGeneratedBasketInput
 }
 
 export type GeneratedBasketsCreateOrConnectWithoutSecretDiscountInput = {
@@ -531,6 +707,8 @@ export type GeneratedBasketsUpdateWithoutSecretDiscountInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   items?: Prisma.BasketItemsUpdateManyWithoutBasketNestedInput
+  baskets?: Prisma.BasketUpdateManyWithoutGeneratedBasketNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutGeneratedBasketNestedInput
 }
 
 export type GeneratedBasketsUncheckedUpdateWithoutSecretDiscountInput = {
@@ -540,6 +718,8 @@ export type GeneratedBasketsUncheckedUpdateWithoutSecretDiscountInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   items?: Prisma.BasketItemsUncheckedUpdateManyWithoutBasketNestedInput
+  baskets?: Prisma.BasketUncheckedUpdateManyWithoutGeneratedBasketNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutGeneratedBasketNestedInput
 }
 
 
@@ -549,10 +729,14 @@ export type GeneratedBasketsUncheckedUpdateWithoutSecretDiscountInput = {
 
 export type GeneratedBasketsCountOutputType = {
   items: number
+  baskets: number
+  orders: number
 }
 
 export type GeneratedBasketsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | GeneratedBasketsCountOutputTypeCountItemsArgs
+  baskets?: boolean | GeneratedBasketsCountOutputTypeCountBasketsArgs
+  orders?: boolean | GeneratedBasketsCountOutputTypeCountOrdersArgs
 }
 
 /**
@@ -572,6 +756,20 @@ export type GeneratedBasketsCountOutputTypeCountItemsArgs<ExtArgs extends runtim
   where?: Prisma.BasketItemsWhereInput
 }
 
+/**
+ * GeneratedBasketsCountOutputType without action
+ */
+export type GeneratedBasketsCountOutputTypeCountBasketsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BasketWhereInput
+}
+
+/**
+ * GeneratedBasketsCountOutputType without action
+ */
+export type GeneratedBasketsCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
+}
+
 
 export type GeneratedBasketsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   gbasketId?: boolean
@@ -582,6 +780,8 @@ export type GeneratedBasketsSelect<ExtArgs extends runtime.Types.Extensions.Inte
   freeDelivery?: boolean
   items?: boolean | Prisma.GeneratedBaskets$itemsArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.GeneratedBaskets$SecretDiscountArgs<ExtArgs>
+  baskets?: boolean | Prisma.GeneratedBaskets$basketsArgs<ExtArgs>
+  orders?: boolean | Prisma.GeneratedBaskets$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.GeneratedBasketsCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["generatedBaskets"]>
 
@@ -618,6 +818,8 @@ export type GeneratedBasketsOmit<ExtArgs extends runtime.Types.Extensions.Intern
 export type GeneratedBasketsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | Prisma.GeneratedBaskets$itemsArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.GeneratedBaskets$SecretDiscountArgs<ExtArgs>
+  baskets?: boolean | Prisma.GeneratedBaskets$basketsArgs<ExtArgs>
+  orders?: boolean | Prisma.GeneratedBaskets$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.GeneratedBasketsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GeneratedBasketsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -632,6 +834,8 @@ export type $GeneratedBasketsPayload<ExtArgs extends runtime.Types.Extensions.In
   objects: {
     items: Prisma.$BasketItemsPayload<ExtArgs>[]
     SecretDiscount: Prisma.$SecretDiscountPayload<ExtArgs> | null
+    baskets: Prisma.$BasketPayload<ExtArgs>[]
+    orders: Prisma.$OrderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     gbasketId: number
@@ -1036,6 +1240,8 @@ export interface Prisma__GeneratedBasketsClient<T, Null = never, ExtArgs extends
   readonly [Symbol.toStringTag]: "PrismaPromise"
   items<T extends Prisma.GeneratedBaskets$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GeneratedBaskets$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BasketItemsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   SecretDiscount<T extends Prisma.GeneratedBaskets$SecretDiscountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GeneratedBaskets$SecretDiscountArgs<ExtArgs>>): Prisma.Prisma__SecretDiscountClient<runtime.Types.Result.GetResult<Prisma.$SecretDiscountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  baskets<T extends Prisma.GeneratedBaskets$basketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GeneratedBaskets$basketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BasketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  orders<T extends Prisma.GeneratedBaskets$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GeneratedBaskets$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1507,6 +1713,54 @@ export type GeneratedBaskets$SecretDiscountArgs<ExtArgs extends runtime.Types.Ex
    */
   include?: Prisma.SecretDiscountInclude<ExtArgs> | null
   where?: Prisma.SecretDiscountWhereInput
+}
+
+/**
+ * GeneratedBaskets.baskets
+ */
+export type GeneratedBaskets$basketsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Basket
+   */
+  select?: Prisma.BasketSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Basket
+   */
+  omit?: Prisma.BasketOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BasketInclude<ExtArgs> | null
+  where?: Prisma.BasketWhereInput
+  orderBy?: Prisma.BasketOrderByWithRelationInput | Prisma.BasketOrderByWithRelationInput[]
+  cursor?: Prisma.BasketWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BasketScalarFieldEnum | Prisma.BasketScalarFieldEnum[]
+}
+
+/**
+ * GeneratedBaskets.orders
+ */
+export type GeneratedBaskets$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
 }
 
 /**
