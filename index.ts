@@ -537,8 +537,6 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
       }
     };
 
-    console.log('Телефон ', phone, " Стоимость доставки: ", deliverySum)
-
     await bot
       .answerWebAppQuery(queryId, {
         type: "article",
@@ -926,7 +924,6 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           orderData.middleName!,
           orderData.phone!,
           orderData.selectedPvzCode!,
-          orderData.deliveryCost!,
           orderData.selectedTariff!,
           orderData.address!,
           cityCode!,

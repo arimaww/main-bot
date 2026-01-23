@@ -70,8 +70,6 @@ export const abovetwentyController = async (
         .json({ message: "Все поля обязательны для заполнения" });
     }
 
-    console.log('Телефон ', phone, " Стоимость доставки: ", deliverySum)
-
     await bot
       .answerWebAppQuery(queryId, {
         type: "article",
