@@ -10,7 +10,7 @@ import axios from "axios";
 
 export const getOrderTrackNumber = async (
   uuid: string,
-  token: string
+  token: string,
 ): Promise<{ entity: { uuid: string; cdek_number: string } }> => {
   try {
     const response = await axios.post(
@@ -21,7 +21,7 @@ export const getOrderTrackNumber = async (
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-      }
+      },
     );
 
     const data = response.data;
@@ -59,7 +59,7 @@ const createPackages = (
   regularCount: number,
   totalCount: number,
   totalPrice: number,
-  hasPrepayment?: boolean
+  hasPrepayment?: boolean,
 ) => {
   const packages: Array<{
     number: string;
@@ -207,7 +207,7 @@ export const getOrderObjRu = async (
   address: string,
   cityCode: number,
   freeDelivery?: boolean,
-  products?: TProduct[]
+  products?: TProduct[],
 ): Promise<TDeliveryRequest> => {
   // Считаем количество протеинов, гейнеров и обычных товаров
   const { proteinCount, gainerCount, regularCount, totalCount } =
@@ -226,7 +226,7 @@ export const getOrderObjRu = async (
           totalCount: acc.totalCount + count,
         };
       },
-      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 }
+      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 },
     ) ?? { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 };
 
   // Создаём packages
@@ -237,7 +237,7 @@ export const getOrderObjRu = async (
           gainerCount,
           regularCount,
           totalCount,
-          totalPrice
+          totalPrice,
         )
       : [];
 
@@ -246,12 +246,25 @@ export const getOrderObjRu = async (
     number: uuidCdek,
     type: 1,
     delivery_recipient_cost: {
-      value: freeDelivery ? 0 : deliverySum,
+      value: freeDelivery
+        ? 0
+        : packages.length > 0
+          ? deliverySum -
+            packages.reduce((total, pkg) => total + pkg.items.reduce((count, acc) => count + acc.amount,0), 0)
+          : deliverySum - 1,
     },
     delivery_recipient_cost_adv: [
       {
-        sum: deliverySum,
-        threshold: deliverySum,
+        sum:
+          packages.length > 0
+          ? deliverySum -
+            packages.reduce((total, pkg) => total + pkg.items.reduce((count, acc) => count + acc.amount,0), 0)
+          : deliverySum - 1,
+        threshold:
+          packages.length > 0
+          ? deliverySum -
+            packages.reduce((total, pkg) => total + pkg.items.reduce((count, acc) => count + acc.amount,0), 0)
+          : deliverySum - 1,
       },
     ],
     packages:
@@ -328,7 +341,7 @@ export const getOrderObjRuWithPrepayment = async (
   selectedTariff: number,
   address: string,
   cityCode: number,
-  products?: TProduct[]
+  products?: TProduct[],
 ): Promise<TDeliveryRequest> => {
   const { proteinCount, gainerCount, regularCount, totalCount } =
     products?.reduce(
@@ -346,7 +359,7 @@ export const getOrderObjRuWithPrepayment = async (
           totalCount: acc.totalCount + count,
         };
       },
-      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 }
+      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 },
     ) ?? { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 };
 
   const packages =
@@ -357,7 +370,7 @@ export const getOrderObjRuWithPrepayment = async (
           regularCount,
           totalCount,
           totalPrice,
-          true
+          true,
         )
       : [];
 
@@ -439,11 +452,10 @@ export const getOrderObjInternation = async (
   middleName: string,
   phone: string,
   selectedPvzCode: string,
-  deliverySum: number,
   selectedTariff: number,
   address: string,
   cityCode: number,
-  products?: TProduct[]
+  products?: TProduct[],
 ): Promise<TDeliveryRequest> => {
   // Считаем количество протеинов, гейнеров и обычных товаров
   const { proteinCount, gainerCount, regularCount, totalCount } =
@@ -462,7 +474,7 @@ export const getOrderObjInternation = async (
           totalCount: acc.totalCount + count,
         };
       },
-      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 }
+      { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 },
     ) ?? { proteinCount: 0, gainerCount: 0, regularCount: 0, totalCount: 0 };
 
   // Создаём packages для международной доставки
@@ -608,7 +620,7 @@ export const getOrderObjInternation = async (
     number: uuidCdek,
     type: 1,
     date_invoice: `${new Date().getFullYear()}-${String(
-      new Date().getMonth() + 1
+      new Date().getMonth() + 1,
     ).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`,
     shipper_address: "Старый Бавтугай, ул. Интернатская, 2",
     delivery_recipient_cost: {
@@ -682,7 +694,7 @@ export const getOrderObjInternation = async (
 };
 
 export const makeTrackNumber = async (
-  body: TDeliveryRequest
+  body: TDeliveryRequest,
 ): Promise<TDeliveryResponse | undefined> => {
   try {
     const options = {
@@ -718,7 +730,7 @@ export const makeTrackNumber = async (
 };
 
 export const getToken = async (
-  body: TCdekUser
+  body: TCdekUser,
 ): Promise<ResponseAuthData | undefined> => {
   try {
     const options = {
