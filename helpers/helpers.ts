@@ -108,6 +108,11 @@ const getSizeKey = (
     (proteinCount === 3 && gainerCount === 0 && regularCount <= 5) ||
     // 1 гейнер + до 15 обычных (0–2 уже в M)
     (gainerCount === 1 && proteinCount === 0 && regularCount <= 15) ||
+    // 1 протеин + 9-20 обычных банок
+    (gainerCount === 0 &&
+      proteinCount === 1 &&
+      regularCount >= 9 &&
+      regularCount <= 20) ||
     // 2 гейнера + до 7 обычных
     (gainerCount === 2 && proteinCount === 0 && regularCount <= 7) ||
     // 1 гейнер + 1 протеин + до 10 обычных
@@ -117,38 +122,91 @@ const getSizeKey = (
 
   // ── Л+ (40×30×38) ────────────────────────────────────────────────────────
   if (
-    // 41–55 обычных
+    // --- Категория LP_SIZE (уже существующие) ---
     (regularCount >= 41 &&
       regularCount <= 55 &&
       proteinCount === 0 &&
       gainerCount === 0) ||
-    // 3 протеина + 6–10 обычных (≤5 уже в Л)
     (proteinCount === 3 && gainerCount === 0 && regularCount <= 10) ||
-    // 4 протеина без обычных
     (proteinCount === 4 && gainerCount === 0 && regularCount === 0) ||
-    // 1 гейнер + 16–20 обычных (≤15 уже в Л)
     (gainerCount === 1 && proteinCount === 0 && regularCount <= 20) ||
-    // 2 гейнера + 8–12 обычных (≤7 уже в Л)
-    (gainerCount === 2 && proteinCount === 0 && regularCount <= 12)
-  )
-    return "LP_SIZE";
+    (gainerCount === 0 &&
+      proteinCount === 1 &&
+      regularCount >= 21 &&
+      regularCount <= 35) ||
+    (gainerCount === 0 &&
+      proteinCount === 2 &&
+      regularCount >= 11 &&
+      regularCount <= 20) ||
+    (gainerCount === 2 && proteinCount === 0 && regularCount <= 12) ||
+    // --- Категория L+ (добавляем новые условия) ---
+    // 1 гейнер + 2 протеина + 0-10 обычных
+    (gainerCount === 1 &&
+      proteinCount === 2 &&
+      regularCount >= 0 &&
+      regularCount <= 10) ||
+    // 1 гейнер + 3 протеина + 0–4 обычных
+    (gainerCount === 1 &&
+      proteinCount === 3 &&
+      regularCount >= 0 &&
+      regularCount <= 4) ||
+    // 2 гейнера + 1 протеин + 4–7 обычных
+    (gainerCount === 2 &&
+      proteinCount === 1 &&
+      regularCount >= 4 &&
+      regularCount <= 7) ||
+    // 2 гейнера + 2 протеина (обычные не указаны, подразумеваем 0 или неважно?)
+    // Если обычных должно быть 0, оставь regularCount === 0
+    (gainerCount === 2 && proteinCount === 2 && regularCount === 0)
+  ) {
+    return "LP_SIZE"; // Или "L_PLUS", если у тебя для них отдельная категория
+  }
 
-  // ── Л++ (50×35×38) ───────────────────────────────────────────────────────
   if (
-    // 56–70 обычных
+    // --- Категория LPP_SIZE
     (regularCount >= 56 &&
       regularCount <= 70 &&
       proteinCount === 0 &&
       gainerCount === 0) ||
-    // 4 протеина + 1–4 обычных (0 уже в Л+)
     (proteinCount === 4 && gainerCount === 0 && regularCount <= 4) ||
-    // 5 протеинов
     (proteinCount === 5 && gainerCount === 0 && regularCount === 0) ||
-    // 2 гейнера + 13–16 обычных (≤12 уже в Л+)
-    (gainerCount === 2 && proteinCount === 0 && regularCount <= 16)
-  )
+    // 1 протеин + 36–50 обычных
+    (gainerCount === 0 &&
+      proteinCount === 1 &&
+      regularCount >= 36 &&
+      regularCount <= 50) ||
+    // 2 протеина + 21–35 обычных
+    (gainerCount === 0 &&
+      proteinCount === 2 &&
+      regularCount >= 21 &&
+      regularCount <= 35) ||
+    // 3 протеина + 11–20 обычных
+    (gainerCount === 0 &&
+      proteinCount === 3 &&
+      regularCount >= 11 &&
+      regularCount <= 20) ||
+    (gainerCount === 2 && proteinCount === 0 && regularCount <= 16) ||
+    // 1 гейнер + 3 протеина + 5–8 обычных
+    (gainerCount === 1 &&
+      proteinCount === 3 &&
+      regularCount >= 5 &&
+      regularCount <= 8) ||
+    // 1 гейнер + 4 протеина + 0–3 обычных (покрывает и просто "1г + 4пр")
+    (gainerCount === 1 &&
+      proteinCount === 4 &&
+      regularCount >= 0 &&
+      regularCount <= 3) ||
+    // 2 гейнера + 2 протеина + 0–3 обычных
+    (gainerCount === 2 &&
+      proteinCount === 2 &&
+      regularCount >= 0 &&
+      regularCount <= 3) ||
+    // 2 гейнера + 3 протеина (если обычных должно быть 0)
+    (gainerCount === 2 && proteinCount === 3 && regularCount === 0)
+  ) {
     return "LPP_SIZE";
-
+  }
+  
   // ── XL — всё остальное: 3+ гейнера, 6+ протеинов, 70+ обычных и т.д. ────
   return "XL_SIZE";
 };
