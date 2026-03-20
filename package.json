@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "dev": "NODE_ENV=production nodemon index.ts",
-    "build": "bunx tsc",
+    "build": "prisma generate && bunx tsc",
     "start": "NODE_ENV=production node dist/index.js"
   },
   "keywords": [],
