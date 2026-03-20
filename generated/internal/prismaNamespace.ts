@@ -407,7 +407,11 @@ export const ModelName = {
   BasketItems: 'BasketItems',
   SecretDiscount: 'SecretDiscount',
   Category: 'Category',
-  PaymentInfo: 'PaymentInfo'
+  PaymentInfo: 'PaymentInfo',
+  Media: 'Media',
+  Modal: 'Modal',
+  ModalViews: 'ModalViews',
+  Post: 'Post'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -423,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "product" | "basket" | "order" | "messages" | "orderBarcode" | "cdekOffice" | "userCrm" | "bank" | "keyboard" | "productDiscount" | "productSet" | "promocodes" | "generatedBaskets" | "basketItems" | "secretDiscount" | "category" | "paymentInfo"
+    modelProps: "user" | "product" | "basket" | "order" | "messages" | "orderBarcode" | "cdekOffice" | "userCrm" | "bank" | "keyboard" | "productDiscount" | "productSet" | "promocodes" | "generatedBaskets" | "basketItems" | "secretDiscount" | "category" | "paymentInfo" | "media" | "modal" | "modalViews" | "post"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1759,6 +1763,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Media: {
+      payload: Prisma.$MediaPayload<ExtArgs>
+      fields: Prisma.MediaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MediaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MediaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        findFirst: {
+          args: Prisma.MediaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MediaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        findMany: {
+          args: Prisma.MediaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>[]
+        }
+        create: {
+          args: Prisma.MediaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        createMany: {
+          args: Prisma.MediaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MediaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>[]
+        }
+        delete: {
+          args: Prisma.MediaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        update: {
+          args: Prisma.MediaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        deleteMany: {
+          args: Prisma.MediaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MediaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MediaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>[]
+        }
+        upsert: {
+          args: Prisma.MediaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        aggregate: {
+          args: Prisma.MediaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMedia>
+        }
+        groupBy: {
+          args: Prisma.MediaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MediaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MediaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MediaCountAggregateOutputType> | number
+        }
+      }
+    }
+    Modal: {
+      payload: Prisma.$ModalPayload<ExtArgs>
+      fields: Prisma.ModalFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ModalFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ModalFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>
+        }
+        findFirst: {
+          args: Prisma.ModalFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ModalFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>
+        }
+        findMany: {
+          args: Prisma.ModalFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>[]
+        }
+        create: {
+          args: Prisma.ModalCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>
+        }
+        createMany: {
+          args: Prisma.ModalCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ModalCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>[]
+        }
+        delete: {
+          args: Prisma.ModalDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>
+        }
+        update: {
+          args: Prisma.ModalUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>
+        }
+        deleteMany: {
+          args: Prisma.ModalDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ModalUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ModalUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>[]
+        }
+        upsert: {
+          args: Prisma.ModalUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalPayload>
+        }
+        aggregate: {
+          args: Prisma.ModalAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateModal>
+        }
+        groupBy: {
+          args: Prisma.ModalGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModalGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ModalCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModalCountAggregateOutputType> | number
+        }
+      }
+    }
+    ModalViews: {
+      payload: Prisma.$ModalViewsPayload<ExtArgs>
+      fields: Prisma.ModalViewsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ModalViewsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ModalViewsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>
+        }
+        findFirst: {
+          args: Prisma.ModalViewsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ModalViewsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>
+        }
+        findMany: {
+          args: Prisma.ModalViewsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>[]
+        }
+        create: {
+          args: Prisma.ModalViewsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>
+        }
+        createMany: {
+          args: Prisma.ModalViewsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ModalViewsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>[]
+        }
+        delete: {
+          args: Prisma.ModalViewsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>
+        }
+        update: {
+          args: Prisma.ModalViewsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>
+        }
+        deleteMany: {
+          args: Prisma.ModalViewsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ModalViewsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ModalViewsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>[]
+        }
+        upsert: {
+          args: Prisma.ModalViewsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModalViewsPayload>
+        }
+        aggregate: {
+          args: Prisma.ModalViewsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateModalViews>
+        }
+        groupBy: {
+          args: Prisma.ModalViewsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModalViewsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ModalViewsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModalViewsCountAggregateOutputType> | number
+        }
+      }
+    }
+    Post: {
+      payload: Prisma.$PostPayload<ExtArgs>
+      fields: Prisma.PostFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PostFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PostFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>
+        }
+        findFirst: {
+          args: Prisma.PostFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PostFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>
+        }
+        findMany: {
+          args: Prisma.PostFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>[]
+        }
+        create: {
+          args: Prisma.PostCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>
+        }
+        createMany: {
+          args: Prisma.PostCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PostCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>[]
+        }
+        delete: {
+          args: Prisma.PostDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>
+        }
+        update: {
+          args: Prisma.PostUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>
+        }
+        deleteMany: {
+          args: Prisma.PostDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PostUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PostUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>[]
+        }
+        upsert: {
+          args: Prisma.PostUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostPayload>
+        }
+        aggregate: {
+          args: Prisma.PostAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePost>
+        }
+        groupBy: {
+          args: Prisma.PostGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PostGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PostCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PostCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1834,7 +2134,8 @@ export const ProductScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   primeCost: 'primeCost',
-  categoryId: 'categoryId'
+  categoryId: 'categoryId',
+  isIncompletePrice: 'isIncompletePrice'
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -2078,12 +2379,76 @@ export const PaymentInfoScalarFieldEnum = {
 export type PaymentInfoScalarFieldEnum = (typeof PaymentInfoScalarFieldEnum)[keyof typeof PaymentInfoScalarFieldEnum]
 
 
+export const MediaScalarFieldEnum = {
+  id: 'id',
+  bucketName: 'bucketName',
+  url: 'url',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  fileKey: 'fileKey',
+  fileType: 'fileType',
+  postId: 'postId'
+} as const
+
+export type MediaScalarFieldEnum = (typeof MediaScalarFieldEnum)[keyof typeof MediaScalarFieldEnum]
+
+
+export const ModalScalarFieldEnum = {
+  id: 'id',
+  prefix: 'prefix',
+  title: 'title',
+  description: 'description',
+  isShowDate: 'isShowDate',
+  endTime: 'endTime',
+  startTime: 'startTime',
+  themeStyle: 'themeStyle',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ModalScalarFieldEnum = (typeof ModalScalarFieldEnum)[keyof typeof ModalScalarFieldEnum]
+
+
+export const ModalViewsScalarFieldEnum = {
+  id: 'id',
+  modalId: 'modalId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ModalViewsScalarFieldEnum = (typeof ModalViewsScalarFieldEnum)[keyof typeof ModalViewsScalarFieldEnum]
+
+
+export const PostScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  content: 'content',
+  isDeleted: 'isDeleted',
+  isPublished: 'isPublished'
+} as const
+
+export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -2100,6 +2465,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -2284,6 +2658,34 @@ export type ListEnumPAYMENT_STATUSFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'THEME_STYLES'
+ */
+export type EnumTHEME_STYLESFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'THEME_STYLES'>
+    
+
+
+/**
+ * Reference to a field of type 'THEME_STYLES[]'
+ */
+export type ListEnumTHEME_STYLESFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'THEME_STYLES[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2401,6 +2803,10 @@ export type GlobalOmitConfig = {
   secretDiscount?: Prisma.SecretDiscountOmit
   category?: Prisma.CategoryOmit
   paymentInfo?: Prisma.PaymentInfoOmit
+  media?: Prisma.MediaOmit
+  modal?: Prisma.ModalOmit
+  modalViews?: Prisma.ModalViewsOmit
+  post?: Prisma.PostOmit
 }
 
 /* Types for Logging */

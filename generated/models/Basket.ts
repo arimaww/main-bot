@@ -280,11 +280,11 @@ export type BasketWhereInput = {
   secretDiscountId?: Prisma.IntNullableFilter<"Basket"> | number | null
   freeDelivery?: Prisma.BoolFilter<"Basket"> | boolean
   gbasketId?: Prisma.IntNullableFilter<"Basket"> | number | null
+  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
   promocode?: Prisma.XOR<Prisma.PromocodesNullableScalarRelationFilter, Prisma.PromocodesWhereInput> | null
   SecretDiscount?: Prisma.XOR<Prisma.SecretDiscountNullableScalarRelationFilter, Prisma.SecretDiscountWhereInput> | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
 }
 
 export type BasketOrderByWithRelationInput = {
@@ -298,11 +298,11 @@ export type BasketOrderByWithRelationInput = {
   secretDiscountId?: Prisma.SortOrderInput | Prisma.SortOrder
   freeDelivery?: Prisma.SortOrder
   gbasketId?: Prisma.SortOrderInput | Prisma.SortOrder
+  generatedBasket?: Prisma.GeneratedBasketsOrderByWithRelationInput
   product?: Prisma.ProductOrderByWithRelationInput
   promocode?: Prisma.PromocodesOrderByWithRelationInput
   SecretDiscount?: Prisma.SecretDiscountOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
-  generatedBasket?: Prisma.GeneratedBasketsOrderByWithRelationInput
 }
 
 export type BasketWhereUniqueInput = Prisma.AtLeast<{
@@ -319,11 +319,11 @@ export type BasketWhereUniqueInput = Prisma.AtLeast<{
   secretDiscountId?: Prisma.IntNullableFilter<"Basket"> | number | null
   freeDelivery?: Prisma.BoolFilter<"Basket"> | boolean
   gbasketId?: Prisma.IntNullableFilter<"Basket"> | number | null
+  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
   promocode?: Prisma.XOR<Prisma.PromocodesNullableScalarRelationFilter, Prisma.PromocodesWhereInput> | null
   SecretDiscount?: Prisma.XOR<Prisma.SecretDiscountNullableScalarRelationFilter, Prisma.SecretDiscountWhereInput> | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
 }, "basketId">
 
 export type BasketOrderByWithAggregationInput = {
@@ -365,11 +365,11 @@ export type BasketCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   freeDelivery?: boolean
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
   product: Prisma.ProductCreateNestedOneWithoutBasketInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutBasketWithPromoInput
   SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutBasketInput
   user: Prisma.UserCreateNestedOneWithoutBasketInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
 }
 
 export type BasketUncheckedCreateInput = {
@@ -390,11 +390,11 @@ export type BasketUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
   product?: Prisma.ProductUpdateOneRequiredWithoutBasketNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutBasketWithPromoNestedInput
   SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutBasketNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutBasketNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
 }
 
 export type BasketUncheckedUpdateInput = {
@@ -727,10 +727,10 @@ export type BasketCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   freeDelivery?: boolean
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
   product: Prisma.ProductCreateNestedOneWithoutBasketInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutBasketWithPromoInput
   SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutBasketInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
 }
 
 export type BasketUncheckedCreateWithoutUserInput = {
@@ -792,10 +792,10 @@ export type BasketCreateWithoutProductInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   freeDelivery?: boolean
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutBasketWithPromoInput
   SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutBasketInput
   user: Prisma.UserCreateNestedOneWithoutBasketInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
 }
 
 export type BasketUncheckedCreateWithoutProductInput = {
@@ -841,10 +841,10 @@ export type BasketCreateWithoutPromocodeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   freeDelivery?: boolean
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
   product: Prisma.ProductCreateNestedOneWithoutBasketInput
   SecretDiscount?: Prisma.SecretDiscountCreateNestedOneWithoutBasketInput
   user: Prisma.UserCreateNestedOneWithoutBasketInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
 }
 
 export type BasketUncheckedCreateWithoutPromocodeInput = {
@@ -939,10 +939,10 @@ export type BasketCreateWithoutSecretDiscountInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   freeDelivery?: boolean
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
   product: Prisma.ProductCreateNestedOneWithoutBasketInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutBasketWithPromoInput
   user: Prisma.UserCreateNestedOneWithoutBasketInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutBasketsInput
 }
 
 export type BasketUncheckedCreateWithoutSecretDiscountInput = {
@@ -1000,10 +1000,10 @@ export type BasketUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
   product?: Prisma.ProductUpdateOneRequiredWithoutBasketNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutBasketWithPromoNestedInput
   SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutBasketNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
 }
 
 export type BasketUncheckedUpdateWithoutUserInput = {
@@ -1047,10 +1047,10 @@ export type BasketUpdateWithoutProductInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutBasketWithPromoNestedInput
   SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutBasketNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutBasketNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
 }
 
 export type BasketUncheckedUpdateWithoutProductInput = {
@@ -1094,10 +1094,10 @@ export type BasketUpdateWithoutPromocodeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
   product?: Prisma.ProductUpdateOneRequiredWithoutBasketNestedInput
   SecretDiscount?: Prisma.SecretDiscountUpdateOneWithoutBasketNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutBasketNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
 }
 
 export type BasketUncheckedUpdateWithoutPromocodeInput = {
@@ -1188,10 +1188,10 @@ export type BasketUpdateWithoutSecretDiscountInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
   product?: Prisma.ProductUpdateOneRequiredWithoutBasketNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutBasketWithPromoNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutBasketNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutBasketsNestedInput
 }
 
 export type BasketUncheckedUpdateWithoutSecretDiscountInput = {
@@ -1231,11 +1231,11 @@ export type BasketSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   secretDiscountId?: boolean
   freeDelivery?: boolean
   gbasketId?: boolean
+  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   promocode?: boolean | Prisma.Basket$promocodeArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.Basket$SecretDiscountArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
 }, ExtArgs["result"]["basket"]>
 
 export type BasketSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1249,11 +1249,11 @@ export type BasketSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   secretDiscountId?: boolean
   freeDelivery?: boolean
   gbasketId?: boolean
+  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   promocode?: boolean | Prisma.Basket$promocodeArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.Basket$SecretDiscountArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
 }, ExtArgs["result"]["basket"]>
 
 export type BasketSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1267,11 +1267,11 @@ export type BasketSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   secretDiscountId?: boolean
   freeDelivery?: boolean
   gbasketId?: boolean
+  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   promocode?: boolean | Prisma.Basket$promocodeArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.Basket$SecretDiscountArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
 }, ExtArgs["result"]["basket"]>
 
 export type BasketSelectScalar = {
@@ -1289,35 +1289,35 @@ export type BasketSelectScalar = {
 
 export type BasketOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"basketId" | "userId" | "productId" | "productCount" | "createdAt" | "updatedAt" | "promocodeId" | "secretDiscountId" | "freeDelivery" | "gbasketId", ExtArgs["result"]["basket"]>
 export type BasketInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   promocode?: boolean | Prisma.Basket$promocodeArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.Basket$SecretDiscountArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
 }
 export type BasketIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   promocode?: boolean | Prisma.Basket$promocodeArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.Basket$SecretDiscountArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
 }
 export type BasketIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   promocode?: boolean | Prisma.Basket$promocodeArgs<ExtArgs>
   SecretDiscount?: boolean | Prisma.Basket$SecretDiscountArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Basket$generatedBasketArgs<ExtArgs>
 }
 
 export type $BasketPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Basket"
   objects: {
+    generatedBasket: Prisma.$GeneratedBasketsPayload<ExtArgs> | null
     product: Prisma.$ProductPayload<ExtArgs>
     promocode: Prisma.$PromocodesPayload<ExtArgs> | null
     SecretDiscount: Prisma.$SecretDiscountPayload<ExtArgs> | null
     user: Prisma.$UserPayload<ExtArgs>
-    generatedBasket: Prisma.$GeneratedBasketsPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     basketId: number
@@ -1724,11 +1724,11 @@ readonly fields: BasketFieldRefs;
  */
 export interface Prisma__BasketClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  generatedBasket<T extends Prisma.Basket$generatedBasketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Basket$generatedBasketArgs<ExtArgs>>): Prisma.Prisma__GeneratedBasketsClient<runtime.Types.Result.GetResult<Prisma.$GeneratedBasketsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   promocode<T extends Prisma.Basket$promocodeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Basket$promocodeArgs<ExtArgs>>): Prisma.Prisma__PromocodesClient<runtime.Types.Result.GetResult<Prisma.$PromocodesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   SecretDiscount<T extends Prisma.Basket$SecretDiscountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Basket$SecretDiscountArgs<ExtArgs>>): Prisma.Prisma__SecretDiscountClient<runtime.Types.Result.GetResult<Prisma.$SecretDiscountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  generatedBasket<T extends Prisma.Basket$generatedBasketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Basket$generatedBasketArgs<ExtArgs>>): Prisma.Prisma__GeneratedBasketsClient<runtime.Types.Result.GetResult<Prisma.$GeneratedBasketsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2164,6 +2164,25 @@ export type BasketDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
+ * Basket.generatedBasket
+ */
+export type Basket$generatedBasketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GeneratedBaskets
+   */
+  select?: Prisma.GeneratedBasketsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GeneratedBaskets
+   */
+  omit?: Prisma.GeneratedBasketsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GeneratedBasketsInclude<ExtArgs> | null
+  where?: Prisma.GeneratedBasketsWhereInput
+}
+
+/**
  * Basket.promocode
  */
 export type Basket$promocodeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2199,25 +2218,6 @@ export type Basket$SecretDiscountArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   include?: Prisma.SecretDiscountInclude<ExtArgs> | null
   where?: Prisma.SecretDiscountWhereInput
-}
-
-/**
- * Basket.generatedBasket
- */
-export type Basket$generatedBasketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the GeneratedBaskets
-   */
-  select?: Prisma.GeneratedBasketsSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the GeneratedBaskets
-   */
-  omit?: Prisma.GeneratedBasketsOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.GeneratedBasketsInclude<ExtArgs> | null
-  where?: Prisma.GeneratedBasketsWhereInput
 }
 
 /**

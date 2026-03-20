@@ -557,13 +557,13 @@ export type OrderWhereInput = {
   gbasketId?: Prisma.IntNullableFilter<"Order"> | number | null
   paymentInfoId?: Prisma.IntNullableFilter<"Order"> | number | null
   bank?: Prisma.XOR<Prisma.BankNullableScalarRelationFilter, Prisma.BankWhereInput> | null
+  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
+  messages?: Prisma.XOR<Prisma.MessagesNullableScalarRelationFilter, Prisma.MessagesWhereInput> | null
+  orderBarcode?: Prisma.XOR<Prisma.OrderBarcodeNullableScalarRelationFilter, Prisma.OrderBarcodeWhereInput> | null
+  paymentInfo?: Prisma.XOR<Prisma.PaymentInfoNullableScalarRelationFilter, Prisma.PaymentInfoWhereInput> | null
   product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
   promocode?: Prisma.XOR<Prisma.PromocodesNullableScalarRelationFilter, Prisma.PromocodesWhereInput> | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  orderBarcode?: Prisma.XOR<Prisma.OrderBarcodeNullableScalarRelationFilter, Prisma.OrderBarcodeWhereInput> | null
-  messages?: Prisma.XOR<Prisma.MessagesNullableScalarRelationFilter, Prisma.MessagesWhereInput> | null
-  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
-  paymentInfo?: Prisma.XOR<Prisma.PaymentInfoNullableScalarRelationFilter, Prisma.PaymentInfoWhereInput> | null
 }
 
 export type OrderOrderByWithRelationInput = {
@@ -608,13 +608,13 @@ export type OrderOrderByWithRelationInput = {
   gbasketId?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentInfoId?: Prisma.SortOrderInput | Prisma.SortOrder
   bank?: Prisma.BankOrderByWithRelationInput
+  generatedBasket?: Prisma.GeneratedBasketsOrderByWithRelationInput
+  messages?: Prisma.MessagesOrderByWithRelationInput
+  orderBarcode?: Prisma.OrderBarcodeOrderByWithRelationInput
+  paymentInfo?: Prisma.PaymentInfoOrderByWithRelationInput
   product?: Prisma.ProductOrderByWithRelationInput
   promocode?: Prisma.PromocodesOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
-  orderBarcode?: Prisma.OrderBarcodeOrderByWithRelationInput
-  messages?: Prisma.MessagesOrderByWithRelationInput
-  generatedBasket?: Prisma.GeneratedBasketsOrderByWithRelationInput
-  paymentInfo?: Prisma.PaymentInfoOrderByWithRelationInput
 }
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -662,13 +662,13 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   gbasketId?: Prisma.IntNullableFilter<"Order"> | number | null
   paymentInfoId?: Prisma.IntNullableFilter<"Order"> | number | null
   bank?: Prisma.XOR<Prisma.BankNullableScalarRelationFilter, Prisma.BankWhereInput> | null
+  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
+  messages?: Prisma.XOR<Prisma.MessagesNullableScalarRelationFilter, Prisma.MessagesWhereInput> | null
+  orderBarcode?: Prisma.XOR<Prisma.OrderBarcodeNullableScalarRelationFilter, Prisma.OrderBarcodeWhereInput> | null
+  paymentInfo?: Prisma.XOR<Prisma.PaymentInfoNullableScalarRelationFilter, Prisma.PaymentInfoWhereInput> | null
   product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
   promocode?: Prisma.XOR<Prisma.PromocodesNullableScalarRelationFilter, Prisma.PromocodesWhereInput> | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  orderBarcode?: Prisma.XOR<Prisma.OrderBarcodeNullableScalarRelationFilter, Prisma.OrderBarcodeWhereInput> | null
-  messages?: Prisma.XOR<Prisma.MessagesNullableScalarRelationFilter, Prisma.MessagesWhereInput> | null
-  generatedBasket?: Prisma.XOR<Prisma.GeneratedBasketsNullableScalarRelationFilter, Prisma.GeneratedBasketsWhereInput> | null
-  paymentInfo?: Prisma.XOR<Prisma.PaymentInfoNullableScalarRelationFilter, Prisma.PaymentInfoWhereInput> | null
 }, "orderId">
 
 export type OrderOrderByWithAggregationInput = {
@@ -798,13 +798,13 @@ export type OrderCreateInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateInput = {
@@ -883,13 +883,13 @@ export type OrderUpdateInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateInput = {
@@ -1609,12 +1609,12 @@ export type OrderCreateWithoutUserInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutUserInput = {
@@ -1764,12 +1764,12 @@ export type OrderCreateWithoutProductInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutProductInput = {
@@ -1873,12 +1873,12 @@ export type OrderCreateWithoutMessagesInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutMessagesInput = {
@@ -1982,12 +1982,12 @@ export type OrderCreateWithoutOrderBarcodeInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutOrderBarcodeInput = {
@@ -2090,13 +2090,13 @@ export type OrderCreateWithoutBankInput = {
   commentForCollector?: string | null
   commentByClient?: string | null
   freeDelivery?: boolean
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutBankInput = {
@@ -2200,12 +2200,12 @@ export type OrderCreateWithoutPromocodeInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutPromocodeInput = {
@@ -2309,12 +2309,12 @@ export type OrderCreateWithoutGeneratedBasketInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
+  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  paymentInfo?: Prisma.PaymentInfoCreateNestedOneWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutGeneratedBasketInput = {
@@ -2418,12 +2418,12 @@ export type OrderCreateWithoutPaymentInfoInput = {
   commentByClient?: string | null
   freeDelivery?: boolean
   bank?: Prisma.BankCreateNestedOneWithoutOrderInput
+  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
+  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
+  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
   product?: Prisma.ProductCreateNestedOneWithoutOrderInput
   promocode?: Prisma.PromocodesCreateNestedOneWithoutOrdersWithPromoInput
   user?: Prisma.UserCreateNestedOneWithoutOrderInput
-  orderBarcode?: Prisma.OrderBarcodeCreateNestedOneWithoutOrdersInput
-  messages?: Prisma.MessagesCreateNestedOneWithoutOrderInput
-  generatedBasket?: Prisma.GeneratedBasketsCreateNestedOneWithoutOrdersInput
 }
 
 export type OrderUncheckedCreateWithoutPaymentInfoInput = {
@@ -2569,12 +2569,12 @@ export type OrderUpdateWithoutUserInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutUserInput = {
@@ -2736,12 +2736,12 @@ export type OrderUpdateWithoutProductInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutProductInput = {
@@ -2903,12 +2903,12 @@ export type OrderUpdateWithoutMessagesInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutMessagesInput = {
@@ -3070,12 +3070,12 @@ export type OrderUpdateWithoutOrderBarcodeInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutOrderBarcodeInput = {
@@ -3236,13 +3236,13 @@ export type OrderUpdateWithoutBankInput = {
   commentForCollector?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutBankInput = {
@@ -3404,12 +3404,12 @@ export type OrderUpdateWithoutPromocodeInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutPromocodeInput = {
@@ -3571,12 +3571,12 @@ export type OrderUpdateWithoutGeneratedBasketInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
+  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  paymentInfo?: Prisma.PaymentInfoUpdateOneWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutGeneratedBasketInput = {
@@ -3738,12 +3738,12 @@ export type OrderUpdateWithoutPaymentInfoInput = {
   commentByClient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   freeDelivery?: Prisma.BoolFieldUpdateOperationsInput | boolean
   bank?: Prisma.BankUpdateOneWithoutOrderNestedInput
+  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
+  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
+  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
   product?: Prisma.ProductUpdateOneWithoutOrderNestedInput
   promocode?: Prisma.PromocodesUpdateOneWithoutOrdersWithPromoNestedInput
   user?: Prisma.UserUpdateOneWithoutOrderNestedInput
-  orderBarcode?: Prisma.OrderBarcodeUpdateOneWithoutOrdersNestedInput
-  messages?: Prisma.MessagesUpdateOneWithoutOrderNestedInput
-  generatedBasket?: Prisma.GeneratedBasketsUpdateOneWithoutOrdersNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutPaymentInfoInput = {
@@ -3874,13 +3874,13 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   gbasketId?: boolean
   paymentInfoId?: boolean
   bank?: boolean | Prisma.Order$bankArgs<ExtArgs>
+  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
+  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
+  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
+  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
   product?: boolean | Prisma.Order$productArgs<ExtArgs>
   promocode?: boolean | Prisma.Order$promocodeArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
-  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
-  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
-  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -3925,13 +3925,13 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   gbasketId?: boolean
   paymentInfoId?: boolean
   bank?: boolean | Prisma.Order$bankArgs<ExtArgs>
+  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
+  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
+  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
+  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
   product?: boolean | Prisma.Order$productArgs<ExtArgs>
   promocode?: boolean | Prisma.Order$promocodeArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
-  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
-  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
-  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -3976,13 +3976,13 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   gbasketId?: boolean
   paymentInfoId?: boolean
   bank?: boolean | Prisma.Order$bankArgs<ExtArgs>
+  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
+  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
+  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
+  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
   product?: boolean | Prisma.Order$productArgs<ExtArgs>
   promocode?: boolean | Prisma.Order$promocodeArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
-  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
-  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
-  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectScalar = {
@@ -4031,46 +4031,46 @@ export type OrderSelectScalar = {
 export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"orderId" | "orderTrackNumber" | "userId" | "surName" | "firstName" | "middleName" | "productId" | "productCount" | "createdAt" | "updatedAt" | "status" | "orderUniqueNumber" | "phone" | "selectedPvzCode" | "selectedTariff" | "fileId" | "deliveryCost" | "bankId" | "totalPrice" | "selectedCountry" | "email" | "orderType" | "messageId" | "country" | "pvzCode" | "index" | "region" | "city" | "totalPriceWithDiscount" | "productCostWithDiscount" | "promocodeId" | "secretDiscountPercent" | "address" | "commentForCollector" | "commentByClient" | "freeDelivery" | "orderBarcodeId" | "messagesId" | "gbasketId" | "paymentInfoId", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bank?: boolean | Prisma.Order$bankArgs<ExtArgs>
+  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
+  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
+  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
+  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
   product?: boolean | Prisma.Order$productArgs<ExtArgs>
   promocode?: boolean | Prisma.Order$promocodeArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
-  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
-  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
-  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
 }
 export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bank?: boolean | Prisma.Order$bankArgs<ExtArgs>
+  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
+  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
+  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
+  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
   product?: boolean | Prisma.Order$productArgs<ExtArgs>
   promocode?: boolean | Prisma.Order$promocodeArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
-  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
-  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
-  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
 }
 export type OrderIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bank?: boolean | Prisma.Order$bankArgs<ExtArgs>
+  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
+  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
+  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
+  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
   product?: boolean | Prisma.Order$productArgs<ExtArgs>
   promocode?: boolean | Prisma.Order$promocodeArgs<ExtArgs>
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
-  orderBarcode?: boolean | Prisma.Order$orderBarcodeArgs<ExtArgs>
-  messages?: boolean | Prisma.Order$messagesArgs<ExtArgs>
-  generatedBasket?: boolean | Prisma.Order$generatedBasketArgs<ExtArgs>
-  paymentInfo?: boolean | Prisma.Order$paymentInfoArgs<ExtArgs>
 }
 
 export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Order"
   objects: {
     bank: Prisma.$BankPayload<ExtArgs> | null
+    generatedBasket: Prisma.$GeneratedBasketsPayload<ExtArgs> | null
+    messages: Prisma.$MessagesPayload<ExtArgs> | null
+    orderBarcode: Prisma.$OrderBarcodePayload<ExtArgs> | null
+    paymentInfo: Prisma.$PaymentInfoPayload<ExtArgs> | null
     product: Prisma.$ProductPayload<ExtArgs> | null
     promocode: Prisma.$PromocodesPayload<ExtArgs> | null
     user: Prisma.$UserPayload<ExtArgs> | null
-    orderBarcode: Prisma.$OrderBarcodePayload<ExtArgs> | null
-    messages: Prisma.$MessagesPayload<ExtArgs> | null
-    generatedBasket: Prisma.$GeneratedBasketsPayload<ExtArgs> | null
-    paymentInfo: Prisma.$PaymentInfoPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     orderId: number
@@ -4508,13 +4508,13 @@ readonly fields: OrderFieldRefs;
 export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   bank<T extends Prisma.Order$bankArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$bankArgs<ExtArgs>>): Prisma.Prisma__BankClient<runtime.Types.Result.GetResult<Prisma.$BankPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  generatedBasket<T extends Prisma.Order$generatedBasketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$generatedBasketArgs<ExtArgs>>): Prisma.Prisma__GeneratedBasketsClient<runtime.Types.Result.GetResult<Prisma.$GeneratedBasketsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  messages<T extends Prisma.Order$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$messagesArgs<ExtArgs>>): Prisma.Prisma__MessagesClient<runtime.Types.Result.GetResult<Prisma.$MessagesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  orderBarcode<T extends Prisma.Order$orderBarcodeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$orderBarcodeArgs<ExtArgs>>): Prisma.Prisma__OrderBarcodeClient<runtime.Types.Result.GetResult<Prisma.$OrderBarcodePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  paymentInfo<T extends Prisma.Order$paymentInfoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$paymentInfoArgs<ExtArgs>>): Prisma.Prisma__PaymentInfoClient<runtime.Types.Result.GetResult<Prisma.$PaymentInfoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   product<T extends Prisma.Order$productArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$productArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   promocode<T extends Prisma.Order$promocodeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$promocodeArgs<ExtArgs>>): Prisma.Prisma__PromocodesClient<runtime.Types.Result.GetResult<Prisma.$PromocodesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.Order$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  orderBarcode<T extends Prisma.Order$orderBarcodeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$orderBarcodeArgs<ExtArgs>>): Prisma.Prisma__OrderBarcodeClient<runtime.Types.Result.GetResult<Prisma.$OrderBarcodePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  messages<T extends Prisma.Order$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$messagesArgs<ExtArgs>>): Prisma.Prisma__MessagesClient<runtime.Types.Result.GetResult<Prisma.$MessagesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  generatedBasket<T extends Prisma.Order$generatedBasketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$generatedBasketArgs<ExtArgs>>): Prisma.Prisma__GeneratedBasketsClient<runtime.Types.Result.GetResult<Prisma.$GeneratedBasketsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  paymentInfo<T extends Prisma.Order$paymentInfoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$paymentInfoArgs<ExtArgs>>): Prisma.Prisma__PaymentInfoClient<runtime.Types.Result.GetResult<Prisma.$PaymentInfoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4999,6 +4999,82 @@ export type Order$bankArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
 }
 
 /**
+ * Order.generatedBasket
+ */
+export type Order$generatedBasketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GeneratedBaskets
+   */
+  select?: Prisma.GeneratedBasketsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GeneratedBaskets
+   */
+  omit?: Prisma.GeneratedBasketsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GeneratedBasketsInclude<ExtArgs> | null
+  where?: Prisma.GeneratedBasketsWhereInput
+}
+
+/**
+ * Order.messages
+ */
+export type Order$messagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Messages
+   */
+  select?: Prisma.MessagesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Messages
+   */
+  omit?: Prisma.MessagesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessagesInclude<ExtArgs> | null
+  where?: Prisma.MessagesWhereInput
+}
+
+/**
+ * Order.orderBarcode
+ */
+export type Order$orderBarcodeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrderBarcode
+   */
+  select?: Prisma.OrderBarcodeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrderBarcode
+   */
+  omit?: Prisma.OrderBarcodeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderBarcodeInclude<ExtArgs> | null
+  where?: Prisma.OrderBarcodeWhereInput
+}
+
+/**
+ * Order.paymentInfo
+ */
+export type Order$paymentInfoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentInfo
+   */
+  select?: Prisma.PaymentInfoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentInfo
+   */
+  omit?: Prisma.PaymentInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentInfoInclude<ExtArgs> | null
+  where?: Prisma.PaymentInfoWhereInput
+}
+
+/**
  * Order.product
  */
 export type Order$productArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5053,82 +5129,6 @@ export type Order$userArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
-}
-
-/**
- * Order.orderBarcode
- */
-export type Order$orderBarcodeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the OrderBarcode
-   */
-  select?: Prisma.OrderBarcodeSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the OrderBarcode
-   */
-  omit?: Prisma.OrderBarcodeOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.OrderBarcodeInclude<ExtArgs> | null
-  where?: Prisma.OrderBarcodeWhereInput
-}
-
-/**
- * Order.messages
- */
-export type Order$messagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Messages
-   */
-  select?: Prisma.MessagesSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Messages
-   */
-  omit?: Prisma.MessagesOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.MessagesInclude<ExtArgs> | null
-  where?: Prisma.MessagesWhereInput
-}
-
-/**
- * Order.generatedBasket
- */
-export type Order$generatedBasketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the GeneratedBaskets
-   */
-  select?: Prisma.GeneratedBasketsSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the GeneratedBaskets
-   */
-  omit?: Prisma.GeneratedBasketsOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.GeneratedBasketsInclude<ExtArgs> | null
-  where?: Prisma.GeneratedBasketsWhereInput
-}
-
-/**
- * Order.paymentInfo
- */
-export type Order$paymentInfoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the PaymentInfo
-   */
-  select?: Prisma.PaymentInfoSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the PaymentInfo
-   */
-  omit?: Prisma.PaymentInfoOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.PaymentInfoInclude<ExtArgs> | null
-  where?: Prisma.PaymentInfoWhereInput
 }
 
 /**

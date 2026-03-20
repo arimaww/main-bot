@@ -107,3 +107,23 @@ export type Category = Prisma.CategoryModel
  * 
  */
 export type PaymentInfo = Prisma.PaymentInfoModel
+/**
+ * Model Media
+ * 
+ */
+export type Media = Prisma.MediaModel
+/**
+ * Model Modal
+ * 
+ */
+export type Modal = Prisma.ModalModel
+/**
+ * Model ModalViews
+ * 
+ */
+export type ModalViews = Prisma.ModalViewsModel
+/**
+ * Model Post
+ * 
+ */
+export type Post = Prisma.PostModel

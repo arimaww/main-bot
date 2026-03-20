@@ -302,6 +302,7 @@ export type UserWhereInput = {
   discountId?: Prisma.IntNullableFilter<"User"> | number | null
   basket?: Prisma.BasketListRelationFilter
   keyboard?: Prisma.KeyboardListRelationFilter
+  ModalViews?: Prisma.ModalViewsListRelationFilter
   order?: Prisma.OrderListRelationFilter
   PaymentInfo?: Prisma.PaymentInfoListRelationFilter
 }
@@ -324,6 +325,7 @@ export type UserOrderByWithRelationInput = {
   discountId?: Prisma.SortOrderInput | Prisma.SortOrder
   basket?: Prisma.BasketOrderByRelationAggregateInput
   keyboard?: Prisma.KeyboardOrderByRelationAggregateInput
+  ModalViews?: Prisma.ModalViewsOrderByRelationAggregateInput
   order?: Prisma.OrderOrderByRelationAggregateInput
   PaymentInfo?: Prisma.PaymentInfoOrderByRelationAggregateInput
 }
@@ -349,6 +351,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   discountId?: Prisma.IntNullableFilter<"User"> | number | null
   basket?: Prisma.BasketListRelationFilter
   keyboard?: Prisma.KeyboardListRelationFilter
+  ModalViews?: Prisma.ModalViewsListRelationFilter
   order?: Prisma.OrderListRelationFilter
   PaymentInfo?: Prisma.PaymentInfoListRelationFilter
 }, "userId">
@@ -414,6 +417,7 @@ export type UserCreateInput = {
   discountId?: number | null
   basket?: Prisma.BasketCreateNestedManyWithoutUserInput
   keyboard?: Prisma.KeyboardCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsCreateNestedManyWithoutUserInput
   order?: Prisma.OrderCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoCreateNestedManyWithoutUserInput
 }
@@ -436,6 +440,7 @@ export type UserUncheckedCreateInput = {
   discountId?: number | null
   basket?: Prisma.BasketUncheckedCreateNestedManyWithoutUserInput
   keyboard?: Prisma.KeyboardUncheckedCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsUncheckedCreateNestedManyWithoutUserInput
   order?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedCreateNestedManyWithoutUserInput
 }
@@ -457,6 +462,7 @@ export type UserUpdateInput = {
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUpdateManyWithoutUserNestedInput
   keyboard?: Prisma.KeyboardUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUpdateManyWithoutUserNestedInput
 }
@@ -479,6 +485,7 @@ export type UserUncheckedUpdateInput = {
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUncheckedUpdateManyWithoutUserNestedInput
   keyboard?: Prisma.KeyboardUncheckedUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUncheckedUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -696,6 +703,20 @@ export type UserUpdateOneRequiredWithoutPaymentInfoNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPaymentInfoInput, Prisma.UserUpdateWithoutPaymentInfoInput>, Prisma.UserUncheckedUpdateWithoutPaymentInfoInput>
 }
 
+export type UserCreateNestedOneWithoutModalViewsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutModalViewsInput, Prisma.UserUncheckedCreateWithoutModalViewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutModalViewsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutModalViewsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutModalViewsInput, Prisma.UserUncheckedCreateWithoutModalViewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutModalViewsInput
+  upsert?: Prisma.UserUpsertWithoutModalViewsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutModalViewsInput, Prisma.UserUpdateWithoutModalViewsInput>, Prisma.UserUncheckedUpdateWithoutModalViewsInput>
+}
+
 export type UserCreateWithoutBasketInput = {
   telegramId: string
   userName: string
@@ -712,6 +733,7 @@ export type UserCreateWithoutBasketInput = {
   surName?: string | null
   discountId?: number | null
   keyboard?: Prisma.KeyboardCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsCreateNestedManyWithoutUserInput
   order?: Prisma.OrderCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoCreateNestedManyWithoutUserInput
 }
@@ -733,6 +755,7 @@ export type UserUncheckedCreateWithoutBasketInput = {
   surName?: string | null
   discountId?: number | null
   keyboard?: Prisma.KeyboardUncheckedCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsUncheckedCreateNestedManyWithoutUserInput
   order?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedCreateNestedManyWithoutUserInput
 }
@@ -769,6 +792,7 @@ export type UserUpdateWithoutBasketInput = {
   surName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   keyboard?: Prisma.KeyboardUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUpdateManyWithoutUserNestedInput
 }
@@ -790,6 +814,7 @@ export type UserUncheckedUpdateWithoutBasketInput = {
   surName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   keyboard?: Prisma.KeyboardUncheckedUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUncheckedUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -811,6 +836,7 @@ export type UserCreateWithoutOrderInput = {
   discountId?: number | null
   basket?: Prisma.BasketCreateNestedManyWithoutUserInput
   keyboard?: Prisma.KeyboardCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoCreateNestedManyWithoutUserInput
 }
 
@@ -832,6 +858,7 @@ export type UserUncheckedCreateWithoutOrderInput = {
   discountId?: number | null
   basket?: Prisma.BasketUncheckedCreateNestedManyWithoutUserInput
   keyboard?: Prisma.KeyboardUncheckedCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsUncheckedCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -868,6 +895,7 @@ export type UserUpdateWithoutOrderInput = {
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUpdateManyWithoutUserNestedInput
   keyboard?: Prisma.KeyboardUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUpdateManyWithoutUserNestedInput
 }
 
@@ -889,6 +917,7 @@ export type UserUncheckedUpdateWithoutOrderInput = {
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUncheckedUpdateManyWithoutUserNestedInput
   keyboard?: Prisma.KeyboardUncheckedUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUncheckedUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -908,6 +937,7 @@ export type UserCreateWithoutKeyboardInput = {
   surName?: string | null
   discountId?: number | null
   basket?: Prisma.BasketCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsCreateNestedManyWithoutUserInput
   order?: Prisma.OrderCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoCreateNestedManyWithoutUserInput
 }
@@ -929,6 +959,7 @@ export type UserUncheckedCreateWithoutKeyboardInput = {
   surName?: string | null
   discountId?: number | null
   basket?: Prisma.BasketUncheckedCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsUncheckedCreateNestedManyWithoutUserInput
   order?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedCreateNestedManyWithoutUserInput
 }
@@ -965,6 +996,7 @@ export type UserUpdateWithoutKeyboardInput = {
   surName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUpdateManyWithoutUserNestedInput
 }
@@ -986,6 +1018,7 @@ export type UserUncheckedUpdateWithoutKeyboardInput = {
   surName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUncheckedUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUncheckedUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   PaymentInfo?: Prisma.PaymentInfoUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1007,6 +1040,7 @@ export type UserCreateWithoutPaymentInfoInput = {
   discountId?: number | null
   basket?: Prisma.BasketCreateNestedManyWithoutUserInput
   keyboard?: Prisma.KeyboardCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsCreateNestedManyWithoutUserInput
   order?: Prisma.OrderCreateNestedManyWithoutUserInput
 }
 
@@ -1028,6 +1062,7 @@ export type UserUncheckedCreateWithoutPaymentInfoInput = {
   discountId?: number | null
   basket?: Prisma.BasketUncheckedCreateNestedManyWithoutUserInput
   keyboard?: Prisma.KeyboardUncheckedCreateNestedManyWithoutUserInput
+  ModalViews?: Prisma.ModalViewsUncheckedCreateNestedManyWithoutUserInput
   order?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1064,6 +1099,7 @@ export type UserUpdateWithoutPaymentInfoInput = {
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUpdateManyWithoutUserNestedInput
   keyboard?: Prisma.KeyboardUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUpdateManyWithoutUserNestedInput
 }
 
@@ -1085,7 +1121,110 @@ export type UserUncheckedUpdateWithoutPaymentInfoInput = {
   discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   basket?: Prisma.BasketUncheckedUpdateManyWithoutUserNestedInput
   keyboard?: Prisma.KeyboardUncheckedUpdateManyWithoutUserNestedInput
+  ModalViews?: Prisma.ModalViewsUncheckedUpdateManyWithoutUserNestedInput
   order?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutModalViewsInput = {
+  telegramId: string
+  userName: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  email?: string | null
+  firstName?: string | null
+  middleName?: string | null
+  phone?: string | null
+  selectedCity?: string | null
+  selectedCountry?: string | null
+  selectedPvzCode?: string | null
+  selectedRegion?: string | null
+  surName?: string | null
+  discountId?: number | null
+  basket?: Prisma.BasketCreateNestedManyWithoutUserInput
+  keyboard?: Prisma.KeyboardCreateNestedManyWithoutUserInput
+  order?: Prisma.OrderCreateNestedManyWithoutUserInput
+  PaymentInfo?: Prisma.PaymentInfoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutModalViewsInput = {
+  userId?: number
+  telegramId: string
+  userName: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  email?: string | null
+  firstName?: string | null
+  middleName?: string | null
+  phone?: string | null
+  selectedCity?: string | null
+  selectedCountry?: string | null
+  selectedPvzCode?: string | null
+  selectedRegion?: string | null
+  surName?: string | null
+  discountId?: number | null
+  basket?: Prisma.BasketUncheckedCreateNestedManyWithoutUserInput
+  keyboard?: Prisma.KeyboardUncheckedCreateNestedManyWithoutUserInput
+  order?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  PaymentInfo?: Prisma.PaymentInfoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutModalViewsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutModalViewsInput, Prisma.UserUncheckedCreateWithoutModalViewsInput>
+}
+
+export type UserUpsertWithoutModalViewsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutModalViewsInput, Prisma.UserUncheckedUpdateWithoutModalViewsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutModalViewsInput, Prisma.UserUncheckedCreateWithoutModalViewsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutModalViewsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutModalViewsInput, Prisma.UserUncheckedUpdateWithoutModalViewsInput>
+}
+
+export type UserUpdateWithoutModalViewsInput = {
+  telegramId?: Prisma.StringFieldUpdateOperationsInput | string
+  userName?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPvzCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedRegion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  basket?: Prisma.BasketUpdateManyWithoutUserNestedInput
+  keyboard?: Prisma.KeyboardUpdateManyWithoutUserNestedInput
+  order?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  PaymentInfo?: Prisma.PaymentInfoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutModalViewsInput = {
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  telegramId?: Prisma.StringFieldUpdateOperationsInput | string
+  userName?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedPvzCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  selectedRegion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  discountId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  basket?: Prisma.BasketUncheckedUpdateManyWithoutUserNestedInput
+  keyboard?: Prisma.KeyboardUncheckedUpdateManyWithoutUserNestedInput
+  order?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  PaymentInfo?: Prisma.PaymentInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1096,6 +1235,7 @@ export type UserUncheckedUpdateWithoutPaymentInfoInput = {
 export type UserCountOutputType = {
   basket: number
   keyboard: number
+  ModalViews: number
   order: number
   PaymentInfo: number
 }
@@ -1103,6 +1243,7 @@ export type UserCountOutputType = {
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   basket?: boolean | UserCountOutputTypeCountBasketArgs
   keyboard?: boolean | UserCountOutputTypeCountKeyboardArgs
+  ModalViews?: boolean | UserCountOutputTypeCountModalViewsArgs
   order?: boolean | UserCountOutputTypeCountOrderArgs
   PaymentInfo?: boolean | UserCountOutputTypeCountPaymentInfoArgs
 }
@@ -1129,6 +1270,13 @@ export type UserCountOutputTypeCountBasketArgs<ExtArgs extends runtime.Types.Ext
  */
 export type UserCountOutputTypeCountKeyboardArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.KeyboardWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountModalViewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ModalViewsWhereInput
 }
 
 /**
@@ -1164,6 +1312,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   discountId?: boolean
   basket?: boolean | Prisma.User$basketArgs<ExtArgs>
   keyboard?: boolean | Prisma.User$keyboardArgs<ExtArgs>
+  ModalViews?: boolean | Prisma.User$ModalViewsArgs<ExtArgs>
   order?: boolean | Prisma.User$orderArgs<ExtArgs>
   PaymentInfo?: boolean | Prisma.User$PaymentInfoArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1227,6 +1376,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   basket?: boolean | Prisma.User$basketArgs<ExtArgs>
   keyboard?: boolean | Prisma.User$keyboardArgs<ExtArgs>
+  ModalViews?: boolean | Prisma.User$ModalViewsArgs<ExtArgs>
   order?: boolean | Prisma.User$orderArgs<ExtArgs>
   PaymentInfo?: boolean | Prisma.User$PaymentInfoArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1239,6 +1389,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     basket: Prisma.$BasketPayload<ExtArgs>[]
     keyboard: Prisma.$KeyboardPayload<ExtArgs>[]
+    ModalViews: Prisma.$ModalViewsPayload<ExtArgs>[]
     order: Prisma.$OrderPayload<ExtArgs>[]
     PaymentInfo: Prisma.$PaymentInfoPayload<ExtArgs>[]
   }
@@ -1654,6 +1805,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   basket<T extends Prisma.User$basketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$basketArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BasketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   keyboard<T extends Prisma.User$keyboardArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$keyboardArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeyboardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ModalViews<T extends Prisma.User$ModalViewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ModalViewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ModalViewsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   order<T extends Prisma.User$orderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$orderArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   PaymentInfo<T extends Prisma.User$PaymentInfoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$PaymentInfoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentInfoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2133,6 +2285,30 @@ export type User$keyboardArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.KeyboardScalarFieldEnum | Prisma.KeyboardScalarFieldEnum[]
+}
+
+/**
+ * User.ModalViews
+ */
+export type User$ModalViewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ModalViews
+   */
+  select?: Prisma.ModalViewsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ModalViews
+   */
+  omit?: Prisma.ModalViewsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ModalViewsInclude<ExtArgs> | null
+  where?: Prisma.ModalViewsWhereInput
+  orderBy?: Prisma.ModalViewsOrderByWithRelationInput | Prisma.ModalViewsOrderByWithRelationInput[]
+  cursor?: Prisma.ModalViewsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ModalViewsScalarFieldEnum | Prisma.ModalViewsScalarFieldEnum[]
 }
 
 /**

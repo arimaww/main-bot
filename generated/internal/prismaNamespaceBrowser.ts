@@ -66,7 +66,11 @@ export const ModelName = {
   BasketItems: 'BasketItems',
   SecretDiscount: 'SecretDiscount',
   Category: 'Category',
-  PaymentInfo: 'PaymentInfo'
+  PaymentInfo: 'PaymentInfo',
+  Media: 'Media',
+  Modal: 'Modal',
+  ModalViews: 'ModalViews',
+  Post: 'Post'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -121,7 +125,8 @@ export const ProductScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   primeCost: 'primeCost',
-  categoryId: 'categoryId'
+  categoryId: 'categoryId',
+  isIncompletePrice: 'isIncompletePrice'
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -365,12 +370,76 @@ export const PaymentInfoScalarFieldEnum = {
 export type PaymentInfoScalarFieldEnum = (typeof PaymentInfoScalarFieldEnum)[keyof typeof PaymentInfoScalarFieldEnum]
 
 
+export const MediaScalarFieldEnum = {
+  id: 'id',
+  bucketName: 'bucketName',
+  url: 'url',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  fileKey: 'fileKey',
+  fileType: 'fileType',
+  postId: 'postId'
+} as const
+
+export type MediaScalarFieldEnum = (typeof MediaScalarFieldEnum)[keyof typeof MediaScalarFieldEnum]
+
+
+export const ModalScalarFieldEnum = {
+  id: 'id',
+  prefix: 'prefix',
+  title: 'title',
+  description: 'description',
+  isShowDate: 'isShowDate',
+  endTime: 'endTime',
+  startTime: 'startTime',
+  themeStyle: 'themeStyle',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ModalScalarFieldEnum = (typeof ModalScalarFieldEnum)[keyof typeof ModalScalarFieldEnum]
+
+
+export const ModalViewsScalarFieldEnum = {
+  id: 'id',
+  modalId: 'modalId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ModalViewsScalarFieldEnum = (typeof ModalViewsScalarFieldEnum)[keyof typeof ModalViewsScalarFieldEnum]
+
+
+export const PostScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  content: 'content',
+  isDeleted: 'isDeleted',
+  isPublished: 'isPublished'
+} as const
+
+export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -387,4 +456,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

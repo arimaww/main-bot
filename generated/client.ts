@@ -39,10 +39,6 @@ export { Prisma }
 
 
 // file annotations for bundling tools to include these files
-path.join(__dirname, "query_engine-windows.dll.node")
-path.join(process.cwd(), "generated/query_engine-windows.dll.node")
-
-// file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node")
 path.join(process.cwd(), "generated/libquery_engine-debian-openssl-3.0.x.so.node")
 
@@ -136,3 +132,23 @@ export type Category = Prisma.CategoryModel
  * 
  */
 export type PaymentInfo = Prisma.PaymentInfoModel
+/**
+ * Model Media
+ * 
+ */
+export type Media = Prisma.MediaModel
+/**
+ * Model Modal
+ * 
+ */
+export type Modal = Prisma.ModalModel
+/**
+ * Model ModalViews
+ * 
+ */
+export type ModalViews = Prisma.ModalViewsModel
+/**
+ * Model Post
+ * 
+ */
+export type Post = Prisma.PostModel

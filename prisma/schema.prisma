@@ -1,7 +1,7 @@
 generator client {
   provider      = "prisma-client"
   output        = "../generated"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  binaryTargets = ["debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -27,38 +27,33 @@ model User {
   discountId      Int?
   basket          Basket[]
   keyboard        Keyboard[]
+  ModalViews      ModalViews[]
   order           Order[]
   PaymentInfo     PaymentInfo[]
 }
 
-enum PRODUCT_VISIBLE_STATUS {
-  VISIBLE
-  HIDDEN
-  HIDDEN_ON_SITE
-}
-
 model Product {
-  productId       Int                     @id @default(autoincrement())
-  name            String
-  synonym         String?
-  description     String
-  longDescription String?
-  isArchived      Boolean                 @default(false) @map("is_archived")
-  visibleStatus   PRODUCT_VISIBLE_STATUS? @default(VISIBLE) @map("visible_status")
-  sostav          String?
-  picture         String?
-  count           Int
-  cost            Decimal
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @default(now()) @updatedAt
-  primeCost       Decimal?
-
-  categoryId      Int?
-  basket          Basket[]
-  order           Order[]
-  productDiscount ProductDiscount?
-  productSet      ProductSet[]
-  Category        Category?        @relation(fields: [categoryId], references: [id])
+  productId         Int                     @id @default(autoincrement())
+  name              String
+  synonym           String?
+  description       String
+  longDescription   String?
+  isArchived        Boolean                 @default(false) @map("is_archived")
+  visibleStatus     PRODUCT_VISIBLE_STATUS? @default(VISIBLE) @map("visible_status")
+  sostav            String?
+  picture           String?
+  count             Int
+  cost              Decimal
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @default(now()) @updatedAt
+  primeCost         Decimal?
+  categoryId        Int?
+  isIncompletePrice Boolean                 @default(true)
+  basket            Basket[]
+  order             Order[]
+  Category          Category?               @relation(fields: [categoryId], references: [id])
+  productDiscount   ProductDiscount?
+  productSet        ProductSet[]
 }
 
 model Basket {
@@ -71,16 +66,16 @@ model Basket {
   promocodeId      Int?
   secretDiscountId Int?
   freeDelivery     Boolean           @default(false)
-  product          Product           @relation(fields: [productId], references: [productId], onDelete: Cascade)
-  promocode        Promocodes?       @relation(fields: [promocodeId], references: [promocodeId], onDelete: Cascade)
-  SecretDiscount   SecretDiscount?   @relation(fields: [secretDiscountId], references: [id])
-  user             User              @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  generatedBasket  GeneratedBaskets? @relation(fields: [gbasketId], references: [gbasketId], onDelete: Cascade)
   gbasketId        Int?
+  generatedBasket  GeneratedBaskets? @relation(fields: [gbasketId], references: [gbasketId])
+  product          Product           @relation(fields: [productId], references: [productId])
+  promocode        Promocodes?       @relation(fields: [promocodeId], references: [promocodeId])
+  SecretDiscount   SecretDiscount?   @relation(fields: [secretDiscountId], references: [id])
+  user             User              @relation(fields: [userId], references: [userId])
 }
 
 model Order {
-  orderId                 Int           @id @default(autoincrement())
+  orderId                 Int               @id @default(autoincrement())
   orderTrackNumber        String?
   userId                  Int?
   surName                 String?
@@ -88,9 +83,9 @@ model Order {
   middleName              String?
   productId               Int?
   productCount            Int
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @default(now()) @updatedAt
-  status                  OrderStatus   @default(WAITPAY)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @default(now()) @updatedAt
+  status                  OrderStatus       @default(WAITPAY)
   orderUniqueNumber       String?
   phone                   String?
   selectedPvzCode         String?
@@ -115,21 +110,19 @@ model Order {
   address                 String?
   commentForCollector     String?
   commentByClient         String?
-  freeDelivery            Boolean       @default(false)
-  bank                    Bank?         @relation(fields: [bankId], references: [id], onDelete: SetNull)
-  product                 Product?      @relation(fields: [productId], references: [productId], onDelete: SetNull)
-  promocode               Promocodes?   @relation(fields: [promocodeId], references: [promocodeId], onDelete: SetNull)
-  user                    User?         @relation(fields: [userId], references: [userId], onDelete: SetNull)
+  freeDelivery            Boolean           @default(false)
   orderBarcodeId          Int?
-  orderBarcode            OrderBarcode? @relation(fields: [orderBarcodeId], references: [id], onDelete: SetNull)
-  messages                Messages?     @relation(fields: [messagesId], references: [id])
   messagesId              Int?
-
-  generatedBasket GeneratedBaskets? @relation(fields: [gbasketId], references: [gbasketId], onDelete: Cascade)
-  gbasketId       Int?
-
-  paymentInfo   PaymentInfo? @relation(fields: [paymentInfoId], references: [id])
-  paymentInfoId Int?
+  gbasketId               Int?
+  paymentInfoId           Int?
+  bank                    Bank?             @relation(fields: [bankId], references: [id])
+  generatedBasket         GeneratedBaskets? @relation(fields: [gbasketId], references: [gbasketId])
+  messages                Messages?         @relation(fields: [messagesId], references: [id])
+  orderBarcode            OrderBarcode?     @relation(fields: [orderBarcodeId], references: [id])
+  paymentInfo             PaymentInfo?      @relation(fields: [paymentInfoId], references: [id])
+  product                 Product?          @relation(fields: [productId], references: [productId])
+  promocode               Promocodes?       @relation(fields: [promocodeId], references: [promocodeId])
+  user                    User?             @relation(fields: [userId], references: [userId])
 }
 
 model Messages {
@@ -142,12 +135,11 @@ model Messages {
 }
 
 model OrderBarcode {
-  id     Int     @id @default(autoincrement())
-  url    String
-  orders Order[]
-
+  id        Int      @id @default(autoincrement())
+  url       String
   createdAt DateTime @default(now())
   updateAt  DateTime @default(now()) @updatedAt
+  orders    Order[]
 }
 
 model CdekOffice {
@@ -241,9 +233,9 @@ model GeneratedBaskets {
   updatedAt        DateTime        @updatedAt
   secretDiscountId Int?            @unique
   freeDelivery     Boolean         @default(false)
+  baskets          Basket[]
   items            BasketItems[]
   SecretDiscount   SecretDiscount? @relation(fields: [secretDiscountId], references: [id])
-  baskets          Basket[]
   orders           Order[]
 }
 
@@ -259,33 +251,91 @@ model BasketItems {
 model SecretDiscount {
   id               Int                  @unique @default(autoincrement())
   percent          Int
-  Basket           Basket[]
   type             SecretDiscountStatus @default(PENDING)
+  Basket           Basket[]
   GeneratedBaskets GeneratedBaskets?
 }
 
 model Category {
   id        Int       @unique @default(autoincrement())
   name      String
-  products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model PaymentInfo {
-  id                Int     @unique @default(autoincrement())
+  id                Int            @unique @default(autoincrement())
   paymentId         String
   orderUniqueNumber String
+  amount            Decimal
+  status            PAYMENT_STATUS @default(NEW)
+  userId            Int
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @default(now()) @updatedAt
   Order             Order[]
+  user              User           @relation(fields: [userId], references: [userId])
+}
 
-  amount Decimal // Копейки
-  status PAYMENT_STATUS @default(NEW)
+model Media {
+  id         String   @id
+  bucketName String
+  url        String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  fileKey    String
+  fileType   String
+  postId     String?
+  Post       Post?    @relation(fields: [postId], references: [id])
 
-  user   User @relation(fields: [userId], references: [userId])
-  userId Int
+  @@index([id])
+}
 
+model Modal {
+  id          String       @id @unique
+  prefix      String?
+  title       String
+  description String
+  isShowDate  Boolean      @default(true)
+  endTime     DateTime?
+  startTime   DateTime?
+  themeStyle  THEME_STYLES @default(NEON_TECH)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  ModalViews  ModalViews[]
+}
+
+model ModalViews {
+  id        Int      @unique @default(autoincrement())
+  modalId   String
+  userId    Int
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  updatedAt DateTime @default(now())
+  Modal     Modal    @relation(fields: [modalId], references: [id])
+  User      User     @relation(fields: [userId], references: [userId])
+
+  @@unique([userId, modalId])
+}
+
+model Post {
+  id          String   @id
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  content     Json?
+  isDeleted   Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  Media       Media[]
+
+  @@index([createdAt])
+}
+
+enum PRODUCT_VISIBLE_STATUS {
+  VISIBLE
+  HIDDEN
+  HIDDEN_ON_SITE
 }
 
 enum PAYMENT_STATUS {
@@ -321,4 +371,12 @@ enum Role {
   ADMIN
   MODERATOR
   OWNER
+}
+
+enum THEME_STYLES {
+  NEON_TECH
+  AURORA_FLOW
+  BRUTAL
+  LUXURY
+  DEEP_HORIZON
 }

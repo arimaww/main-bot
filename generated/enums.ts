@@ -69,3 +69,14 @@ export const Role = {
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const THEME_STYLES = {
+  NEON_TECH: 'NEON_TECH',
+  AURORA_FLOW: 'AURORA_FLOW',
+  BRUTAL: 'BRUTAL',
+  LUXURY: 'LUXURY',
+  DEEP_HORIZON: 'DEEP_HORIZON'
+} as const
+
+export type THEME_STYLES = (typeof THEME_STYLES)[keyof typeof THEME_STYLES]
