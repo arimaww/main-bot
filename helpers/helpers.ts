@@ -52,7 +52,8 @@ const SIZE_CONFIG = {
   XS_SIZE: { length: 17, width: 12, height: 10, name: "XS" }, // ~0.5 кг — 1 обычная банка
   S_SIZE: { length: 23, width: 19, height: 10, name: "S" }, // ~2 кг   — 2–4 обычных
   M_SIZE: { length: 33, width: 25, height: 15, name: "M" }, // ~5 кг — 5–20
-  L_SIZE: { length: 31, width: 25, height: 38, name: "L" }, // ~12 кг — 21–40
+  MP_SIZE: { length: 35, width: 25, height: 32, name: "M" }, // ~5 кг — 21-28
+  L_SIZE: { length: 31, width: 25, height: 38, name: "L" }, // ~12 кг — 29–40
   LP_SIZE: { length: 40, width: 30, height: 38, name: "L+" }, // ~15 кг  (Л+) — 41–55
   LPP_SIZE: { length: 50, width: 35, height: 38, name: "L++" }, // ~18 кг  (Л++) — 56–70
   XL_SIZE: { length: 60, width: 35, height: 30, name: "XL" }, // 18+ кг — 70+
@@ -95,30 +96,78 @@ const getSizeKey = (
   )
     return "M_SIZE";
 
-  // ── Л ────────────────────────────────────────────────────────────────────
   if (
-    // 21–40 обычных
+    // Обычные: 21–28
     (regularCount >= 21 &&
-      regularCount <= 40 &&
+      regularCount <= 28 &&
       proteinCount === 0 &&
       gainerCount === 0) ||
-    // 2 протеина + до 10 обычных (0–3 уже в M)
-    (proteinCount === 2 && gainerCount === 0 && regularCount <= 10) ||
-    // 3 протеина + до 5 обычных
-    (proteinCount === 3 && gainerCount === 0 && regularCount <= 5) ||
-    // 1 гейнер + до 15 обычных (0–2 уже в M)
-    (gainerCount === 1 && proteinCount === 0 && regularCount <= 15) ||
-    // 1 протеин + 9-20 обычных банок
-    (gainerCount === 0 &&
-      proteinCount === 1 &&
+    // Протеин:
+    (proteinCount === 1 &&
+      gainerCount === 0 &&
       regularCount >= 9 &&
-      regularCount <= 20) ||
-    // 2 гейнера + до 7 обычных
-    (gainerCount === 2 && proteinCount === 0 && regularCount <= 7) ||
-    // 1 гейнер + 1 протеин + до 10 обычных
-    (gainerCount === 1 && proteinCount === 1 && regularCount <= 10)
-  )
+      regularCount <= 14) ||
+    (proteinCount === 2 &&
+      gainerCount === 0 &&
+      regularCount >= 0 &&
+      regularCount <= 4) ||
+    (proteinCount === 3 && gainerCount === 0 && regularCount === 0) ||
+    // Гейнер:
+    (gainerCount === 1 &&
+      proteinCount === 0 &&
+      regularCount >= 0 &&
+      regularCount <= 5) ||
+    // Гейнер + Протеин:
+    (gainerCount === 1 &&
+      proteinCount === 1 &&
+      regularCount >= 0 &&
+      regularCount <= 3)
+  ) {
+    return "MP_SIZE";
+  }
+
+  // ── Л ────────────────────────────────────────────────────────────────────
+  if (
+    // Обычные: 29–45
+    (regularCount >= 29 &&
+      regularCount <= 45 &&
+      proteinCount === 0 &&
+      gainerCount === 0) ||
+    // Протеин:
+    (proteinCount === 1 &&
+      gainerCount === 0 &&
+      regularCount >= 15 &&
+      regularCount <= 25) ||
+    (proteinCount === 2 &&
+      gainerCount === 0 &&
+      regularCount >= 5 &&
+      regularCount <= 14) ||
+    (proteinCount === 3 &&
+      gainerCount === 0 &&
+      regularCount >= 1 &&
+      regularCount <= 6) ||
+    (proteinCount === 4 && gainerCount === 0 && regularCount === 0) ||
+    // Гейнер:
+    (gainerCount === 1 &&
+      proteinCount === 0 &&
+      regularCount >= 6 &&
+      regularCount <= 18) ||
+    (gainerCount === 2 &&
+      proteinCount === 0 &&
+      regularCount >= 0 &&
+      regularCount <= 6) ||
+    // Гейнер + Протеин:
+    (gainerCount === 1 &&
+      proteinCount === 1 &&
+      regularCount >= 4 &&
+      regularCount <= 10) ||
+    (gainerCount === 1 &&
+      proteinCount === 2 &&
+      regularCount >= 0 &&
+      regularCount <= 4)
+  ) {
     return "L_SIZE";
+  }
 
   // ── Л+ (40×30×38) ────────────────────────────────────────────────────────
   if (
@@ -206,7 +255,7 @@ const getSizeKey = (
   ) {
     return "LPP_SIZE";
   }
-  
+
   // ── XL — всё остальное: 3+ гейнера, 6+ протеинов, 70+ обычных и т.д. ────
   return "XL_SIZE";
 };
