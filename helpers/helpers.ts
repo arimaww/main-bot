@@ -51,7 +51,8 @@ const WEIGHT_GROSS_MARGIN = 100;
 const SIZE_CONFIG = {
   XS_SIZE: { length: 17, width: 12, height: 10, name: "XS" }, // ~0.5 кг — 1 обычная банка
   S_SIZE: { length: 23, width: 19, height: 10, name: "S" }, // ~2 кг   — 2–4 обычных
-  M_SIZE: { length: 33, width: 25, height: 15, name: "M" }, // ~5 кг — 5–20
+  SP_SIZE: { length: 25, width: 20, height: 25, name: "S+" }, // ~2 кг   — 5–10 обычных
+  M_SIZE: { length: 33, width: 25, height: 15, name: "M" }, // ~5 кг — 11–20
   MP_SIZE: { length: 35, width: 25, height: 32, name: "M" }, // ~5 кг — 21-28
   L_SIZE: { length: 31, width: 25, height: 38, name: "L" }, // ~12 кг — 29–40
   LP_SIZE: { length: 40, width: 30, height: 38, name: "L+" }, // ~15 кг  (Л+) — 41–55
@@ -80,10 +81,18 @@ const getSizeKey = (
   )
     return "S_SIZE";
 
+  if (
+    gainerCount === 0 &&
+    ((proteinCount === 1 && regularCount >= 0 && regularCount <= 3) ||
+      (proteinCount === 0 && regularCount >= 5 && regularCount <= 10))
+  ) {
+    return "SP_SIZE";
+  }
+
   // ── M ────────────────────────────────────────────────────────────────────
   if (
-    // 5–20 обычных
-    (regularCount >= 5 &&
+    // 11–20 обычных
+    (regularCount >= 11 &&
       regularCount <= 20 &&
       proteinCount === 0 &&
       gainerCount === 0) ||
