@@ -37,6 +37,7 @@ import { handleCheckPayment } from "./callback-handlers/check-payment";
 import { getOrderData } from "./helpers/get-order-data";
 import { CdekOffice } from "./generated/client";
 import { abovetwentyController } from "./controllers/abovetwenty-controller";
+import { siteOrderController } from "./controllers/site-order-controller";
 
 const app = express();
 
@@ -46,16 +47,17 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.CLIENT_URL,
+    credentials: true,
     methods: ["POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
-  })
+  }),
 );
 app.use(express.json());
 
 const WEB_CRM_APP = process.env.WEB_CRM_APP as string;
 
-setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 3000); // Функция, которая запускается при включении бота или перезагрузки
+setTimeout(() => botOnStart(bot, MANAGER_CHAT_ID), 3000); // Функция, которая запускается при включении или перезагрузке бота
 
 export const sendMessageHandler = async (message: TelegramBot.Message) => {
   if (
@@ -68,7 +70,7 @@ export const sendMessageHandler = async (message: TelegramBot.Message) => {
     if (!match) {
       await bot.sendMessage(
         message.chat.id,
-        'Формат команды: /sendMessage [telegramId] "[message]" (вводить без скобок)'
+        'Формат команды: /sendMessage [telegramId] "[message]" (вводить без скобок)',
       );
       return;
     }
@@ -81,8 +83,8 @@ export const sendMessageHandler = async (message: TelegramBot.Message) => {
         async (err) =>
           await bot.sendMessage(
             MANAGER_CHAT_ID,
-            "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err
-          )
+            "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err,
+          ),
       );
     await bot
       .sendMessage(MANAGER_CHAT_ID, "Сообщение успешно отправлено")
@@ -90,8 +92,8 @@ export const sendMessageHandler = async (message: TelegramBot.Message) => {
         async (err) =>
           await bot.sendMessage(
             MANAGER_CHAT_ID,
-            "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err
-          )
+            "[ЛОГИ]: Произошла ошибка при отправке сообщения: " + err,
+          ),
       );
   }
 };
@@ -158,7 +160,7 @@ bot.onText(
           if (secretDiscount?.type === "USED")
             return bot.sendMessage(
               chatId,
-              "Данная корзина уже была использована."
+              "Данная корзина уже была использована.",
             );
 
           const userExist = await prisma.user.findFirst({
@@ -196,7 +198,7 @@ bot.onText(
               ],
             ],
           },
-        }
+        },
       );
     } else {
       const chatId = msg.chat.id;
@@ -229,7 +231,7 @@ bot.onText(
         });
       }
     }
-  }
+  },
 );
 
 bot.on("message", (msg) => ordersKeyboardEvent(msg, bot, MANAGER_CHAT_ID));
@@ -360,7 +362,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
 
     if (!cdekOffice) return;
     const handleScreenshotMessage = async (msg: TelegramBot.Message) => {
-      if (msg.chat.id === telegramId) {
+      if (msg.chat.id === Number(telegramId)) {
         if (msg.photo) {
           bot.removeListener("message", handleScreenshotMessage);
 
@@ -413,8 +415,8 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             const deliveryNote = basket[0]?.freeDelivery
               ? "Доставка: <strong>Бесплатно</strong>"
               : cdekOffice.allowed_cod && isRussia
-              ? `Доставка: ${deliveryCost} ₽`
-              : "";
+                ? `Доставка: ${deliveryCost} ₽`
+                : "";
 
             const result = `Прайс: ${priceToPay} ₽ ${paymentNote}\n ${deliveryNote}`;
 
@@ -428,29 +430,29 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                 .filter((el) => el.productCount > 0)
                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                 .join(
-                  "\n"
+                  "\n",
                 )}\nTelegram ID: ${telegramId}\n\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${
                 selectedCountry === "RU"
                   ? "Россия"
                   : selectedCountry === "KG"
-                  ? "Кыргызстан"
-                  : selectedCountry === "BY"
-                  ? "Беларусь"
-                  : selectedCountry === "AM"
-                  ? "Армения"
-                  : selectedCountry === "KZ"
-                  ? "Казахстан"
-                  : selectedCountry === "AZ"
-                  ? "Азербайджан"
-                  : selectedCountry === "UZ"
-                  ? "Узбекистан"
-                  : "Неизвестная страна"
+                    ? "Кыргызстан"
+                    : selectedCountry === "BY"
+                      ? "Беларусь"
+                      : selectedCountry === "AM"
+                        ? "Армения"
+                        : selectedCountry === "KZ"
+                          ? "Казахстан"
+                          : selectedCountry === "AZ"
+                            ? "Азербайджан"
+                            : selectedCountry === "UZ"
+                              ? "Узбекистан"
+                              : "Неизвестная страна"
               }
-                                 \nНомер: ${phone.replace(
-                                   /[ ()-]/g,
-                                   ""
-                                   //  TODO: Указать с доставкой ли оплата или без неё
-                                 )}\n` +
+                  \nНомер: ${phone.replace(
+                    /[ ()-]/g,
+                    "",
+                    //  TODO: Указать с доставкой ли оплата или без неё
+                  )}\n` +
               `${result}` +
               `${
                 secretDiscountId
@@ -501,6 +503,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                   });
                 })
                 .catch((err) => console.log(err));
+              console.log("отрабатывает4");
             } else {
               console.log("Этот заказ уже обработан или отправлен.");
             }
@@ -519,7 +522,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
               });
             bot.sendMessage(
               telegramId,
-              "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером."
+              "Спасибо! Ваш скриншот принят.\n\nОжидайте подтверждения заказа нашим менеджером.",
             );
           } catch (err) {
             console.error("Ошибка отправки сообщения:", err);
@@ -529,9 +532,9 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
             () =>
               bot.sendMessage(
                 telegramId,
-                "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение."
+                "Пожалуйста, прикрепите скриншот чека, а не текстовое сообщение.",
               ),
-            500
+            500,
           );
         }
       }
@@ -648,7 +651,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                   ],
                 ],
               },
-            }
+            },
           )
           .then(async (sentMessage) => {
             await prisma.order.updateMany({
@@ -701,7 +704,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
                   ],
                 ],
               },
-            }
+            },
           )
           .then(async (sentMessage) => {
             await prisma.order
@@ -728,7 +731,7 @@ app.post("/", async (req: Request<{}, {}, TWeb>, res: Response) => {
         await bot
           .sendMessage(
             user?.telegramId!,
-            "Ваш заказ был автоматически отменен из-за отсутствия оплаты."
+            "Ваш заказ был автоматически отменен из-за отсутствия оплаты.",
           )
           .catch((err) => console.log(err));
       }
@@ -896,7 +899,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             orderData.address!,
             cityCode!,
             orderData.freeDelivery,
-            orderData?.products
+            orderData?.products,
           );
         } else {
           getOrderObject = await getOrderObjRuWithPrepayment(
@@ -911,7 +914,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             orderData.selectedTariff!,
             orderData.address!,
             cityCode!,
-            orderData?.products
+            orderData?.products,
           );
         }
       } else {
@@ -927,7 +930,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           orderData.selectedTariff!,
           orderData.address!,
           cityCode!,
-          orderData?.products
+          orderData?.products,
         );
       }
       const delay = (ms: number) =>
@@ -940,7 +943,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
 
         const orderCdekData = await getOrderTrackNumber(
           orderData?.im_number,
-          authData?.access_token!
+          authData?.access_token!,
         ).then((order) => order.entity);
 
         const orderTrackNumberForUser = orderCdekData.cdek_number;
@@ -948,7 +951,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
         if (!orderTrackNumberForUser)
           return await bot.sendMessage(
             chatId,
-            `Заказ с номером: ${orderCdekData.uuid} не удалось зарегистрировать.`
+            `Заказ с номером: ${orderCdekData.uuid} не удалось зарегистрировать.`,
           );
 
         await prisma.order.updateMany({
@@ -977,7 +980,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
             {
               parse_mode: "HTML",
               disable_web_page_preview: true,
-            }
+            },
           )
           .catch((err) => console.log(err));
 
@@ -1089,8 +1092,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 async (err) =>
                   await bot.sendMessage(
                     MANAGER_CHAT_ID,
-                    "[ЛОГИ]: Ошибка: " + err
-                  )
+                    "[ЛОГИ]: Ошибка: " + err,
+                  ),
               )
           : await bot
               .editMessageText(acceptOrderMessage, {
@@ -1112,20 +1115,20 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 async (err) =>
                   await bot.sendMessage(
                     MANAGER_CHAT_ID,
-                    "[ЛОГИ]: Ошибка: " + err
-                  )
+                    "[ЛОГИ]: Ошибка: " + err,
+                  ),
               );
 
         const barcode_uuid = await generateBarcode(
           orderCdekData.uuid,
-          authData?.access_token
+          authData?.access_token,
         ).then((barcode) => barcode.entity.uuid);
 
         await new Promise((resolve) => setTimeout(resolve, 3500));
 
         let barcode_url: string | null = await pollForBarcode(
           barcode_uuid,
-          authData?.access_token!
+          authData?.access_token!,
         );
         barcode_url = null;
 
@@ -1214,7 +1217,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                   ],
                 ],
               },
-            }
+            },
           )
           .then(async (msg) => {
             const dbMessageId = await prisma.order
@@ -1293,7 +1296,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
           {
             parse_mode: "HTML",
             disable_web_page_preview: true,
-          }
+          },
         );
 
         const timestamp = new Date();
@@ -1370,18 +1373,18 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
               orderData?.country === "RU"
                 ? "Россия"
                 : orderData?.country === "KG"
-                ? "Кыргызстан"
-                : orderData?.country === "BY"
-                ? "Беларусь"
-                : orderData?.country === "AM"
-                ? "Армения"
-                : orderData?.country === "KZ"
-                ? "Казахстан"
-                : orderData?.country === "AZ"
-                ? "Азербайджан"
-                : orderData?.country === "UZ"
-                ? "Узбекистан"
-                : "Неизвестная страна"
+                  ? "Кыргызстан"
+                  : orderData?.country === "BY"
+                    ? "Беларусь"
+                    : orderData?.country === "AM"
+                      ? "Армения"
+                      : orderData?.country === "KZ"
+                        ? "Казахстан"
+                        : orderData?.country === "AZ"
+                          ? "Азербайджан"
+                          : orderData?.country === "UZ"
+                            ? "Узбекистан"
+                            : "Неизвестная страна"
             }` +
             `\nРегион: ${orderData?.region}` +
             `\nГород: ${orderData?.cityName}` +
@@ -1422,7 +1425,7 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
                 ],
               ],
             },
-          }
+          },
         );
       }
     } else if (action === "Удалить") {
@@ -1485,6 +1488,8 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
     console.error("Ошибка обработки заказа:", err);
   }
 };
+
+app.post("/site", siteOrderController);
 
 // Обработчик callback_query при order collect
 bot.on("callback_query", handleCollectOrder);
