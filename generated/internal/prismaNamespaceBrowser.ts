@@ -70,7 +70,8 @@ export const ModelName = {
   Media: 'Media',
   Modal: 'Modal',
   ModalViews: 'ModalViews',
-  Post: 'Post'
+  Post: 'Post',
+  Bonus: 'Bonus'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -126,7 +127,9 @@ export const ProductScalarFieldEnum = {
   updatedAt: 'updatedAt',
   primeCost: 'primeCost',
   categoryId: 'categoryId',
-  isIncompletePrice: 'isIncompletePrice'
+  isIncompletePrice: 'isIncompletePrice',
+  editorDescription: 'editorDescription',
+  editorSostav: 'editorSostav'
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -364,7 +367,8 @@ export const PaymentInfoScalarFieldEnum = {
   status: 'status',
   userId: 'userId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  paymentUrl: 'paymentUrl'
 } as const
 
 export type PaymentInfoScalarFieldEnum = (typeof PaymentInfoScalarFieldEnum)[keyof typeof PaymentInfoScalarFieldEnum]
@@ -424,6 +428,16 @@ export const PostScalarFieldEnum = {
 } as const
 
 export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
+
+
+export const BonusScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt',
+  updateAt: 'updateAt'
+} as const
+
+export type BonusScalarFieldEnum = (typeof BonusScalarFieldEnum)[keyof typeof BonusScalarFieldEnum]
 
 
 export const SortOrder = {
