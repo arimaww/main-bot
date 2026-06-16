@@ -1,32 +1,7 @@
 import { Request, Response } from "express";
-import { cancelWaitPayOrders } from "../helpers/cancel-wait-pay-orders";
-import { ordersKeyboardEvent } from "../events/orders-keyboard-event";
-import { MANAGER_CHAT_ID, token } from "../config/config";
-import { bot } from "../bot/bot";
-import { prisma } from "../prisma/prisma-client";
-import { makeToken, TPayGenerate } from "../helpers/payment/t-pay";
-
-export const updatePaymentInfo = async (req: Request, res: Response) => {
-  try {
-    await cancelWaitPayOrders(bot);
-    await bot.sendMessage(
-      MANAGER_CHAT_ID,
-      "Реквизиты были изменены.\nВсе неоплаченные заказы удалены."
-    );
-    bot.on("message", (msg) => ordersKeyboardEvent(msg, bot, MANAGER_CHAT_ID));
-
-    return res
-      .status(200)
-      .json({ message: "Реквизиты обновлены и заказы отменены" });
-  } catch (error) {
-    res.status(500).json({ message: "Ошибка обновления реквизитов", error });
-  }
-};
-
-export const tPaymentWebhookHandler = async (req: Request, res: Response) => {
-  console.log("success t-pay webhook");
-  return res.status(200).json({ message: "Success" });
-};
+import { prisma } from "../../prisma/prisma-client";
+import { bot } from "../../bot/bot";
+import { makeToken, TPayGenerate } from "../../helpers/payment/t-pay";
 
 export const tPaymentHandler = async (req: Request, res: Response) => {
   try {
@@ -285,7 +260,7 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
               ],
             ],
           },
-        }
+        },
       );
 
       await prisma.basket.deleteMany({ where: { userId: user?.userId } });
