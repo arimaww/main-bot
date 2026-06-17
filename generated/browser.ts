@@ -127,3 +127,8 @@ export type ModalViews = Prisma.ModalViewsModel
  * 
  */
 export type Post = Prisma.PostModel
+/**
+ * Model Bonus
+ * 
+ */
+export type Bonus = Prisma.BonusModel

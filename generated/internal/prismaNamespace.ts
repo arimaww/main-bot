@@ -411,7 +411,8 @@ export const ModelName = {
   Media: 'Media',
   Modal: 'Modal',
   ModalViews: 'ModalViews',
-  Post: 'Post'
+  Post: 'Post',
+  Bonus: 'Bonus'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -427,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "product" | "basket" | "order" | "messages" | "orderBarcode" | "cdekOffice" | "userCrm" | "bank" | "keyboard" | "productDiscount" | "productSet" | "promocodes" | "generatedBaskets" | "basketItems" | "secretDiscount" | "category" | "paymentInfo" | "media" | "modal" | "modalViews" | "post"
+    modelProps: "user" | "product" | "basket" | "order" | "messages" | "orderBarcode" | "cdekOffice" | "userCrm" | "bank" | "keyboard" | "productDiscount" | "productSet" | "promocodes" | "generatedBaskets" | "basketItems" | "secretDiscount" | "category" | "paymentInfo" | "media" | "modal" | "modalViews" | "post" | "bonus"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2059,6 +2060,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Bonus: {
+      payload: Prisma.$BonusPayload<ExtArgs>
+      fields: Prisma.BonusFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BonusFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BonusFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>
+        }
+        findFirst: {
+          args: Prisma.BonusFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BonusFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>
+        }
+        findMany: {
+          args: Prisma.BonusFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>[]
+        }
+        create: {
+          args: Prisma.BonusCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>
+        }
+        createMany: {
+          args: Prisma.BonusCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BonusCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>[]
+        }
+        delete: {
+          args: Prisma.BonusDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>
+        }
+        update: {
+          args: Prisma.BonusUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>
+        }
+        deleteMany: {
+          args: Prisma.BonusDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BonusUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BonusUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>[]
+        }
+        upsert: {
+          args: Prisma.BonusUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusPayload>
+        }
+        aggregate: {
+          args: Prisma.BonusAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBonus>
+        }
+        groupBy: {
+          args: Prisma.BonusGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BonusGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BonusCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BonusCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2135,7 +2210,9 @@ export const ProductScalarFieldEnum = {
   updatedAt: 'updatedAt',
   primeCost: 'primeCost',
   categoryId: 'categoryId',
-  isIncompletePrice: 'isIncompletePrice'
+  isIncompletePrice: 'isIncompletePrice',
+  editorDescription: 'editorDescription',
+  editorSostav: 'editorSostav'
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -2373,7 +2450,8 @@ export const PaymentInfoScalarFieldEnum = {
   status: 'status',
   userId: 'userId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  paymentUrl: 'paymentUrl'
 } as const
 
 export type PaymentInfoScalarFieldEnum = (typeof PaymentInfoScalarFieldEnum)[keyof typeof PaymentInfoScalarFieldEnum]
@@ -2433,6 +2511,16 @@ export const PostScalarFieldEnum = {
 } as const
 
 export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
+
+
+export const BonusScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt',
+  updateAt: 'updateAt'
+} as const
+
+export type BonusScalarFieldEnum = (typeof BonusScalarFieldEnum)[keyof typeof BonusScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2560,6 +2648,20 @@ export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMo
 
 
 /**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
  * Reference to a field of type 'OrderStatus'
  */
 export type EnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderStatus'>
@@ -2668,20 +2770,6 @@ export type EnumTHEME_STYLESFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'THEME_STYLES[]'
  */
 export type ListEnumTHEME_STYLESFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'THEME_STYLES[]'>
-    
-
-
-/**
- * Reference to a field of type 'Json'
- */
-export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-/**
- * Reference to a field of type 'QueryMode'
- */
-export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -2807,6 +2895,7 @@ export type GlobalOmitConfig = {
   modal?: Prisma.ModalOmit
   modalViews?: Prisma.ModalViewsOmit
   post?: Prisma.PostOmit
+  bonus?: Prisma.BonusOmit
 }
 
 /* Types for Logging */

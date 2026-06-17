@@ -8,11 +8,21 @@ import {
 import { createHash } from "crypto";
 
 export const TPayGenerate = async (
-  data: TPayPaymentRequest
+  data: TPayPaymentRequest,
 ): Promise<TPayPaymentResponse> => {
   const resp = await axios.post<TPayPaymentResponse>(
     `${process.env.TPAY_API_URL}/Init`,
-    data
+    data,
+  );
+  return resp.data;
+};
+
+export const TPayGenerateQr = async (
+  data: any,
+): Promise<TPayPaymentResponse> => {
+  const resp = await axios.post<TPayPaymentResponse>(
+    `${process.env.TPAY_API_URL}/GetQrBankList`,
+    data,
   );
   return resp.data;
 };
@@ -36,11 +46,11 @@ export function makeToken(params: any, password: string) {
 }
 
 export async function getPaymentStatus(
-  data: TPayPaymentCheckRequest
+  data: TPayPaymentCheckRequest,
 ): Promise<TPayPaymentCheckResponse> {
   const resp = await axios.post<TPayPaymentCheckResponse>(
     `${process.env.TPAY_API_URL}/GetState`,
-    data
+    data,
   );
   return resp.data;
 }

@@ -49,6 +49,8 @@ model Product {
   primeCost         Decimal?
   categoryId        Int?
   isIncompletePrice Boolean                 @default(true)
+  editorDescription Json?
+  editorSostav      Json?
   basket            Basket[]
   order             Order[]
   Category          Category?               @relation(fields: [categoryId], references: [id])
@@ -273,6 +275,7 @@ model PaymentInfo {
   userId            Int
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @default(now()) @updatedAt
+  paymentUrl        String?
   Order             Order[]
   user              User           @relation(fields: [userId], references: [userId])
 }
@@ -330,6 +333,13 @@ model Post {
   Media       Media[]
 
   @@index([createdAt])
+}
+
+model Bonus {
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
+  updateAt  DateTime @default(now())
 }
 
 enum PRODUCT_VISIBLE_STATUS {
