@@ -47,7 +47,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: [process.env.CLIENT_URL!, process.env.WEB_CRM_APP!],
     credentials: true,
     methods: ["POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
