@@ -233,7 +233,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
         await bot
           .sendMessage(
             orderData.telegramId!,
-            `🎉 <strong>Ваш заказ оформлен!</strong>\n\n📦<strong>Трек-номер: ${orderTrackNumberForUser}\n\n` +
+            `🎉 <strong>Ваш заказ оформлен!</strong>\n\n📦Трек-номер: ${orderTrackNumberForUser}\n\n` +
               `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!Рады помогать Вам на пути к лучшему самочувствию)\n\n` +
               `Ваш заказ:\n${orderData.products
                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
