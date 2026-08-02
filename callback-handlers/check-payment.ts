@@ -46,7 +46,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
       if (user) {
         await bot.sendMessage(
           user.telegramId,
-          "Платёж уже обрабатывается или подтверждён. Пожалуйста, подождите."
+          "Платёж уже обрабатывается или подтверждён. Пожалуйста, подождите.",
         );
       }
       return;
@@ -109,7 +109,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
       if (!orderData?.selectedPvzCode && !orderData?.address) {
         return await bot.sendMessage(
           user.telegramId,
-          "selectedPvzCode не найден"
+          "selectedPvzCode не найден",
         );
       }
 
@@ -164,7 +164,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
             orderData.address!,
             cityCode!,
             orderData?.freeDelivery,
-            orderData?.products
+            orderData?.products,
           );
         } else {
           getOrderObject = await getOrderObjRuWithPrepayment(
@@ -179,7 +179,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
             orderData.selectedTariff!,
             orderData.address!,
             cityCode!,
-            orderData?.products
+            orderData?.products,
           );
         }
       } else {
@@ -195,7 +195,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
           orderData.selectedTariff!,
           orderData.address!,
           cityCode!,
-          orderData?.products
+          orderData?.products,
         );
       }
       const delay = (ms: number) =>
@@ -208,7 +208,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
 
         const orderCdekData = await getOrderTrackNumber(
           orderData?.im_number,
-          authData?.access_token!
+          authData?.access_token!,
         ).then((order) => order.entity);
 
         const orderTrackNumberForUser = orderCdekData.cdek_number;
@@ -216,7 +216,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
         if (!orderTrackNumberForUser)
           return await bot.sendMessage(
             user.telegramId,
-            `Заказ с номером: ${orderCdekData.uuid} не удалось зарегистрировать.`
+            `Заказ с номером: ${orderCdekData.uuid} не удалось зарегистрировать.`,
           );
 
         await prisma.order.updateMany({
@@ -233,21 +233,28 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
         await bot
           .sendMessage(
             orderData.telegramId!,
-            `📝Ваш заказ оформлен!\nВот трек-номер: ${orderTrackNumberForUser}\n(если нет трек-номера, то обратитесь к <a href="https://t.me/ManageR_triple_h">консультанту</a>)\n\n` +
-              `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!\n\n` +
+            `🎉 <strong>Ваш заказ оформлен!</strong>\n\n📦<strong>Трек-номер: ${orderTrackNumberForUser}\n\n` +
+              `Благодарим за покупку, ${orderData?.surName} ${orderData?.firstName} ${orderData?.middleName}!Рады помогать Вам на пути к лучшему самочувствию)\n\n` +
               `Ваш заказ:\n${orderData.products
                 .map((el) => `${el.productCount} шт. | ${el.synonym}`)
                 .join("\n")}\n\n` +
-              `🕰️ Отправка посылки в течении 3х дней после оплаты (Не считая воскресенье и праздничные дни. Отправок в эти дни нет, но магазин работает без выходных).\n\n` +
-              `Если в течение 4х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a> об этом.\n\n` +
-              `📦 Если заканчивается срок хранения посылки на пункте выдачи - напишите нам для продления. Иначе за возврат удерживается сумма (за доставку к вам и обратно).` +
-              `\n\n🔗 Основной канал:\nhttps://t.me/+-XvL40v4VGEzZjgy` +
-              `\n\n🔗 Резервный канал (на случай потери доступа к основному):\nhttps://t.me/+N_pb4P0NOOs0ZmYy` +
-              `\n\n❗️ПРЕТЕНЗИИ ПО СОСТОЯНИЮ ТОВАРА И СООТВЕТСТВИЮ ЗАКАЗА РАССМАТРИВАЮТСЯ ТОЛЬКО ПРИ НАЛИЧИИ ВИДЕОФИКСАЦИИ ВСКРЫТИЯ УПАКОВКИ❗️`,
+              `⏳ Отправка в течении 2х дней после оформления. Магазин работает ежедневно, но отправки не осуществляются по воскресеньям и праздничным дням.\n\n` +
+              `📍 Если в течение 3х дней статус заказа не изменился, сообщите <a href="https://t.me/ManageR_triple_h">нам</a>.\n\n` +
+              `📦 <strong>Важная информация</strong>` +
+              `\n\nЕсли нужно продлить срок хранения или изменить данные заказа (получатель, адрес, город получения) — сообщите нам заранее.` +
+              `\n\nЕсли посылка возвращается из-за окончания срока хранения или отказа от получения, СДЭК удерживает стоимость доставки туда и обратно. Эти расходы компенсируются клиентом.` +
+              `\n\n⚠️ При получении посылки` +
+              `\n\n🎥 Откройте посылку в ПВЗ и снимите непрерывное видео <strong>вскрытия</strong> от запечатанной упаковки до проверки содержимого.` +
+              `\n\n• Если посылка не ваша — не забирайте её и сообщите сотруднику ПВЗ.` +
+              `\n• Если есть недостача, повреждение или ошибка в заказе — оформите претензию в ПВЗ, заберите посылку и напишите нам.` +
+              `\n\n❗️Видео вскрытия обязательно для рассмотрения претензий.` +
+              `\n\n<strong>📢 Наши каналы:</strong>` +
+              `\n• Основной канал:\nhttps://t.me/+-XvL40v4VGEzZjgy` +
+              `\n• Резервный канал (на случай потери доступа к основному):\nhttps://t.me/+N_pb4P0NOOs0ZmYy`,
             {
               parse_mode: "HTML",
               disable_web_page_preview: true,
-            }
+            },
           )
           .catch((err) => console.log(err));
 
@@ -349,21 +356,21 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
           })
           .catch(
             async (err) =>
-              await bot.sendMessage(MANAGER_CHAT_ID, "[ЛОГИ]: Ошибка: " + err)
+              await bot.sendMessage(MANAGER_CHAT_ID, "[ЛОГИ]: Ошибка: " + err),
           );
         // ------------------------------------------------------------------------
 
         // Отправляем в группу СДЭК заказ с трек номером
         const barcode_uuid = await generateBarcode(
           orderCdekData.uuid,
-          authData?.access_token
+          authData?.access_token,
         ).then((barcode) => barcode.entity.uuid);
 
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const barcode_url = await pollForBarcode(
           barcode_uuid,
-          authData?.access_token!
+          authData?.access_token!,
         );
 
         // Записываем barcode в бд
@@ -450,7 +457,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
                   ],
                 ],
               },
-            }
+            },
           )
           .then(async (msg) => {
             const order = await prisma.order.findFirst({
