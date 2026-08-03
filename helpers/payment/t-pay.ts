@@ -57,6 +57,7 @@ export async function getPaymentStatus(
   const resp = await axios.post<TPayPaymentCheckResponse>(
     `${process.env.TPAY_API_URL}/GetState`,
     data,
+    { httpsAgent },
   );
   return resp.data;
 }

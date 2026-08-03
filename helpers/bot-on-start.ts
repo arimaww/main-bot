@@ -52,8 +52,9 @@ export async function botOnStart(bot: TelegramBot, MANAGER_CHAT_ID: string) {
     }
   }
 
-  return await bot.sendMessage(
-    MANAGER_CHAT_ID,
-    "Бот был перезапущен.\nВсе неоплаченные заказы были автоматически удалены."
-  );
+  return 
+  // await bot.sendMessage(
+  //   MANAGER_CHAT_ID,
+  //   "Бот был перезапущен.\nВсе неоплаченные заказы были автоматически удалены."
+  // );
 }
