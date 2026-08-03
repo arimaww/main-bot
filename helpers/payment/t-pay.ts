@@ -6,6 +6,11 @@ import {
   TPayPaymentResponse,
 } from "../../types/payment/payment.types";
 import { createHash } from "crypto";
+import https from "https";
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
 
 export const TPayGenerate = async (
   data: TPayPaymentRequest,
@@ -13,6 +18,7 @@ export const TPayGenerate = async (
   const resp = await axios.post<TPayPaymentResponse>(
     `${process.env.TPAY_API_URL}/Init`,
     data,
+    { httpsAgent },
   );
   return resp.data;
 };
