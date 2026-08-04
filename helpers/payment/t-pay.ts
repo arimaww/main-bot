@@ -7,9 +7,10 @@ import {
 } from "../../types/payment/payment.types";
 import { createHash } from "crypto";
 import https from "https";
+import { ROOT_CA, SUB_CA } from "../../cert";
 
 const httpsAgent = new https.Agent({
-  rejectUnauthorized: false,
+  ca: [ROOT_CA, SUB_CA],
 });
 
 export const TPayGenerate = async (

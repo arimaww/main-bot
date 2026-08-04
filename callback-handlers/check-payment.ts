@@ -46,7 +46,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
       if (user) {
         await bot.sendMessage(
           user.telegramId,
-          "Платёж уже обрабатывается или подтверждён. Пожалуйста, подождите.",
+          "Платеж ещё не подтвержден, обратитесь к менеджеру",
         );
       }
       return;
