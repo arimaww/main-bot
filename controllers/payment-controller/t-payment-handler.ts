@@ -51,7 +51,17 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
         console.log("Старый заказ удалён");
       }
 
-      if (!basket || !queryId || !totalPrice) {
+      if (!basket || !totalPrice) {
+        await bot
+          .sendMessage(
+            telegramId,
+            "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
+          )
+          .catch((err) => console.log(err));
+        return res
+          .status(400)
+          .json({ message: "Все поля обязательны для заполнения" });
+      } else if (queryId || !basket || !totalPrice) {
         await bot
           .answerWebAppQuery(queryId, {
             type: "article",
@@ -131,17 +141,44 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
 
       if (!cdekOffice) return;
 
-      await bot
-        .answerWebAppQuery(queryId, {
-          type: "article",
-          id: queryId,
-          title: "Ваш заказ",
-          input_message_content: {
-            message_text:
-              `\n\nЗаказ:\n${products
-                .filter((el: any) => el.productCount > 0)
-                .map((el: any) => `${el.productCount} шт. | ${el.synonym}`)
-                .join("\n")}\n` +
+      if (queryId) {
+        // если открывает mini-app через inline-кнопку из чата
+        await bot
+          .answerWebAppQuery(queryId, {
+            type: "article",
+            id: queryId,
+            title: "Ваш заказ",
+            input_message_content: {
+              message_text:
+                `\n\nЗаказ:\n${products
+                  .filter((el: any) => el.productCount > 0)
+                  .map((el: any) => `${el.productCount} шт. | ${el.synonym}`)
+                  .join("\n")}\n` +
+                `\nФИО ${surName} ${firstName} ${middleName}` +
+                "\nНомер " +
+                phone +
+                `\n\n${
+                  !!basket[0]?.freeDelivery
+                    ? "Доставка: Бесплатно"
+                    : `Доставка: ${deliverySum} ₽`
+                }` +
+                "\n\nПрайс: " +
+                `${
+                  totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                    ? totalPriceWithDiscount
+                    : totalPrice
+                }`,
+            },
+          })
+          .catch((err) => console.log(err));
+      } else if (telegramId) {
+        await bot
+          .sendMessage(
+            telegramId,
+            `\n\nЗаказ:\n${products
+              .filter((el: any) => el.productCount > 0)
+              .map((el: any) => `${el.productCount} шт. | ${el.synonym}`)
+              .join("\n")}\n` +
               `\nФИО ${surName} ${firstName} ${middleName}` +
               "\nНомер " +
               phone +
@@ -156,9 +193,9 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
                   ? totalPriceWithDiscount
                   : totalPrice
               }`,
-          },
-        })
-        .catch((err) => console.log(err));
+          )
+          .catch((err) => console.log(err));
+      }
 
       // При доставке заграницу
       let paymentInfoInter = "";
