@@ -6,7 +6,7 @@ import { MANAGER_CHAT_ID } from "../config/config";
 
 export const abovetwentyController = async (
   req: Request<{}, {}, TWeb>,
-  res: Response
+  res: Response,
 ) => {
   const {
     selectedPvzCode,
@@ -53,34 +53,61 @@ export const abovetwentyController = async (
       console.log("Старый заказ удалён");
     }
 
-    if (!basket || !queryId || !totalPrice) {
+    // if (!basket || !queryId || !totalPrice) {
+    //   await bot
+    //     .answerWebAppQuery(queryId, {
+    //       type: "article",
+    //       id: queryId,
+    //       title: "Не удалось приобрести товар",
+    //       input_message_content: {
+    //         message_text:
+    //           "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
+    //       },
+    //     })
+    //     .catch((err) => console.log(err));
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Все поля обязательны для заполнения" });
+    // }
+
+    if (queryId) {
+      // если открывает mini-app через inline-кнопку из чата
       await bot
         .answerWebAppQuery(queryId, {
           type: "article",
           id: queryId,
-          title: "Не удалось приобрести товар",
+          title: "Ваш заказ",
           input_message_content: {
             message_text:
-              "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
+              `\n\nЗаказ:\n${products
+                .filter((el: any) => el.productCount > 0)
+                .map((el: any) => `${el.productCount} шт. | ${el.synonym}`)
+                .join("\n")}\n` +
+              `\nФИО ${surName} ${firstName} ${middleName}` +
+              "\nНомер " +
+              phone +
+              `\n\n${
+                !!basket[0]?.freeDelivery
+                  ? "Доставка: Бесплатно"
+                  : `Доставка: ${deliverySum} ₽`
+              }` +
+              "\n\nПрайс: " +
+              `${
+                totalPriceWithDiscount && totalPriceWithDiscount !== 0
+                  ? totalPriceWithDiscount
+                  : totalPrice
+              }`,
           },
         })
         .catch((err) => console.log(err));
-      return res
-        .status(400)
-        .json({ message: "Все поля обязательны для заполнения" });
-    }
-
-    await bot
-      .answerWebAppQuery(queryId, {
-        type: "article",
-        id: queryId,
-        title: "Ваш заказ",
-        input_message_content: {
-          message_text:
-            `\n\nЗаказ:\n${products
-              .filter((el: any) => el.productCount > 0)
-              .map((el: any) => `${el.productCount} шт. | ${el.synonym}`)
-              .join("\n")}\n` +
+    } else if (telegramId) {
+      await bot
+        .sendMessage(
+          telegramId,
+          `\n\nЗаказ:\n${products
+            .filter((el: any) => el.productCount > 0)
+            .map((el: any) => `${el.productCount} шт. | ${el.synonym}`)
+            .join("\n")}\n` +
             `\nФИО ${surName} ${firstName} ${middleName}` +
             "\nНомер " +
             phone +
@@ -95,9 +122,9 @@ export const abovetwentyController = async (
                 ? totalPriceWithDiscount
                 : totalPrice
             }`,
-        },
-      })
-      .catch((err) => console.log(err));
+        )
+        .catch((err) => console.log(err));
+    }
 
     const uniqueProducts = products.filter((prod) => prod.productCount > 0);
 
@@ -190,8 +217,8 @@ export const abovetwentyController = async (
       const deliveryNote = basket[0]?.freeDelivery
         ? "Доставка: <strong>Бесплатно</strong>"
         : cdekOffice.allowed_cod && isRussia
-        ? `Доставка: ${deliveryCost} ₽`
-        : "";
+          ? `Доставка: ${deliveryCost} ₽`
+          : "";
 
       const result = `Прайс: ${priceToPay} ₽ ${paymentNote}\n ${deliveryNote}`;
 
@@ -207,23 +234,23 @@ export const abovetwentyController = async (
           .filter((el) => el.productCount > 0)
           .map((el) => `${el.productCount} шт. | ${el.synonym}`)
           .join(
-            "\n"
+            "\n",
           )}\n\nTelegram ID: ${telegramId}\nФИО: ${surName} ${firstName} ${middleName}\nСтрана: ${
           selectedCountry === "RU"
             ? "Россия"
             : selectedCountry === "KG"
-            ? "Кыргызстан"
-            : selectedCountry === "BY"
-            ? "Беларусь"
-            : selectedCountry === "AM"
-            ? "Армения"
-            : selectedCountry === "KZ"
-            ? "Казахстан"
-            : selectedCountry === "AZ"
-            ? "Азербайджан"
-            : selectedCountry === "UZ"
-            ? "Узбекистан"
-            : "Неизвестная страна"
+              ? "Кыргызстан"
+              : selectedCountry === "BY"
+                ? "Беларусь"
+                : selectedCountry === "AM"
+                  ? "Армения"
+                  : selectedCountry === "KZ"
+                    ? "Казахстан"
+                    : selectedCountry === "AZ"
+                      ? "Азербайджан"
+                      : selectedCountry === "UZ"
+                        ? "Узбекистан"
+                        : "Неизвестная страна"
         }\nНомер: ${phone.replace(/[ ()-]/g, "")}\n` +
         `${result}` +
         `${
@@ -345,7 +372,7 @@ export const abovetwentyController = async (
                   ],
                 ],
               },
-            }
+            },
           )
           .then(async (sentMessage) => {
             await prisma.order.updateMany({
@@ -378,7 +405,7 @@ export const abovetwentyController = async (
                   ],
                 ],
               },
-            }
+            },
           )
           .then(async (sentMessage) => {
             await prisma.order
