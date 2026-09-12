@@ -51,32 +51,6 @@ export const tPaymentHandler = async (req: Request, res: Response) => {
         console.log("Старый заказ удалён");
       }
 
-      if (!basket || !totalPrice) {
-        await bot
-          .sendMessage(
-            telegramId,
-            "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
-          )
-          .catch((err) => console.log(err));
-        return res
-          .status(400)
-          .json({ message: "Все поля обязательны для заполнения" });
-      } else if (queryId || !basket || !totalPrice) {
-        await bot
-          .answerWebAppQuery(queryId, {
-            type: "article",
-            id: queryId,
-            title: "Не удалось приобрести товар",
-            input_message_content: {
-              message_text:
-                "Не удалось приобрести товар\nНапишите /start и попробуйте позже",
-            },
-          })
-          .catch((err) => console.log(err));
-        return res
-          .status(400)
-          .json({ message: "Все поля обязательны для заполнения" });
-      }
 
       const uniqueProducts = products.filter((prod) => prod.productCount > 0);
 
