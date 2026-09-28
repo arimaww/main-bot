@@ -38,11 +38,14 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
     });
     if (!paymentInfo) return;
 
+    const user = await prisma.user.findFirst({
+      where: { userId: paymentInfo.userId },
+    });
+
+    if (!user) return console.log("Пользователь не найден");
+
     // ✅ Проверяем, не обработан ли платёж уже
     if (paymentInfo.status === "PROCESSING") {
-      const user = await prisma.user.findFirst({
-        where: { userId: paymentInfo.userId },
-      });
       if (user) {
         await bot.sendMessage(
           user.telegramId,
@@ -68,29 +71,207 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
       data: { status: "PROCESSING" },
     });
 
-    const user = await prisma.user.findFirst({
-      where: { userId: paymentInfo.userId },
-    });
-    if (!user) return;
-
     // Проверяем оплату
     const request = await getPaymentStatus({ ...data, Token: token });
 
-    if (request.Status !== "CONFIRMED") {
-      // Возвращаем статус в NEW, чтобы можно было проверить позже
-      await prisma.paymentInfo.update({
-        where: { id: paymentInfo.id },
-        data: { status: "NEW" },
-      });
-      return await bot.sendMessage(user.telegramId, "Платёж ещё не обработан.");
-    }
+    // if (request.Status !== "CONFIRMED") {
+    //   // Возвращаем статус в NEW, чтобы можно было проверить позже
+    //   await prisma.paymentInfo.update({
+    //     where: { id: paymentInfo.id },
+    //     data: { status: "NEW" },
+    //   });
+    //   return await bot.sendMessage(user.telegramId, "Платёж ещё не обработан.");
+    // }
 
     const orderData = await getOrderData(paymentInfo.orderUniqueNumber);
     if (orderData.status === "SUCCESS") {
       return await bot.sendMessage(user.telegramId, "Заказ уже принят.");
     }
 
-    if (request.Status === "CONFIRMED") {
+    const cdekOffice = await prisma.cdekOffice
+      .findFirst({
+        where: { code: orderData.selectedPvzCode! },
+      })
+      .catch((err) => console.log(err));
+
+    if (!cdekOffice) return console.log("Не удалось найти ПВЗ");
+
+    const sendOrderToManager = async () => {
+      const order = await prisma.order.findFirst({
+        where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
+      });
+      const orders = await prisma.order.findMany({
+        where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
+      });
+
+      if (!order) return console.log("Заказ не найден");
+
+      const promocode = order[0]?.promocodeId
+        ? await prisma.promocodes.findFirst({
+            where: { promocodeId: order[0]?.promocodeId },
+          })
+        : undefined;
+
+      const isOrderAlreadyUpdated = await prisma.order.findMany({
+        where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
+      });
+
+      if (isOrderAlreadyUpdated[0]?.fileId) return;
+
+      const secretDiscountId = order[0]?.generatedBasket
+        ? order[0]?.generatedBasket?.secretDiscountId
+        : null;
+
+      let secret;
+
+      if (secretDiscountId) {
+        secret = await prisma.secretDiscount.findFirst({
+          where: { id: Number(secretDiscountId) },
+        });
+      }
+
+      const isRussia = order.selectedCountry === "RU";
+      const hasDiscount = !!order.totalPriceWithDiscount;
+      const deliveryCost = Number(order.deliveryCost);
+
+      const basePrice = hasDiscount
+        ? order.totalPriceWithDiscount
+        : order.totalPrice;
+      const fullPrice = Number(basePrice) + deliveryCost;
+
+      // Определяем финальную сумму
+      const priceToPay =
+        // Если доставка не в РФ или нет наложенного платежа — платит сразу с доставкой
+        !isRussia || !cdekOffice.allowed_cod ? fullPrice : basePrice;
+
+      // Определяем пояснение
+      const paymentNote =
+        !isRussia || !cdekOffice.allowed_cod
+          ? "<strong>должен оплатить вместе с доставкой</strong>"
+          : "<strong>должен оплатить без учета доставки</strong>";
+
+      // Определяем текст по доставке
+      const deliveryNote = order.freeDelivery
+        ? "Доставка: <strong>Бесплатно</strong>"
+        : cdekOffice.allowed_cod && isRussia
+          ? `Доставка: ${deliveryCost} ₽`
+          : "";
+
+      const result = `Прайс: ${priceToPay} ₽ ${paymentNote}\n${deliveryNote}`;
+
+      const prods = await prisma.product.findMany();
+
+      const products = orders.map((el) => {
+        const foundProduct = prods.find((p) => p.productId === el.productId);
+
+        return {
+          productCount: el.productCount,
+          synonym: foundProduct?.synonym,
+        };
+      });
+
+      const messageToManager =
+        `T-PAY (оплачено)\nНомер в кассе для проверки: ${order.orderUniqueNumber}\n\n` +
+        `${
+          user.userName
+            ? `<a href='https://t.me/${user.userName}'>Пользователь</a>`
+            : "Пользователь"
+        }` +
+        ` сделал заказ:\n${products
+          .filter((el) => el.productCount > 0)
+          .map((el) => `${el.productCount} шт. | ${el.synonym}`)
+          .join(
+            "\n",
+          )}\nTelegram ID: ${user.telegramId}\n\nФИО: ${order.surName} ${order.firstName} ${order.middleName}\nСтрана: ${
+          order.selectedCountry === "RU"
+            ? "Россия"
+            : order.selectedCountry === "KG"
+              ? "Кыргызстан"
+              : order.selectedCountry === "BY"
+                ? "Беларусь"
+                : order.selectedCountry === "AM"
+                  ? "Армения"
+                  : order.selectedCountry === "KZ"
+                    ? "Казахстан"
+                    : order.selectedCountry === "AZ"
+                      ? "Азербайджан"
+                      : order.selectedCountry === "UZ"
+                        ? "Узбекистан"
+                        : "Неизвестная страна"
+        }
+                  \nНомер: ${order.phone?.replace(
+                    /[ ()-]/g,
+                    "",
+                    //  TODO: Указать с доставкой ли оплата или без неё
+                  )}\n` +
+        `${result}` +
+        `${
+          secretDiscountId
+            ? `<blockquote>У данного клиента скидка на ${secret?.percent} ₽. Корзина сгенерирована менеджером.</blockquote>`
+            : ""
+        }` +
+        `${
+          promocode
+            ? `\n\n<blockquote>Данный пользователь использовал промокод: ${promocode?.title} на ${promocode?.percent} %</blockquote>`
+            : ""
+        }`;
+
+      if (order && order.status === "WAITPAY") {
+        await bot
+          .sendMessage(MANAGER_CHAT_ID, messageToManager, {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "✅ Принять",
+                    callback_data: `Принять_${paymentInfo.orderUniqueNumber}`,
+                  },
+                  {
+                    text: "❌ Удалить",
+                    callback_data: `Удалить_${paymentInfo.orderUniqueNumber}`,
+                  },
+                ],
+              ],
+            },
+            parse_mode: "HTML",
+          })
+          .then(async (msg) => {
+            const newMessage = await prisma.messages.create({
+              data: {
+                bot_msg_id: String(msg.message_id),
+                cdek_group_msg_id: "",
+              },
+            });
+
+            await prisma.order.updateMany({
+              where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
+              data: { messagesId: newMessage.id },
+            });
+          })
+          .catch((err) => console.log(err));
+      } else {
+        console.log("Этот заказ уже обработан или отправлен.");
+      }
+
+      // Обработчик callback_query для кнопок "Принять" и "Удалить"
+
+      await prisma.order.updateMany({
+        where: { orderUniqueNumber: paymentInfo.orderUniqueNumber },
+        data: { status: "PENDING" },
+      });
+
+      if (secretDiscountId)
+        await prisma.secretDiscount.update({
+          where: { id: secretDiscountId },
+          data: { type: "USED" },
+        });
+      bot.sendMessage(
+        user.telegramId,
+        "Отлично, оплата прошла успешно! Мы проверим заказ и вышлем трек-номер",
+      );
+    };
+
+    if (request.Status !== "CONFIRMED") {
       // После всей логики заказа
       await prisma.paymentInfo.update({
         where: { id: paymentInfo.id },
@@ -98,6 +279,7 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
       });
 
       // Формирование трек номера СДЭК для заказа пользователя
+
       const authData = await getToken({
         grant_type: "client_credentials",
         client_id: process.env.CLIENT_ID!,
@@ -213,11 +395,11 @@ export const handleCheckPayment = async (callbackQuery: CallbackQuery) => {
 
         const orderTrackNumberForUser = orderCdekData.cdek_number;
 
-        if (!orderTrackNumberForUser)
-          return await bot.sendMessage(
-            user.telegramId,
-            `Заказ с номером: ${orderCdekData.uuid} не удалось зарегистрировать.`,
-          );
+        // Если cdek_number не придет, то отправляем заказ менеджеру
+        
+        if (!orderTrackNumberForUser) {
+          return await sendOrderToManager();
+        }
 
         await prisma.order.updateMany({
           where: { orderUniqueNumber: orderData?.im_number },

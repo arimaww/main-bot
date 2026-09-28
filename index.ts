@@ -1118,30 +1118,58 @@ export const handleCallbackQuery = async (query: TelegramBot.CallbackQuery) => {
               : timestamp.getMinutes()
           }`;
 
+        const isTPay = orderData.bank?.bankName === "Оплата картой РФ";
+
+        console.log("isTpay: ", isTPay);
+
         action === "Принять"
-          ? await bot
-              .editMessageCaption(acceptOrderMessage, {
-                message_id: messageId,
-                chat_id: chatId,
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: "❌ Удалить",
-                        callback_data: `Удалить_${orderData?.im_number}`,
-                      },
+          ? isTPay
+            ? await bot
+                .editMessageText(acceptOrderMessage, {
+                  message_id: messageId,
+                  chat_id: chatId,
+                  reply_markup: {
+                    inline_keyboard: [
+                      [
+                        {
+                          text: "❌ Удалить",
+                          callback_data: `Удалить_${orderData?.im_number}`,
+                        },
+                      ],
                     ],
-                  ],
-                },
-                parse_mode: "HTML",
-              })
-              .catch(
-                async (err) =>
-                  await bot.sendMessage(
-                    MANAGER_CHAT_ID,
-                    "[ЛОГИ]: Ошибка: " + err,
-                  ),
-              )
+                  },
+                  parse_mode: "HTML",
+                })
+                .catch(
+                  async (err) =>
+                    await bot.sendMessage(
+                      MANAGER_CHAT_ID,
+                      "[ЛОГИ]: Ошибка: " + err,
+                    ),
+                )
+            : await bot
+                .editMessageCaption(acceptOrderMessage, {
+                  message_id: messageId,
+                  chat_id: chatId,
+                  reply_markup: {
+                    inline_keyboard: [
+                      [
+                        {
+                          text: "❌ Удалить",
+                          callback_data: `Удалить_${orderData?.im_number}`,
+                        },
+                      ],
+                    ],
+                  },
+                  parse_mode: "HTML",
+                })
+                .catch(
+                  async (err) =>
+                    await bot.sendMessage(
+                      MANAGER_CHAT_ID,
+                      "[ЛОГИ]: Ошибка: " + err,
+                    ),
+                )
           : await bot
               .editMessageText(acceptOrderMessage, {
                 message_id: messageId,
